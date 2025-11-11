@@ -1,0 +1,11 @@
+Estructura de la base de datos:
+Grupos Familiares: Para agrupar a los miembros de una misma familia
+Disciplinas: Actividades deportivas ofrecidas por el club
+Miembros: Información de cada socio
+Miembros-Disciplinas: Relación muchos a muchos entre miembros y disciplinas
+Pagos: Registro de todos los pagos
+Asistencia: Control de asistencia a las disciplinas
+Notificaciones: Sistema de notificaciones
+Documentos: Almacenamiento de archivos
+Descuentos Familiares: Descuentos especiales para grupos familiares
+Configuración: Ajustes del sistema
