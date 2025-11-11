@@ -1,0 +1,139 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
+
+interface Admin {
+  id: string
+  nombre_completo: string
+  email: string
+}
+
+interface NuevaDisciplinaFormProps {
+  admins: Admin[]
+}
+
+export function NuevaDisciplinaForm({ admins }: NuevaDisciplinaFormProps) {
+  const router = useRouter()
+  const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false)
+  const [formData, setFormData] = useState({
+    nombre: "",
+    descripcion: "",
+    cuota_deportiva: "",
+    admin_id: "",
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    try {
+      const supabase = createClient()
+
+      const { error } = await supabase.from("disciplinas").insert({
+        nombre: formData.nombre,
+        descripcion: formData.descripcion || null,
+        cuota_deportiva: Number.parseFloat(formData.cuota_deportiva),
+        admin_id: formData.admin_id || null,
+        activa: true,
+      })
+
+      if (error) throw error
+
+      toast({
+        title: "Disciplina creada exitosamente",
+      })
+
+      router.push("/admin/disciplinas")
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al crear disciplina",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Datos de la Disciplina</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="nombre">Nombre *</Label>
+            <Input
+              id="nombre"
+              required
+              placeholder="Ej: Fútbol, Natación, Tenis"
+              value={formData.nombre}
+              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="descripcion">Descripción</Label>
+            <Textarea
+              id="descripcion"
+              placeholder="Descripción de la disciplina"
+              value={formData.descripcion}
+              onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="cuota_deportiva">Cuota Deportiva Mensual *</Label>
+            <Input
+              id="cuota_deportiva"
+              type="number"
+              step="0.01"
+              required
+              placeholder="0.00"
+              value={formData.cuota_deportiva}
+              onChange={(e) => setFormData({ ...formData, cuota_deportiva: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="admin_id">Administrador de Disciplina</Label>
+            <Select value={formData.admin_id} onValueChange={(value) => setFormData({ ...formData, admin_id: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar administrador (opcional)" />
+              </SelectTrigger>
+              <SelectContent>
+                {admins.map((admin) => (
+                  <SelectItem key={admin.id} value={admin.id}>
+                    {admin.nombre_completo} ({admin.email})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex gap-4">
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creando..." : "Crear Disciplina"}
+            </Button>
+            <Button type="button" variant="outline" onClick={() => router.back()}>
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  )
+}
