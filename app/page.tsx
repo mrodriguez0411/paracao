@@ -54,8 +54,8 @@ export default async function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section id="inicio" className="pt-32 pb-16">
-        <div className="container">
+      <section id="inicio" className="pt-32 pb-16 w-full">
+        <div className="container max-w-6xl mx-auto px-4">
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
               Bienvenidos al <span className="text-primary">Club Paracao</span>
@@ -76,8 +76,8 @@ export default async function HomePage() {
       </section>
 
       {/* Nosotros Section */}
-      <section id="nosotros" className="py-20 bg-muted/30">
-        <div className="container max-w-6xl">
+      <section id="nosotros" className="py-20 bg-muted/30 w-full">
+        <div className="container max-w-6xl mx-auto px-4">
           <div className="mx-auto max-w-4xl text-center mb-16">
             <h2 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl mb-6">Nuestra Historia</h2>
             <div className="w-20 h-1 bg-primary mx-auto mb-6"></div>
@@ -87,8 +87,8 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
-            <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1">
+          <div className="grid gap-10 md:grid-cols-3">
+            <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1 flex flex-col items-center text-center">
               <CardHeader className="text-center">
                 <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit mb-4">
                   <Users className="h-8 w-8 text-primary" />
@@ -132,8 +132,8 @@ export default async function HomePage() {
       </section>
 
       {/* Disciplinas Section */}
-      <section id="disciplinas" className="py-20">
-        <div className="container max-w-6xl">
+      <section id="disciplinas" className="py-20 w-full">
+        <div className="container max-w-6xl mx-auto px-4">
           <div className="mx-auto max-w-4xl text-center mb-16">
             <h2 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl mb-6">Nuestras Disciplinas</h2>
             <div className="w-20 h-1 bg-primary mx-auto mb-6"></div>
@@ -261,9 +261,9 @@ export default async function HomePage() {
       </section>
 
       {/* Contacto Section */}
-      <section id="contacto" className="py-20 bg-muted/50">
-        <div className="container max-w-6xl">
-          <div className="mx-auto max-w-2xl">
+      <section id="contacto" className="py-20 bg-muted/50 w-full">
+        <div className="container max-w-6xl mx-auto px-4">
+          <div className="mx-auto max-w-4xl">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Contacto</h2>
               <p className="mt-4 text-lg text-muted-foreground">
@@ -311,9 +311,9 @@ export default async function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-background">
-        <div className="container py-12">
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
+      <footer className="border-t bg-background w-full">
+        <div className="container max-w-6xl mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-4 max-w-7xl mx-auto">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Trophy className="h-6 w-6 text-primary" />
