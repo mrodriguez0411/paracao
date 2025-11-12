@@ -74,6 +74,25 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+/* Ajustes para pantallas grandes */
+@media (min-width: 1280px) {
+  :root {
+    --base-scale: 1.1;
+  }
+}
+
+@media (min-width: 1536px) {
+  :root {
+    --base-scale: 1.2;
+  }
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --base-scale: 1.3;
+  }
+}
+
 @theme inline {
   /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
   --color-background: #ffffff;
