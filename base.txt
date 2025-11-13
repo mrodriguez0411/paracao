@@ -11,3 +11,6 @@ Descuentos Familiares: Descuentos especiales para grupos familiares
 Configuración: Ajustes del sistema
 
 prueba
+
+NEXT_PUBLIC_SUPABASE_URL="https://artqrxvwimrsalmcwxeu.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFydHFyeHZ3aW1yc2FsbWN3eGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI4NDI0OTIsImV4cCI6MjA3ODQxODQ5Mn0.8Dc0qzfaK4LGifMrllA3IeOc6OPCC5Pug2quf8BpzNY"
