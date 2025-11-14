@@ -1,5 +1,5 @@
 import { requireAuth } from "@/lib/auth"
-import { createClient } from "@/lib/supabase/server"
+import { createServiceRoleClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
@@ -7,7 +7,7 @@ import { SociosTable } from "@/components/admin/socios-table"
 
 export default async function SociosPage() {
   await requireAuth(["super_admin"])
-  const supabase = await createClient()
+  const supabase = createServiceRoleClient()
 
   const { data: grupos } = await supabase
     .from("grupos_familiares")

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useState } from "react"
 
 async function handleLoginAction(email: string, password: string) {
@@ -123,6 +124,9 @@ export default function LoginPage() {
                 {error && <p className="text-sm text-red-600 font-semibold">{error}</p>}
                 <Button type="submit" className="w-full bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white font-semibold text-lg py-6" disabled={isLoading}>
                   {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
+                </Button>
+                <Button asChild variant="outline" className="w-full border-[#1e3a8a] text-[#1e3a8a] hover:bg-[#1e3a8a]/5 font-semibold py-6">
+                  <Link href="/">Ir al sitio web</Link>
                 </Button>
               </div>
             </form>

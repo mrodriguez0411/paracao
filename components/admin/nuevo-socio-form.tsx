@@ -4,7 +4,6 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -29,43 +28,37 @@ export function NuevoSocioForm() {
     setIsLoading(true)
 
     try {
-      const supabase = createClient()
-
-      // Crear usuario en auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            nombre_completo: formData.nombre_completo,
-            rol: "socio",
-          },
+      // Usar endpoint del servidor que usa service-role para evitar restricciones de dominio
+      const response = await fetch("/api/admin/crear-socio", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          nombre_completo: formData.nombre_completo,
+          telefono: formData.telefono,
+          nombre_grupo: formData.nombre_grupo,
+          cuota_social: formData.cuota_social,
+        }),
       })
 
-      if (authError) throw authError
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Error al crear socio")
+      }
 
-      if (!authData.user) throw new Error("No se pudo crear el usuario")
-
-      // Actualizar perfil con teléfono
-      await supabase.from("profiles").update({ telefono: formData.telefono }).eq("id", authData.user.id)
-
-      // Crear grupo familiar
-      const { error: grupoError } = await supabase.from("grupos_familiares").insert({
-        nombre: formData.nombre_grupo,
-        titular_id: authData.user.id,
-        cuota_social: Number.parseFloat(formData.cuota_social),
-      })
-
-      if (grupoError) throw grupoError
+      const data = await response.json()
 
       toast({
         title: "Socio creado exitosamente",
-        description: "Se ha enviado un email de confirmación al socio",
+        description: `Se ha creado el usuario ${data.email}`,
       })
 
       router.push("/admin/socios")
     } catch (error) {
+      console.error("Error al crear socio:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Error al crear socio",
