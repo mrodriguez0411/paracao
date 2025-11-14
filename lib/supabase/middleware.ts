@@ -82,8 +82,14 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Permitir acceso a login sin autenticación
-  if (request.nextUrl.pathname.startsWith('/auth')) {
+  // Rutas públicas que no requieren autenticación
+  const publicPaths = ['/auth', '/', '/about', '/contact'] // Añade aquí las rutas públicas
+  const isPublicPath = publicPaths.some(path => 
+    path === '/' ? request.nextUrl.pathname === path : request.nextUrl.pathname.startsWith(path)
+  )
+
+  // Permitir acceso a rutas públicas sin autenticación
+  if (isPublicPath) {
     return supabaseResponse
   }
 
@@ -91,6 +97,7 @@ export async function updateSession(request: NextRequest) {
   if (!user) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
+    url.searchParams.set('redirectedFrom', request.nextUrl.pathname)
     return NextResponse.redirect(url)
   }
 
