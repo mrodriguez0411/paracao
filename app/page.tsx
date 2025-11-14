@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import Image from "next/image"
 import { Trophy, Users, Target, Award, Calendar, Phone, Mail, MapPin, Menu, X } from "lucide-react"
 //import Image from "next/image"
 
@@ -18,29 +19,34 @@ export default async function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b shadow-sm">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#EFB600] backdrop-blur-sm border-b shadow-md">
         <div className="container flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 font-bold">
-            <Trophy className="h-6 w-6" />
-            <span>Club Paracao</span>
+            <Image
+              src="/Nueva%20carpeta/Oficial%20png.png"
+              alt="Club Paracao Logo"
+              width={50}
+              height={50}
+              className="h-20 w-auto"
+            />
           </Link>
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="#inicio" className="px-5 py-2.5 text-lg font-semibold text-gray-800 hover:text-primary transition-colors hover:bg-primary/5 rounded-lg">
+            <Link href="#inicio" className="px-5 py-2.5 text-lg font-semibold text-brand-blue hover:text-brand-blue/80 transition-colors hover:bg-brand-blue/5 rounded-lg">
               Inicio
             </Link>
-            <Link href="#nosotros" className="px-4 py-2 text-base font-semibold text-gray-800 hover:text-primary transition-colors hover:bg-primary/5 rounded-lg">
+            <Link href="#nosotros" className="px-4 py-2 text-base font-semibold text-gray-700 hover:text-brand-blue transition-colors hover:bg-brand-blue/5 rounded-lg">
               Nosotros
             </Link>
-            <Link href="#disciplinas" className="px-4 py-2 text-base font-semibold text-gray-800 hover:text-primary transition-colors hover:bg-primary/5 rounded-lg">
+            <Link href="#disciplinas" className="px-4 py-2 text-base font-semibold text-gray-700 hover:text-brand-blue transition-colors hover:bg-brand-blue/5 rounded-lg">
               Disciplinas
             </Link>
-            <Link href="#galeria" className="px-4 py-2 text-base font-semibold text-gray-800 hover:text-primary transition-colors hover:bg-primary/5 rounded-lg">
+            <Link href="#galeria" className="px-4 py-2 text-base font-semibold text-gray-700 hover:text-brand-blue transition-colors hover:bg-brand-blue/5 rounded-lg">
               Galería
             </Link>
-            <Link href="#contacto" className="px-4 py-2 text-base font-semibold text-gray-800 hover:text-primary transition-colors hover:bg-primary/5 rounded-lg">
+            <Link href="#contacto" className="px-4 py-2 text-base font-semibold text-gray-700 hover:text-brand-blue transition-colors hover:bg-brand-blue/5 rounded-lg">
               Contacto
             </Link>
-            <Button asChild size="lg" className="ml-3 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors px-8 py-2.5 h-auto text-lg">
+            <Button asChild size="lg" className="ml-3 bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white transition-colors px-8 py-2.5 h-auto text-lg font-oswald">
               <Link href="/auth/login" className="font-bold">Área de Socios</Link>
             </Button>
           </nav>
@@ -54,20 +60,24 @@ export default async function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section id="inicio" className="pt-32 pb-16 w-full">
+      <section id="inicio" className="pt-32 pb-1 w-full ">
         <div className="container max-w-6xl mx-auto px-4">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              Bienvenidos al <span className="text-primary">Club Paracao</span>
-            </h1>
+          <div className="text-center py-10">
+            <Image
+              src="/Nueva%20carpeta/Claim%20amarillo1.png"
+              alt="Club Paracao"
+              width={400}
+              height={100}
+              className="mx-auto h-100 w-full max-w-lg mb-6"
+            />
             <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
               Más que un club, una familia. Promoviendo el deporte, la salud y la integración social desde 1980.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
-              <Button asChild>
+              <Button asChild className="bg-[#EFB600] hover:bg-[#EFB600]/90 text-[#1e3a8a] px-8 py-3 text-lg font-semibold transition-all duration-200">
                 <Link href="#disciplinas">Ver Disciplinas</Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button asChild className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white px-8 py-3 text-lg font-semibold transition-all duration-200">
                 <Link href="#contacto">Contáctanos</Link>
               </Button>
             </div>
@@ -88,10 +98,10 @@ export default async function HomePage() {
           </div>
 
           <div className="grid gap-10 md:grid-cols-3">
-            <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1 flex flex-col items-center text-center">
-              <CardHeader className="text-center">
-                <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit mb-4">
-                  <Users className="h-8 w-8 text-primary" />
+            <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1 flex flex-col items-center justify-center text-center bg-textura-amarilla">
+              <CardHeader className="text-center flex flex-col items-center">
+                <div className="mx-auto bg-[#1e3a8a]/10 p-3 rounded-full w-fit mb-4">
+                  <Users className="h-8 w-8 text-[#1e3a8a]" />
                 </div>
                 <CardTitle className="text-xl">Comunidad</CardTitle>
               </CardHeader>
@@ -102,10 +112,10 @@ export default async function HomePage() {
               </CardContent>
             </Card>
 
-            <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1">
+            <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1 bg-textura-amarilla">
               <CardHeader className="text-center">
-                <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit mb-4">
-                  <Target className="h-8 w-8 text-primary" />
+                <div className="mx-auto bg-[#1e3a8a]/10 p-3 rounded-full w-fit mb-4">
+                  <Target className="h-8 w-8 text-[#1e3a8a]" />
                 </div>
                 <CardTitle className="text-xl">Excelencia Deportiva</CardTitle>
               </CardHeader>
@@ -116,12 +126,14 @@ export default async function HomePage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <Award className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>Trayectoria</CardTitle>
+            <Card className="bg-textura-amarilla h-full transition-all hover:shadow-lg hover:-translate-y-1 flex flex-col items-center justify-center text-center">
+              <CardHeader className="text-center flex flex-col items-center">
+                <div className="mx-auto bg-[#1e3a8a]/10 p-3 rounded-full w-fit mb-4">
+                  <Award className="h-8 w-8 text-[#1e3a8a]" />
+                </div>
+                <CardTitle className="text-xl">Trayectoria</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="text-center">
                 <p className="text-muted-foreground">
                   Años de experiencia formando deportistas y promoviendo valores a través del deporte
                 </p>
@@ -271,27 +283,27 @@ export default async function HomePage() {
               </p>
             </div>
 
-            <Card>
+            <Card className="bg-textura-amarilla rounded-lg shadow-sm">
               <CardContent className="pt-6">
-                <div className="space-y-6">
+                <div className="space-y-6 text-[#020617]">
                   <div className="space-y-2">
                     <h3 className="font-semibold">Dirección</h3>
-                    <p className="text-muted-foreground">Calle Principal 123, Ciudad</p>
+                    <p className="">Calle Principal 123, Ciudad</p>
                   </div>
 
                   <div className="space-y-2">
                     <h3 className="font-semibold">Teléfono</h3>
-                    <p className="text-muted-foreground">+54 11 1234-5678</p>
+                    <p className="">+54 11 1234-5678</p>
                   </div>
 
                   <div className="space-y-2">
                     <h3 className="font-semibold">Email</h3>
-                    <p className="text-muted-foreground">info@clubdeportivo.com</p>
+                    <p className="">info@clubdeportivo.com</p>
                   </div>
 
                   <div className="space-y-2">
                     <h3 className="font-semibold">Horario de Atención</h3>
-                    <p className="text-muted-foreground">
+                    <p className="">
                       Lunes a Viernes: 9:00 - 20:00
                       <br />
                       Sábados: 9:00 - 13:00
@@ -299,8 +311,8 @@ export default async function HomePage() {
                   </div>
 
                   <div className="pt-4">
-                    <Button asChild className="w-full">
-                      <Link href="/auth/login">Acceder al Portal de Socios</Link>
+                    <Button asChild className="w-full bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white font-semibold">
+                      <Link href="/portal">Acceder al Portal de Socios</Link>
                     </Button>
                   </div>
                 </div>

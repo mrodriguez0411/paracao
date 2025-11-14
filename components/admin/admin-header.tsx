@@ -28,8 +28,8 @@ export function AdminHeader({ profile }: AdminHeaderProps) {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-card px-6">
-      <h1 className="text-xl font-semibold">
+    <header className="flex h-16 items-center justify-between border-b bg-textura-amarilla--overlay px-6">
+      <h1 className="text-xl font-semibold text-brand-blue">
         {profile.rol === "super_admin" ? "Panel de Administración" : "Panel de Disciplina"}
       </h1>
       <DropdownMenu>

@@ -28,8 +28,8 @@ export function PortalHeader({ profile }: PortalHeaderProps) {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-card px-6">
-      <h1 className="text-xl font-semibold">Portal de Socios</h1>
+    <header className="flex h-16 items-center justify-between border-b bg-textura-amarilla--overlay px-6">
+      <h1 className="text-xl font-semibold text-brand-blue">Portal de Socios</h1>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="gap-2">
