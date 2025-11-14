@@ -28,6 +28,10 @@ async function handleLoginAction(email: string, password: string) {
 
     console.log("Login exitoso:", data.user.email)
 
+    // Forzar sincronización de sesión con el servidor
+    // Esto asegura que las cookies de sesión se establezcan correctamente
+    await supabase.auth.getSession()
+
     // Esperar un momento para que se actualice la sesión
     await new Promise((resolve) => setTimeout(resolve, 1000))
 

@@ -95,11 +95,14 @@ export async function updateSession(request: NextRequest) {
 
   // Redirigir usuarios no autenticados a login
   if (!user) {
+    console.log('[middleware] No user found, redirecting to login')
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
     url.searchParams.set('redirectedFrom', request.nextUrl.pathname)
     return NextResponse.redirect(url)
   }
+
+  console.log('[middleware] User found:', user.id, '- Path:', request.nextUrl.pathname)
 
   // Obtener el perfil del usuario para validar permisos
   // Use a service-role client to read the profiles table from middleware.
@@ -109,24 +112,17 @@ export async function updateSession(request: NextRequest) {
     const service = createServiceRoleClient()
     const { data, error } = await service.from('profiles').select('rol').eq('id', user.id).single()
     if (error) {
-      // keep profile null and log the error server-side if needed
-      // console.error('profiles lookup error:', error)
+      console.error('[middleware] profiles lookup error:', error.message)
     } else {
       profile = data
+      console.log('[middleware] profile found:', profile?.rol)
     }
-  } catch {
+  } catch (e) {
+    console.error('[middleware] service role client error:', String(e))
     // If service role client isn't configured, fall back to the request-bound client
     const { data } = await supabase.from('profiles').select('rol').eq('id', user.id).single()
     profile = data
-  }
-
-  // Redirigir a /admin solo si es admin
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    if (profile?.rol !== 'super_admin' && profile?.rol !== 'admin_disciplina') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/unauthorized'
-      return NextResponse.redirect(url)
-    }
+    console.log('[middleware] fallback profile:', profile?.rol)
   }
 
   // Redirigir a /portal solo si es socio
