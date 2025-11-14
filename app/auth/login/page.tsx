@@ -87,18 +87,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-6">
+    <div className="flex min-h-screen w-full items-center justify-center p-6 bg-textura-azul bg-fixed">
       <div className="w-full max-w-sm">
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Iniciar Sesión</CardTitle>
-            <CardDescription>Ingresa tus credenciales para acceder</CardDescription>
+        <Card className="bg-textura-amarilla border-0 shadow-lg rounded-lg">
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-4xl font-oswald font-bold text-[#1e3a8a] mb-2">Club Paracao</CardTitle>
+            <CardDescription className="text-[#1e3a8a] text-base font-semibold">Iniciar Sesión</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin}>
               <div className="flex flex-col gap-6">
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-[#1e3a8a] font-semibold">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -106,20 +106,22 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    className="border-[#1e3a8a]/30 focus:border-[#1e3a8a] focus:ring-[#1e3a8a]"
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="password">Contraseña</Label>
+                  <Label htmlFor="password" className="text-[#1e3a8a] font-semibold">Contraseña</Label>
                   <Input
                     id="password"
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    className="border-[#1e3a8a]/30 focus:border-[#1e3a8a] focus:ring-[#1e3a8a]"
                   />
                 </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                {error && <p className="text-sm text-red-600 font-semibold">{error}</p>}
+                <Button type="submit" className="w-full bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white font-semibold text-lg py-6" disabled={isLoading}>
                   {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
                 </Button>
               </div>
