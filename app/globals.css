@@ -1,9 +1,37 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Fonts and brand assets from public/Nueva carpeta */
+@font-face {
+  font-family: 'Oswald';
+  src: url('/Nueva%20carpeta/Oswald-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Oswald';
+  src: url('/Nueva%20carpeta/Oswald-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Oswald';
+  src: url('/Nueva%20carpeta/Oswald-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* Brand colors (from public/Nueva carpeta) */
+  --brand-blue: #5278F0;
+  --brand-yellow: #EFB600;
+  --brand-foreground: var(--brand-blue);
+  --brand-accent: var(--brand-yellow);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -164,5 +192,25 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Use Oswald as the default UI font */
+    font-family: 'Oswald', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color: var(--brand-foreground);
   }
 }
+
+/* Background texture helpers */
+.bg-textura-amarilla {
+  background-image: url('/Nueva%20carpeta/Textura%20amarilla.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.bg-textura-azul {
+  background-image: url('/Nueva%20carpeta/Textura%20azul.png');
+  background-size: cover;
+  background-position: center;
+}
+
+/* Text color helpers */
+.text-brand-blue { color: var(--brand-blue) !important; }
+.text-brand-yellow { color: var(--brand-yellow) !important; }
