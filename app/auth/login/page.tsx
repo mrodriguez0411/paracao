@@ -53,8 +53,28 @@ export default function LoginPage() {
 
     try {
       await handleLoginAction(email, password)
-      // La redirección se maneja en el middleware
-      router.push("/portal")
+
+      // Después del sign-in, pedir al servidor el profile real (usa cookies)
+      // y redirigir según `profile.rol`. Esto evita depender de user_metadata
+      // que puede estar desincronizado.
+      try {
+        const res = await fetch('/api/debug/session', { credentials: 'same-origin' })
+        if (res.ok) {
+          const json = await res.json()
+          const role = json?.profile?.rol
+          if (role === 'super_admin' || role === 'admin_disciplina') {
+            router.push('/admin')
+          } else {
+            router.push('/portal')
+          }
+        } else {
+          // Fallback: ir a portal
+          router.push('/portal')
+        }
+      } catch {
+        // Si falla la petición, caer al fallback
+        router.push('/portal')
+      }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "Error al iniciar sesión")
     } finally {

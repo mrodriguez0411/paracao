@@ -48,6 +48,7 @@ export async function updateSession(request: NextRequest) {
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -94,11 +95,23 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Obtener el perfil del usuario para validar permisos
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('rol')
-    .eq('id', user.id)
-    .single()
+  // Use a service-role client to read the profiles table from middleware.
+  // This avoids RLS policy recursion when policies reference the profiles table.
+  let profile = null
+  try {
+    const service = createServiceRoleClient()
+    const { data, error } = await service.from('profiles').select('rol').eq('id', user.id).single()
+    if (error) {
+      // keep profile null and log the error server-side if needed
+      // console.error('profiles lookup error:', error)
+    } else {
+      profile = data
+    }
+  } catch {
+    // If service role client isn't configured, fall back to the request-bound client
+    const { data } = await supabase.from('profiles').select('rol').eq('id', user.id).single()
+    profile = data
+  }
 
   // Redirigir a /admin solo si es admin
   if (request.nextUrl.pathname.startsWith('/admin')) {
