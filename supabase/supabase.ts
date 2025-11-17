@@ -39,497 +39,231 @@ export type Database = {
   }
   public: {
     Tables: {
-      attendance: {
+      cuotas: {
         Row: {
-          attendance_date: string
+          anio: number
           created_at: string | null
-          discipline_id: string
+          disciplina_id: string | null
+          fecha_pago: string | null
+          fecha_vencimiento: string
+          grupo_id: string
           id: string
-          member_id: string
-          notes: string | null
-          recorded_by: string | null
-          status: string
+          mes: number
+          metodo_pago: string | null
+          monto: number
+          pagada: boolean | null
+          tipo: string
+          updated_at: string | null
         }
         Insert: {
-          attendance_date: string
+          anio: number
           created_at?: string | null
-          discipline_id: string
+          disciplina_id?: string | null
+          fecha_pago?: string | null
+          fecha_vencimiento: string
+          grupo_id: string
           id?: string
-          member_id: string
-          notes?: string | null
-          recorded_by?: string | null
-          status: string
+          mes: number
+          metodo_pago?: string | null
+          monto: number
+          pagada?: boolean | null
+          tipo: string
+          updated_at?: string | null
         }
         Update: {
-          attendance_date?: string
+          anio?: number
           created_at?: string | null
-          discipline_id?: string
+          disciplina_id?: string | null
+          fecha_pago?: string | null
+          fecha_vencimiento?: string
+          grupo_id?: string
           id?: string
-          member_id?: string
-          notes?: string | null
-          recorded_by?: string | null
-          status?: string
+          mes?: number
+          metodo_pago?: string | null
+          monto?: number
+          pagada?: boolean | null
+          tipo?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "attendance_discipline_id_fkey"
-            columns: ["discipline_id"]
+            foreignKeyName: "cuotas_disciplina_id_fkey"
+            columns: ["disciplina_id"]
             isOneToOne: false
-            referencedRelation: "disciplines"
+            referencedRelation: "disciplinas"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "attendance_member_id_fkey"
-            columns: ["member_id"]
+            foreignKeyName: "cuotas_grupo_id_fkey"
+            columns: ["grupo_id"]
             isOneToOne: false
-            referencedRelation: "members"
+            referencedRelation: "grupos_familiares"
             referencedColumns: ["id"]
           },
         ]
       }
-      disciplines: {
+      disciplinas: {
         Row: {
+          activa: boolean | null
+          admin_id: string | null
           created_at: string | null
-          description: string | null
+          cuota_deportiva: number
+          descripcion: string | null
           id: string
-          is_active: boolean | null
-          max_capacity: number | null
-          monthly_fee: number
-          name: string
+          nombre: string
           updated_at: string | null
         }
         Insert: {
+          activa?: boolean | null
+          admin_id?: string | null
           created_at?: string | null
-          description?: string | null
+          cuota_deportiva?: number
+          descripcion?: string | null
           id?: string
-          is_active?: boolean | null
-          max_capacity?: number | null
-          monthly_fee: number
-          name: string
+          nombre: string
           updated_at?: string | null
         }
         Update: {
+          activa?: boolean | null
+          admin_id?: string | null
           created_at?: string | null
-          description?: string | null
+          cuota_deportiva?: number
+          descripcion?: string | null
           id?: string
-          is_active?: boolean | null
-          max_capacity?: number | null
-          monthly_fee?: number
-          name?: string
+          nombre?: string
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      documents: {
-        Row: {
-          created_at: string | null
-          document_type: string
-          file_name: string
-          file_path: string
-          file_size: number
-          file_type: string
-          id: string
-          member_id: string | null
-          notes: string | null
-          uploaded_by: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          document_type: string
-          file_name: string
-          file_path: string
-          file_size: number
-          file_type: string
-          id?: string
-          member_id?: string | null
-          notes?: string | null
-          uploaded_by?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          document_type?: string
-          file_name?: string
-          file_path?: string
-          file_size?: number
-          file_type?: string
-          id?: string
-          member_id?: string | null
-          notes?: string | null
-          uploaded_by?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "documents_member_id_fkey"
-            columns: ["member_id"]
+            foreignKeyName: "disciplinas_admin_id_fkey"
+            columns: ["admin_id"]
             isOneToOne: false
-            referencedRelation: "members"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      family_discounts: {
+      grupos_familiares: {
         Row: {
-          applicable_to: string
           created_at: string | null
-          created_by: string | null
-          discount_type: string
-          discount_value: number
-          end_date: string | null
-          family_group_id: string
+          cuota_social: number
           id: string
-          is_active: boolean | null
-          notes: string | null
-          start_date: string
+          nombre: string
+          titular_id: string
           updated_at: string | null
         }
         Insert: {
-          applicable_to: string
           created_at?: string | null
-          created_by?: string | null
-          discount_type: string
-          discount_value: number
-          end_date?: string | null
-          family_group_id: string
+          cuota_social?: number
           id?: string
-          is_active?: boolean | null
-          notes?: string | null
-          start_date: string
+          nombre: string
+          titular_id: string
           updated_at?: string | null
         }
         Update: {
-          applicable_to?: string
           created_at?: string | null
-          created_by?: string | null
-          discount_type?: string
-          discount_value?: number
-          end_date?: string | null
-          family_group_id?: string
+          cuota_social?: number
           id?: string
-          is_active?: boolean | null
-          notes?: string | null
-          start_date?: string
+          nombre?: string
+          titular_id?: string
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "family_discounts_family_group_id_fkey"
-            columns: ["family_group_id"]
+            foreignKeyName: "grupos_familiares_titular_id_fkey"
+            columns: ["titular_id"]
             isOneToOne: false
-            referencedRelation: "family_groups"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      family_groups: {
+      inscripciones: {
         Row: {
-          address: string
+          activa: boolean | null
           created_at: string | null
-          email: string
+          disciplina_id: string
+          fecha_inscripcion: string | null
           id: string
-          is_active: boolean | null
-          name: string
-          phone: string
-          updated_at: string | null
+          miembro_id: string
         }
         Insert: {
-          address: string
+          activa?: boolean | null
           created_at?: string | null
-          email: string
+          disciplina_id: string
+          fecha_inscripcion?: string | null
           id?: string
-          is_active?: boolean | null
-          name: string
-          phone: string
-          updated_at?: string | null
+          miembro_id: string
         }
         Update: {
-          address?: string
+          activa?: boolean | null
           created_at?: string | null
-          email?: string
+          disciplina_id?: string
+          fecha_inscripcion?: string | null
           id?: string
-          is_active?: boolean | null
-          name?: string
-          phone?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      member_disciplines: {
-        Row: {
-          created_at: string | null
-          discipline_id: string
-          discount_percentage: number | null
-          id: string
-          is_active: boolean | null
-          join_date: string
-          member_id: string
-          monthly_fee: number
-          notes: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          discipline_id: string
-          discount_percentage?: number | null
-          id?: string
-          is_active?: boolean | null
-          join_date: string
-          member_id: string
-          monthly_fee: number
-          notes?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          discipline_id?: string
-          discount_percentage?: number | null
-          id?: string
-          is_active?: boolean | null
-          join_date?: string
-          member_id?: string
-          monthly_fee?: number
-          notes?: string | null
-          updated_at?: string | null
+          miembro_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "member_disciplines_discipline_id_fkey"
-            columns: ["discipline_id"]
+            foreignKeyName: "inscripciones_disciplina_id_fkey"
+            columns: ["disciplina_id"]
             isOneToOne: false
-            referencedRelation: "disciplines"
+            referencedRelation: "disciplinas"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "member_disciplines_member_id_fkey"
-            columns: ["member_id"]
+            foreignKeyName: "inscripciones_miembro_id_fkey"
+            columns: ["miembro_id"]
             isOneToOne: false
-            referencedRelation: "members"
+            referencedRelation: "miembros_familia"
             referencedColumns: ["id"]
           },
         ]
       }
-      members: {
-        Row: {
-          address: string | null
-          birth_date: string
-          blood_type: string | null
-          city: string | null
-          created_at: string | null
-          dni: string
-          email: string
-          emergency_contact_name: string
-          emergency_contact_phone: string
-          emergency_contact_relation: string | null
-          family_group_id: string | null
-          first_name: string
-          gender: string | null
-          has_medical_insurance: boolean | null
-          id: string
-          is_active: boolean | null
-          is_primary_contact: boolean | null
-          last_name: string
-          medical_insurance_name: string | null
-          medical_insurance_number: string | null
-          notes: string | null
-          phone: string
-          postal_code: string | null
-          relationship_to_primary: string | null
-          social_fee: number
-          status: string
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          address?: string | null
-          birth_date: string
-          blood_type?: string | null
-          city?: string | null
-          created_at?: string | null
-          dni: string
-          email: string
-          emergency_contact_name: string
-          emergency_contact_phone: string
-          emergency_contact_relation?: string | null
-          family_group_id?: string | null
-          first_name: string
-          gender?: string | null
-          has_medical_insurance?: boolean | null
-          id?: string
-          is_active?: boolean | null
-          is_primary_contact?: boolean | null
-          last_name: string
-          medical_insurance_name?: string | null
-          medical_insurance_number?: string | null
-          notes?: string | null
-          phone: string
-          postal_code?: string | null
-          relationship_to_primary?: string | null
-          social_fee?: number
-          status?: string
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          address?: string | null
-          birth_date?: string
-          blood_type?: string | null
-          city?: string | null
-          created_at?: string | null
-          dni?: string
-          email?: string
-          emergency_contact_name?: string
-          emergency_contact_phone?: string
-          emergency_contact_relation?: string | null
-          family_group_id?: string | null
-          first_name?: string
-          gender?: string | null
-          has_medical_insurance?: boolean | null
-          id?: string
-          is_active?: boolean | null
-          is_primary_contact?: boolean | null
-          last_name?: string
-          medical_insurance_name?: string | null
-          medical_insurance_number?: string | null
-          notes?: string | null
-          phone?: string
-          postal_code?: string | null
-          relationship_to_primary?: string | null
-          social_fee?: number
-          status?: string
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "members_family_group_id_fkey"
-            columns: ["family_group_id"]
-            isOneToOne: false
-            referencedRelation: "family_groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notifications: {
+      miembros_familia: {
         Row: {
           created_at: string | null
+          dni: string | null
+          fecha_nacimiento: string | null
+          grupo_id: string
           id: string
-          is_read: boolean | null
-          member_id: string | null
-          message: string
-          notification_type: string
-          related_entity_id: string | null
-          related_entity_type: string | null
-          title: string
+          nombre_completo: string
+          parentesco: string | null
+          socio_id: string | null
         }
         Insert: {
           created_at?: string | null
+          dni?: string | null
+          fecha_nacimiento?: string | null
+          grupo_id: string
           id?: string
-          is_read?: boolean | null
-          member_id?: string | null
-          message: string
-          notification_type: string
-          related_entity_id?: string | null
-          related_entity_type?: string | null
-          title: string
+          nombre_completo: string
+          parentesco?: string | null
+          socio_id?: string | null
         }
         Update: {
           created_at?: string | null
+          dni?: string | null
+          fecha_nacimiento?: string | null
+          grupo_id?: string
           id?: string
-          is_read?: boolean | null
-          member_id?: string | null
-          message?: string
-          notification_type?: string
-          related_entity_id?: string | null
-          related_entity_type?: string | null
-          title?: string
+          nombre_completo?: string
+          parentesco?: string | null
+          socio_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "notifications_member_id_fkey"
-            columns: ["member_id"]
+            foreignKeyName: "miembros_familia_grupo_id_fkey"
+            columns: ["grupo_id"]
             isOneToOne: false
-            referencedRelation: "members"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      payments: {
-        Row: {
-          amount: number
-          created_at: string | null
-          created_by: string | null
-          discipline_id: string | null
-          due_date: string
-          family_group_id: string | null
-          id: string
-          member_id: string | null
-          notes: string | null
-          payment_date: string
-          payment_method: string
-          payment_type: string
-          period_end: string | null
-          period_start: string | null
-          receipt_number: string | null
-          status: string
-          updated_at: string | null
-        }
-        Insert: {
-          amount: number
-          created_at?: string | null
-          created_by?: string | null
-          discipline_id?: string | null
-          due_date: string
-          family_group_id?: string | null
-          id?: string
-          member_id?: string | null
-          notes?: string | null
-          payment_date: string
-          payment_method: string
-          payment_type: string
-          period_end?: string | null
-          period_start?: string | null
-          receipt_number?: string | null
-          status: string
-          updated_at?: string | null
-        }
-        Update: {
-          amount?: number
-          created_at?: string | null
-          created_by?: string | null
-          discipline_id?: string | null
-          due_date?: string
-          family_group_id?: string | null
-          id?: string
-          member_id?: string | null
-          notes?: string | null
-          payment_date?: string
-          payment_method?: string
-          payment_type?: string
-          period_end?: string | null
-          period_start?: string | null
-          receipt_number?: string | null
-          status?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payments_discipline_id_fkey"
-            columns: ["discipline_id"]
-            isOneToOne: false
-            referencedRelation: "disciplines"
+            referencedRelation: "grupos_familiares"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "payments_family_group_id_fkey"
-            columns: ["family_group_id"]
+            foreignKeyName: "miembros_familia_socio_id_fkey"
+            columns: ["socio_id"]
             isOneToOne: false
-            referencedRelation: "family_groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payments_member_id_fkey"
-            columns: ["member_id"]
-            isOneToOne: false
-            referencedRelation: "members"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -537,57 +271,33 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string | null
+          dni: string | null
           email: string
           id: string
           nombre_completo: string
           rol: string
+          telefono: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          dni?: string | null
           email: string
           id: string
           nombre_completo: string
-          rol?: string
+          rol: string
+          telefono?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          dni?: string | null
           email?: string
           id?: string
           nombre_completo?: string
           rol?: string
+          telefono?: string | null
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      settings: {
-        Row: {
-          description: string | null
-          id: string
-          setting_key: string
-          setting_type: string
-          setting_value: string | null
-          updated_at: string | null
-          updated_by: string | null
-        }
-        Insert: {
-          description?: string | null
-          id?: string
-          setting_key: string
-          setting_type: string
-          setting_value?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Update: {
-          description?: string | null
-          id?: string
-          setting_key?: string
-          setting_type?: string
-          setting_value?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
         }
         Relationships: []
       }
@@ -596,42 +306,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      calculate_next_due_date: {
-        Args: { p_discipline_id?: string; p_member_id: string }
-        Returns: string
-      }
-      check_scheduled_jobs: {
-        Args: never
-        Returns: {
-          active: boolean
-          command: string
-          database: string
-          jobid: number
-          jobname: string
-          schedule: string
-          username: string
-        }[]
-      }
-      create_admin_notification: {
-        Args: {
-          p_message: string
-          p_notification_type: string
-          p_related_entity_id: string
-          p_title: string
-        }
-        Returns: undefined
-      }
-      generate_monthly_fees: { Args: never; Returns: undefined }
-      notify_upcoming_due_dates: { Args: never; Returns: Json }
-      remove_scheduled_job: { Args: { p_jobname: string }; Returns: boolean }
-      run_monthly_fee_generation: { Args: never; Returns: Json }
-      schedule_daily_reminders: { Args: never; Returns: Json }
-      schedule_monthly_fee_generation: { Args: never; Returns: undefined }
-      send_email_notification: {
-        Args: { p_html_content: string; p_subject: string; p_to_email: string }
-        Returns: Json
-      }
-      test_notification_system: { Args: never; Returns: Json }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

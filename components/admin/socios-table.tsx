@@ -14,6 +14,7 @@ interface GrupoWithData {
   profiles: {
     nombre_completo: string
     email: string
+    dni: string
   }
   miembros_familia: { count: number }[]
 }
@@ -38,6 +39,7 @@ export function SociosTable({ grupos }: SociosTableProps) {
           <TableRow>
             <TableHead>Grupo Familiar</TableHead>
             <TableHead>Titular</TableHead>
+            <TableHead>DNI</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Miembros</TableHead>
             <TableHead>Cuota Social</TableHead>
@@ -49,6 +51,7 @@ export function SociosTable({ grupos }: SociosTableProps) {
             <TableRow key={grupo.id}>
               <TableCell className="font-medium">{grupo.nombre}</TableCell>
               <TableCell>{grupo.profiles?.nombre_completo}</TableCell>
+              <TableCell className="font-mono font-semibold">{grupo.profiles?.dni}</TableCell>
               <TableCell>{grupo.profiles?.email}</TableCell>
               <TableCell>{grupo.miembros_familia?.length || 0}</TableCell>
               <TableCell>${grupo.cuota_social}</TableCell>

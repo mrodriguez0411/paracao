@@ -13,7 +13,7 @@ export default async function SociosPage() {
     .from("grupos_familiares")
     .select(`
       *,
-      profiles:titular_id(nombre_completo, email),
+      profiles:titular_id(nombre_completo, email, dni),
       miembros_familia(count)
     `)
     .order("created_at", { ascending: false })

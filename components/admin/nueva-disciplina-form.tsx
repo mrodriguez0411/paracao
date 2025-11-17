@@ -4,7 +4,6 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -39,17 +38,23 @@ export function NuevaDisciplinaForm({ admins }: NuevaDisciplinaFormProps) {
     setIsLoading(true)
 
     try {
-      const supabase = createClient()
-
-      const { error } = await supabase.from("disciplinas").insert({
-        nombre: formData.nombre,
-        descripcion: formData.descripcion || null,
-        cuota_deportiva: Number.parseFloat(formData.cuota_deportiva),
-        admin_id: formData.admin_id || null,
-        activa: true,
+      const response = await fetch("/api/admin/disciplinas/crear", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nombre: formData.nombre,
+          descripcion: formData.descripcion || null,
+          cuota_deportiva: Number.parseFloat(formData.cuota_deportiva),
+          admin_id: formData.admin_id || null,
+        }),
       })
 
-      if (error) throw error
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Error al crear disciplina")
+      }
 
       toast({
         title: "Disciplina creada exitosamente",
