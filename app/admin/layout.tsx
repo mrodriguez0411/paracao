@@ -16,11 +16,17 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <AdminSidebar profile={profile} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <AdminHeader profile={profile} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+    <div className="flex h-screen overflow-hidden" style={{
+      backgroundImage: 'url(/Nueva%20carpeta/Patron%20azul.png)',
+      backgroundSize: '300px',
+      backgroundRepeat: 'repeat'
+    }}>
+      <div className="relative z-10 flex w-full h-full">
+        <AdminSidebar profile={profile} />
+        <div className="flex flex-1 flex-col overflow-hidden bg-white/80">
+          <AdminHeader profile={profile} />
+          <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        </div>
       </div>
     </div>
   )

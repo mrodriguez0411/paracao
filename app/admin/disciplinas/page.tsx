@@ -9,13 +9,33 @@ export default async function DisciplinasPage() {
   await requireAuth(["super_admin"])
   const supabase = await createClient()
 
-  const { data: disciplinas } = await supabase
+  // Obtener información del usuario actual
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  // Consulta de depuración
+  console.log("Usuario autenticado:", user?.email)
+  
+  // Verificar si podemos acceder a la tabla disciplinas
+  const { data: testData, error: testError } = await supabase
+    .from('disciplinas')
+    .select('*')
+    .limit(1)
+    .single()
+    
+  console.log("Datos de prueba:", testData)
+  console.log("Error en prueba:", testError)
+
+  // Consulta original
+  const { data: disciplinas, error } = await supabase
     .from("disciplinas")
     .select(`
       *,
       admin:admin_id(nombre_completo)
     `)
     .order("nombre", { ascending: true })
+    
+  console.log("Datos de disciplinas:", disciplinas)
+  console.log("Error al cargar disciplinas:", error)
 
   return (
     <div className="space-y-6">

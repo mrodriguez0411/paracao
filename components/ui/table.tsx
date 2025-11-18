@@ -4,20 +4,18 @@ import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
-function Table({ className, ...props }: React.ComponentProps<'table'>) {
-  return (
-    <div
-      data-slot="table-container"
-      className="relative w-full overflow-x-auto"
-    >
-      <table
-        data-slot="table"
-        className={cn('w-full caption-bottom text-sm', className)}
-        {...props}
-      />
-    </div>
-  )
-}
+const Table = React.forwardRef<
+  HTMLTableElement,
+  React.HTMLAttributes<HTMLTableElement>
+>(({ className, ...props }, ref) => (
+  <div className="relative w-full overflow-auto">
+    <table
+      ref={ref}
+      className={cn('w-full caption-bottom text-sm bg-white/30 backdrop-blur-sm rounded-lg overflow-hidden', className)}
+      {...props}
+    />
+  </div>
+))
 
 function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
   return (
@@ -52,18 +50,19 @@ function TableFooter({ className, ...props }: React.ComponentProps<'tfoot'>) {
   )
 }
 
-function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
-  return (
-    <tr
-      data-slot="table-row"
-      className={cn(
-        'hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors',
-        className,
-      )}
-      {...props}
-    />
-  )
-}
+const TableRow = React.forwardRef<
+  HTMLTableRowElement,
+  React.HTMLAttributes<HTMLTableRowElement>
+>(({ className, ...props }, ref) => (
+  <tr
+    ref={ref}
+    className={cn(
+      'border-b border-gray-200/30 transition-colors hover:bg-white/30 data-[state=selected]:bg-white/20',
+      className,
+    )}
+    {...props}
+  />
+))
 
 function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
   return (
