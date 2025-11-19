@@ -29,10 +29,10 @@ export function AdminSidebar({ profile }: AdminSidebarProps) {
 
   return (
     <aside className="flex w-64 flex-col border-r border-yellow-300 bg-[#EFB600] text-[#1e3a8a] shadow-lg">
-      <div className="flex h-20 items-center justify-center border-b border-yellow-300 px-6">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-          <Trophy className="h-8 w-8 text-[#1e3a8a]" />
-          <span className="text-[#1e3a8a]">CLUB PARACAO</span>
+      <div className="flex h-24 items-center justify-center border-b border-yellow-300 px-6">
+        <Link href="/" className="flex items-center gap-4">
+          <img src="/Nueva%20carpeta/Oficial%20png.png" alt="Club Paracao" className="h-16 md:h-25 w-auto" />
+          <img src="/Nueva%20carpeta/Claim%20azul1.png" alt="Claim Azul" className="h-9 md:h-25 w-auto" />
         </Link>
       </div>
       <nav className="flex-1 space-y-1 p-4">
