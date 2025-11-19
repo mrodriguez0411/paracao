@@ -28,17 +28,17 @@ export function PortalHeader({ profile }: PortalHeaderProps) {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-textura-amarilla--overlay px-6">
-      <h1 className="text-xl font-semibold text-brand-blue">Portal de Socios</h1>
+    <header className="flex h-16 items-center justify-between border-b border-yellow-300 bg-[#EFB600] px-6">
+      <h1 className="text-xl font-semibold text-[#1e3a8a]">Portal de Socios</h1>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="gap-2">
+          <Button variant="ghost" size="sm" className="gap-2 text-[#1e3a8a] hover:bg-[#1e3a8a]/10">
             <User className="h-4 w-4" />
             {profile.nombre_completo}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="border-yellow-300">
+          <DropdownMenuLabel className="text-[#1e3a8a]">Mi Cuenta</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />

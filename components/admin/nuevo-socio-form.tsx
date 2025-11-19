@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,6 +15,8 @@ interface Miembro {
   id: string
   nombre_completo: string
   dni: string
+  parentesco?: string
+  disciplinas?: string[]
 }
 
 export function NuevoSocioForm() {
@@ -34,7 +36,25 @@ export function NuevoSocioForm() {
   const [nuevoMiembro, setNuevoMiembro] = useState({
     nombre_completo: "",
     dni: "",
+    parentesco: "",
   })
+  const [disciplinas, setDisciplinas] = useState<Array<{ id: string; nombre: string }>>([])
+  const [titularDisciplinas, setTitularDisciplinas] = useState<string[]>([])
+  const [titularDiscSelect, setTitularDiscSelect] = useState<string>("")
+  const [miembroDiscSelect, setMiembroDiscSelect] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    const cargarDisciplinas = async () => {
+      try {
+        const res = await fetch("/api/admin/disciplinas")
+        const data = await res.json()
+        setDisciplinas(Array.isArray(data) ? data : [])
+      } catch (e) {
+        // noop
+      }
+    }
+    cargarDisciplinas()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +76,7 @@ export function NuevoSocioForm() {
           nombre_grupo: formData.nombre_grupo,
           cuota_social: formData.cuota_social,
           miembros: miembros,
+          titular_disciplinas: titularDisciplinas,
         }),
       })
 
@@ -85,9 +106,9 @@ export function NuevoSocioForm() {
   }
 
   return (
-    <Card>
+    <Card className="border border-gray-100 shadow-sm rounded-xl overflow-hidden">
       <CardHeader>
-        <CardTitle>Datos del Socio</CardTitle>
+        <CardTitle className="text-[#1e3a8a]">Datos del Socio</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -175,13 +196,59 @@ export function NuevoSocioForm() {
             </div>
           </div>
 
+          {/* Disciplinas del Titular */}
+          <div className="border-t pt-6 mt-6">
+            <h3 className="text-lg font-semibold text-[#1e3a8a] mb-3">Disciplinas del Titular</h3>
+            <div className="flex items-center gap-2">
+              <select
+                value={titularDiscSelect}
+                onChange={(e) => setTitularDiscSelect(e.target.value)}
+                className="flex-1 border rounded p-2 text-black"
+              >
+                <option value="">Seleccioná una disciplina</option>
+                {disciplinas.map((d) => (
+                  <option key={d.id} value={d.id}>{d.nombre}</option>
+                ))}
+              </select>
+              <Button
+                type="button"
+                className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white"
+                onClick={() => {
+                  if (!titularDiscSelect) return
+                  if (!titularDisciplinas.includes(titularDiscSelect)) {
+                    setTitularDisciplinas([...titularDisciplinas, titularDiscSelect])
+                  }
+                  setTitularDiscSelect("")
+                }}
+              >Agregar</Button>
+            </div>
+            {titularDisciplinas.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {titularDisciplinas.map((id) => {
+                  const disc = disciplinas.find((d) => d.id === id)
+                  return (
+                    <span key={id} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-sm">
+                      {disc?.nombre || id}
+                      <button
+                        type="button"
+                        className="text-blue-800/70 hover:text-blue-900"
+                        onClick={() => setTitularDisciplinas(titularDisciplinas.filter((x) => x !== id))}
+                        aria-label="Quitar"
+                      >×</button>
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
           {/* Sección de Miembros Familiares */}
           <div className="border-t pt-6 mt-6">
             <h3 className="text-lg font-semibold text-[#1e3a8a] mb-4">Miembros del Grupo Familiar</h3>
             
             {/* Formulario para agregar miembro */}
             <div className="bg-slate-50 p-4 rounded-lg mb-4 space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="miembro_nombre">Nombre Completo</Label>
                   <Input
@@ -200,17 +267,81 @@ export function NuevoSocioForm() {
                     onChange={(e) => setNuevoMiembro({ ...nuevoMiembro, dni: e.target.value })}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="miembro_parentesco">Parentesco</Label>
+                  <Input
+                    id="miembro_parentesco"
+                    placeholder="Ej: Hijo, Esposa, ..."
+                    value={nuevoMiembro.parentesco}
+                    onChange={(e) => setNuevoMiembro({ ...nuevoMiembro, parentesco: e.target.value })}
+                  />
+                </div>
               </div>
-              
+
+              {/* Disciplinas del nuevo miembro */}
+              <div>
+                <Label className="text-black font-bold">Disciplinas</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <select
+                    value={miembroDiscSelect["nuevo"] || ""}
+                    onChange={(e) => setMiembroDiscSelect({ ...miembroDiscSelect, ["nuevo"]: e.target.value })}
+                    className="flex-1 border rounded p-2 text-black"
+                  >
+                    <option value="">Seleccioná una disciplina</option>
+                    {disciplinas.map((d) => (
+                      <option key={d.id} value={d.id}>{d.nombre}</option>
+                    ))}
+                  </select>
+                  <Button
+                    type="button"
+                    className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white"
+                    onClick={() => {
+                      const sel = miembroDiscSelect["nuevo"]
+                      if (!sel) return
+                      const actuales = (nuevoMiembro as any).disciplinas || []
+                      if (!actuales.includes(sel)) {
+                        (nuevoMiembro as any).disciplinas = [...actuales, sel]
+                        setNuevoMiembro({ ...nuevoMiembro })
+                      }
+                      setMiembroDiscSelect({ ...miembroDiscSelect, ["nuevo"]: "" })
+                    }}
+                  >Agregar</Button>
+                </div>
+                {Array.isArray((nuevoMiembro as any).disciplinas) && (nuevoMiembro as any).disciplinas.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {((nuevoMiembro as any).disciplinas as string[]).map((id) => {
+                      const disc = disciplinas.find((d) => d.id === id)
+                      return (
+                        <span key={id} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-sm">
+                          {disc?.nombre || id}
+                          <button
+                            type="button"
+                            className="text-blue-800/70 hover:text-blue-900"
+                            onClick={() => {
+                              const arr = ((nuevoMiembro as any).disciplinas || []).filter((x: string) => x !== id)
+                              ;(nuevoMiembro as any).disciplinas = arr
+                              setNuevoMiembro({ ...nuevoMiembro })
+                            }}
+                            aria-label="Quitar"
+                          >×</button>
+                        </span>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
               <Button
                 type="button"
                 onClick={() => {
                   if (nuevoMiembro.nombre_completo.trim() && nuevoMiembro.dni.trim()) {
-                    setMiembros([...miembros, { ...nuevoMiembro, id: String(Date.now()) }])
-                    setNuevoMiembro({ nombre_completo: '', dni: '' })
+                    const disciplinas = (nuevoMiembro as any).disciplinas || []
+                    setMiembros([...miembros, { ...nuevoMiembro, disciplinas, id: String(Date.now()) }])
+                    setNuevoMiembro({ nombre_completo: '', dni: '', parentesco: '' } as any)
+                    setMiembroDiscSelect({ ...miembroDiscSelect, ["nuevo"]: "" })
                   }
                 }}
-                className="w-full bg-[#1e3a8a] hover:bg-[#1e40af] text-white"
+                className="w-full bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white"
               >
                 Agregar Miembro
               </Button>
@@ -229,6 +360,9 @@ export function NuevoSocioForm() {
                       <div>
                         <p className="font-medium text-gray-800">{miembro.nombre_completo}</p>
                         <p className="text-sm text-gray-600 font-mono">DNI: {miembro.dni}</p>
+                        {Array.isArray(miembro.disciplinas) && miembro.disciplinas.length > 0 && (
+                          <div className="mt-1 text-xs text-gray-600">Disciplinas: {miembro.disciplinas.map((id) => disciplinas.find((d) => d.id === id)?.nombre || id).join(", ")}</div>
+                        )}
                       </div>
                       <button
                         type="button"
@@ -245,10 +379,10 @@ export function NuevoSocioForm() {
           </div>
 
           <div className="flex gap-4">
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">
               {isLoading ? "Creando..." : "Crear Socio"}
             </Button>
-            <Button type="button" variant="outline" onClick={() => router.back()}>
+            <Button type="button" variant="outline" className="border-[#1e3a8a] text-[#1e3a8a] hover:bg-[#1e3a8a]/5" onClick={() => router.back()}>
               Cancelar
             </Button>
           </div>

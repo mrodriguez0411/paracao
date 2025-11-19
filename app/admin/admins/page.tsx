@@ -25,7 +25,7 @@ export default async function AdminsPage() {
           <h2 className="text-3xl font-bold tracking-tight">Administradores de Disciplina</h2>
           <p className="text-muted-foreground">Gestiona los administradores de cada disciplina</p>
         </div>
-        <Button asChild>
+        <Button asChild className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">
           <Link href="/admin/admins/nuevo">
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Admin

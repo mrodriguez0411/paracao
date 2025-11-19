@@ -54,8 +54,8 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">Bienvenido, {profile.nombre_completo}</p>
+        <h2 className="text-3xl font-bold tracking-tight" style={{ color: "#efb600" }}>Dashboard</h2>
+        <p style={{ color: "#efb600" }}>Bienvenido, {profile.nombre_completo}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -64,33 +64,33 @@ export default async function AdminDashboard() {
           .map((stat) => {
             const Icon = stat.icon
             return (
-              <Card key={stat.title}>
+              <Card key={stat.title} className="bg-white/80 backdrop-blur border border-[#1e3a8a]/20 shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
-                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-[#1e3a8a]">{stat.title}</CardTitle>
+                  <Icon className="h-4 w-4 text-[#1e3a8a]" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <div className="text-3xl font-extrabold text-[#1e3a8a]">{stat.value}</div>
                 </CardContent>
               </Card>
             )
           })}
       </div>
 
-      <Card>
+      <Card className="bg-white/80 backdrop-blur border border-[#1e3a8a]/20 shadow-sm">
         <CardHeader>
-          <CardTitle>Accesos Rápidos</CardTitle>
+          <CardTitle className="text-[#1e3a8a]">Accesos Rápidos</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-2 text-blue-900/80">
           {isSuperAdmin && (
             <>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm">
                 • Gestiona socios, disciplinas y cuotas desde el menú lateral
               </p>
-              <p className="text-sm text-muted-foreground">• Asigna administradores a cada disciplina</p>
+              <p className="text-sm">• Asigna administradores a cada disciplina</p>
             </>
           )}
-          <p className="text-sm text-muted-foreground">• Registra pagos de cuotas en la sección Cuotas</p>
+          <p className="text-sm">• Registra pagos de cuotas en la sección Cuotas</p>
         </CardContent>
       </Card>
     </div>

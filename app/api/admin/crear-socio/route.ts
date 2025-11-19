@@ -73,22 +73,42 @@ async function crearMiembrosFamiliares(supabase: any, grupoId: string, miembros:
     grupo_id: grupoId,
     nombre_completo: miembro.nombre_completo,
     dni: miembro.dni,
+    parentesco: miembro.parentesco || null,
   }))
 
-  const { error: miembrosError } = await supabase
+  const { data: insertados, error: miembrosError } = await supabase
     .from("miembros_familia")
     .insert(miembrosData)
+    .select()
 
   if (miembrosError) {
     console.error("[crear-socio] Error al crear miembros familiares:", miembrosError)
     throw new Error(`Error al crear miembros familiares: ${miembrosError.message}`)
+  }
+
+  // Crear inscripciones de miembros si vienen disciplinas
+  if (Array.isArray(miembros)) {
+    const insc: any[] = []
+    for (let i = 0; i < miembros.length; i++) {
+      const disciplines = Array.isArray(miembros[i]?.disciplinas) ? miembros[i].disciplinas : []
+      const miembroId = insertados?.[i]?.id
+      for (const discId of disciplines) {
+        insc.push({ miembro_id: miembroId, disciplina_id: discId })
+      }
+    }
+    if (insc.length > 0) {
+      const { error: inscErr } = await supabase.from("inscripciones").insert(insc)
+      if (inscErr) {
+        console.warn("[crear-socio] No se pudieron crear algunas inscripciones de miembros:", inscErr)
+      }
+    }
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, nombre_completo, dni, telefono, nombre_grupo, cuota_social, miembros } = body
+    const { email, password, nombre_completo, dni, telefono, nombre_grupo, cuota_social, miembros, titular_disciplinas } = body
 
     console.log("[crear-socio] Iniciando con datos:", { email, nombre_completo, dni, nombre_grupo, miembros })
 
@@ -115,6 +135,37 @@ export async function POST(request: NextRequest) {
 
     // Crear miembros familiares
     await crearMiembrosFamiliares(supabase, grupoId, miembros)
+
+    // Asegurar miembro titular y crear inscripciones del titular si vienen
+    let titularMiembroId: string | null = null
+    {
+      const { data: mfTit, error: mfTitErr } = await supabase
+        .from("miembros_familia")
+        .insert({ grupo_id: grupoId, nombre_completo, dni, parentesco: "Titular", socio_id: user.id })
+        .select()
+      if (mfTitErr) {
+        console.warn("[crear-socio] No se pudo crear miembro titular (puede existir):", mfTitErr)
+        const { data: mfExist } = await supabase
+          .from("miembros_familia")
+          .select("id")
+          .eq("grupo_id", grupoId)
+          .eq("socio_id", user.id)
+          .maybeSingle()
+        titularMiembroId = (mfExist as any)?.id || null
+      } else {
+        titularMiembroId = (mfTit as any)?.[0]?.id || null
+      }
+    }
+
+    if (titularMiembroId && Array.isArray(titular_disciplinas)) {
+      if (titular_disciplinas.length > 0) {
+        const payload = titular_disciplinas.map((discId: string) => ({ miembro_id: titularMiembroId as string, disciplina_id: discId }))
+        const { error: inscTitErr } = await supabase.from("inscripciones").insert(payload)
+        if (inscTitErr) {
+          console.warn("[crear-socio] No se pudieron crear inscripciones del titular:", inscTitErr)
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,

@@ -92,7 +92,7 @@ export default function VerSocioPage() {
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => router.back()}>
+        <Button variant="ghost" size="sm" className="text-[#1e3a8a] hover:bg-[#1e3a8a]/10" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Volver
         </Button>
@@ -100,8 +100,8 @@ export default function VerSocioPage() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Datos del Socio</CardTitle>
-          <Button asChild variant="outline" size="sm">
+          <CardTitle className="text-[#1e3a8a]">Datos del Socio</CardTitle>
+          <Button asChild variant="outline" size="sm" className="border-[#1e3a8a] text-[#1e3a8a] hover:bg-[#1e3a8a]/5">
             <Link href={`/admin/socios/${grupoId}/editar`}>
               <Edit className="h-4 w-4 mr-2" />
               Editar

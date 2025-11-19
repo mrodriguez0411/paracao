@@ -306,7 +306,46 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_miembros_familia: {
+        Args: { p_grupo_id: string }
+        Returns: {
+          created_at: string | null
+          dni: string | null
+          fecha_nacimiento: string | null
+          grupo_id: string
+          id: string
+          nombre_completo: string
+          parentesco: string | null
+          socio_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "miembros_familia"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_profile_by_id: {
+        Args: { profile_id: string }
+        Returns: {
+          created_at: string | null
+          dni: string | null
+          email: string
+          id: string
+          nombre_completo: string
+          rol: string
+          telefono: string | null
+          updated_at: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_user_role: { Args: never; Returns: string }
+      is_super_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

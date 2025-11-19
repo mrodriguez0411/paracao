@@ -39,6 +39,7 @@ export interface GrupoWithData {
     email: string;
   } | null;
   miembros_familia: MiembroFamilia[];
+  totalMiembros?: number;
   _error?: string;
   [key: string]: any;
 }
@@ -62,7 +63,7 @@ export const SociosTable = ({ grupos, loading = false }: SociosTableProps) => {
 
   if (grupos.length === 0) {
     return (
-      <Card className="border border-gray-200 shadow-md rounded-xl overflow-hidden">
+      <Card className="border border-gray-200 shadow-md rounded-xl overflow-hidden bg-textura-amarilla">
         <CardHeader className="bg-blue-800 px-6 py-4">
           <CardTitle className="text-white text-xl font-semibold">Socios</CardTitle>
         </CardHeader>
@@ -98,6 +99,7 @@ export const SociosTable = ({ grupos, loading = false }: SociosTableProps) => {
                 <TableHead className="w-[300px] text-gray-500 font-medium text-[11px] tracking-wider uppercase py-4 pl-6">Titular</TableHead>
                 <TableHead className="text-gray-500 font-medium text-[11px] tracking-wider uppercase py-4">DNI</TableHead>
                 <TableHead className="text-gray-500 font-medium text-[11px] tracking-wider uppercase py-4">Email</TableHead>
+                <TableHead className="text-gray-500 font-medium text-[11px] tracking-wider uppercase py-4">Parentesco</TableHead>
                 <TableHead className="text-center text-gray-500 font-medium text-[11px] tracking-wider uppercase py-4">Miembros</TableHead>
                 <TableHead className="text-gray-500 font-medium text-[11px] tracking-wider uppercase py-4">Cuota</TableHead>
                 <TableHead className="w-[120px] text-right text-gray-500 font-medium text-[11px] tracking-wider uppercase py-4 pr-6">Acciones</TableHead>
@@ -108,11 +110,9 @@ export const SociosTable = ({ grupos, loading = false }: SociosTableProps) => {
                 const nombreTitular = grupo.profiles?.nombre_completo || 'Sin nombre';
                 const emailTitular = grupo.profiles?.email || 'Sin email';
                 const dniTitular = grupo.profiles?.dni || 'Sin DNI';
-                // Contar los miembros de la familia (excluyendo al titular)
                 const cantidadMiembros = Array.isArray(grupo.miembros_familia) 
                   ? grupo.miembros_familia.length 
                   : 0;
-                // Sumar 1 por el titular
                 const totalMiembros = 1 + cantidadMiembros;
 
                 return (
@@ -144,6 +144,11 @@ export const SociosTable = ({ grupos, loading = false }: SociosTableProps) => {
                         {emailTitular}
                       </a>
                     </TableCell>
+                    <TableCell className="text-sm text-gray-700 font-light">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Titular
+                      </span>
+                    </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center">
                         <span className="inline-flex items-center justify-center h-7 w-7 rounded-full bg-blue-50 text-blue-700 font-medium text-xs border border-blue-100">
@@ -153,7 +158,7 @@ export const SociosTable = ({ grupos, loading = false }: SociosTableProps) => {
                     </TableCell>
                     <TableCell className="text-sm font-medium text-gray-900">
                       <span className="px-2.5 py-1 rounded-full bg-gray-50 text-gray-800 text-sm font-medium">
-                        ${grupo.cuota_social.toLocaleString('es-AR')}
+                        ${grupo.cuota_social?.toLocaleString('es-AR') || '0'}
                       </span>
                     </TableCell>
                     <TableCell className="pr-6">

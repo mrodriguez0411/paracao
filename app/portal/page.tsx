@@ -1,18 +1,18 @@
 import { requireAuth } from "@/lib/auth"
-import { createClient } from "@/lib/supabase/server"
+import { createServiceRoleClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, Trophy, CreditCard, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default async function PortalDashboard() {
   const profile = await requireAuth(["socio"])
-  const supabase = await createClient()
+  const supabase = createServiceRoleClient()
 
   // Obtener grupo familiar del socio
   const { data: grupoFamiliar } = await supabase
     .from("grupos_familiares")
     .select("*")
-    .or(`titular_id.eq.${profile.id}`)
+    .eq("titular_id", profile.id)
     .single()
 
   if (!grupoFamiliar) {
@@ -71,8 +71,8 @@ export default async function PortalDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Bienvenido, {profile.nombre_completo}</h2>
-        <p className="text-muted-foreground">Grupo Familiar: {grupoFamiliar.nombre}</p>
+        <h2 className="text-3xl font-bold tracking-tight" style={{color:"#efb600"}}>Bienvenido, {profile.nombre_completo}</h2>
+        <p className="text-muted-foreground"style={{color:"#efb600"}}>Grupo Familiar: {grupoFamiliar.nombre}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">

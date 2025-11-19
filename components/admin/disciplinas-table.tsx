@@ -25,39 +25,39 @@ interface DisciplinasTableProps {
 export function DisciplinasTable({ disciplinas }: DisciplinasTableProps) {
   if (disciplinas.length === 0) {
     return (
-      <Card className="p-8 text-center">
+      <Card className="p-8 text-center bg-textura-amarilla">
         <p className="text-muted-foreground">No hay disciplinas registradas</p>
       </Card>
     )
   }
 
   return (
-    <Card>
+    <Card className="border border-gray-100 shadow-sm rounded-xl overflow-hidden">
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Disciplina</TableHead>
-            <TableHead>Descripción</TableHead>
-            <TableHead>Cuota Deportiva</TableHead>
-            <TableHead>Administrador</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+        <TableHeader className="bg-white border-b border-gray-100">
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="text-gray-500 font-medium text-[11px] tracking-wider uppercase py-4 pl-6">Disciplina</TableHead>
+            <TableHead className="text-gray-500 font-medium text-[11px] tracking-wider uppercase py-4">Descripción</TableHead>
+            <TableHead className="text-gray-500 font-medium text-[11px] tracking-wider uppercase py-4">Cuota Deportiva</TableHead>
+            <TableHead className="text-gray-500 font-medium text-[11px] tracking-wider uppercase py-4">Administrador</TableHead>
+            <TableHead className="text-gray-500 font-medium text-[11px] tracking-wider uppercase py-4">Estado</TableHead>
+            <TableHead className="text-right text-gray-500 font-medium text-[11px] tracking-wider uppercase py-4 pr-6">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {disciplinas.map((disciplina) => (
-            <TableRow key={disciplina.id}>
-              <TableCell className="font-medium">{disciplina.nombre}</TableCell>
-              <TableCell className="max-w-xs truncate">{disciplina.descripcion || "-"}</TableCell>
-              <TableCell>${disciplina.cuota_deportiva}</TableCell>
-              <TableCell>{disciplina.admin?.nombre_completo || "Sin asignar"}</TableCell>
+            <TableRow key={disciplina.id} className="hover:bg-gray-50/50 transition-colors border-b border-gray-50 last:border-0">
+              <TableCell className="py-4 pl-6 font-medium text-gray-900">{disciplina.nombre}</TableCell>
+              <TableCell className="max-w-xs truncate text-sm text-gray-700">{disciplina.descripcion || "-"}</TableCell>
+              <TableCell className="text-sm font-medium text-gray-900">${disciplina.cuota_deportiva}</TableCell>
+              <TableCell className="text-sm text-gray-700">{disciplina.admin?.nombre_completo || "Sin asignar"}</TableCell>
               <TableCell>
-                <Badge variant={disciplina.activa ? "default" : "secondary"}>
+                <Badge className={disciplina.activa ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-700"}>
                   {disciplina.activa ? "Activa" : "Inactiva"}
                 </Badge>
               </TableCell>
-              <TableCell className="text-right">
-                <Button variant="ghost" size="sm" asChild>
+              <TableCell className="text-right pr-6">
+                <Button variant="ghost" size="sm" asChild className="text-gray-500 hover:bg-blue-50 hover:text-blue-700 rounded-lg p-2 h-9 w-9">
                   <Link href={`/admin/disciplinas/${disciplina.id}/editar`}>
                     <Edit className="h-4 w-4" />
                   </Link>

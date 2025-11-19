@@ -34,7 +34,63 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: "Socio no encontrado" }, { status: 404 })
     }
 
-    return NextResponse.json(data)
+    // Obtener inscripciones del titular localizando su registro en miembros_familia (socio_id = titular)
+    let titular_inscripciones: any[] = []
+    const titularProfileId = (data as any)?.profiles?.id
+    if (titularProfileId) {
+      let titularMiembroId: string | null = null
+      // 1) Buscar por socio_id
+      const { data: titularMiembro1 } = await supabase
+        .from("miembros_familia")
+        .select("id")
+        .eq("grupo_id", grupoId)
+        .eq("socio_id", titularProfileId)
+        .maybeSingle()
+      titularMiembroId = (titularMiembro1 as any)?.id || null
+
+      // 2) Si no existe, buscar por parentesco 'Titular'
+      if (!titularMiembroId) {
+        const { data: titularMiembro2 } = await supabase
+          .from("miembros_familia")
+          .select("id")
+          .eq("grupo_id", grupoId)
+          .eq("parentesco", "Titular")
+          .maybeSingle()
+        titularMiembroId = (titularMiembro2 as any)?.id || null
+      }
+
+      // 3) Si aún no existe, intentar por coincidencia de DNI o nombre con el titular
+      if (!titularMiembroId) {
+        const titularDni = (data as any)?.profiles?.dni || null
+        const titularNombre = (data as any)?.profiles?.nombre_completo || null
+        if (titularDni || titularNombre) {
+          const { data: mfCandidatos } = await supabase
+            .from("miembros_familia")
+            .select("id, dni, nombre_completo")
+            .eq("grupo_id", grupoId)
+
+          const candidato = (mfCandidatos as any[])?.find(
+            (m) => (titularDni && m.dni === titularDni) || (titularNombre && m.nombre_completo === titularNombre)
+          )
+          titularMiembroId = candidato?.id || null
+        }
+      }
+
+      if (titularMiembroId) {
+        const { data: inscTitular, error: errInsc } = await supabase
+          .from("inscripciones")
+          .select("disciplina_id, disciplinas (id, nombre)")
+          .eq("miembro_id", titularMiembroId)
+
+        if (!errInsc && inscTitular) {
+          titular_inscripciones = inscTitular
+        } else if (errInsc) {
+          console.warn("[socios-get] No se pudieron obtener inscripciones del titular:", errInsc)
+        }
+      }
+    }
+
+    return NextResponse.json({ ...data, titular_inscripciones })
   } catch (error) {
     console.error("[socios-get] Error:", error)
     return NextResponse.json(
@@ -48,7 +104,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id: grupoId } = await params
     const body = await request.json()
-    const { nombre_grupo, nombre_completo, dni, telefono, cuota_social } = body
+    const { nombre_grupo, nombre_completo, dni, telefono, cuota_social, titular_disciplinas } = body
 
     console.log("[socios-update] Actualizando socio:", grupoId)
 
@@ -116,6 +172,49 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (updateProfileError) {
       console.error("[socios-update] Error al actualizar perfil:", updateProfileError)
       throw new Error(`Error al actualizar perfil: ${updateProfileError.message}`)
+    }
+
+    // Sincronizar disciplinas del titular si vienen (vinculadas al miembro con parentesco 'Titular')
+    console.log("[socios-update] titular_disciplinas recibidas:", Array.isArray(titular_disciplinas) ? titular_disciplinas : null)
+    if (Array.isArray(titular_disciplinas)) {
+      // Asegurar miembro titular por parentesco
+      let titularMiembroId: string | null = null
+      const { data: titularByPar, error: errTitPar } = await supabase
+        .from("miembros_familia")
+        .select("id")
+        .eq("grupo_id", grupoId)
+        .eq("parentesco", "Titular")
+        .maybeSingle()
+
+      if (titularByPar?.id) {
+        titularMiembroId = titularByPar.id
+      } else {
+        // crear registro básico del titular como miembro (sin socio_id por compatibilidad de esquema)
+        const { data: mfNew, error: mfErr } = await supabase
+          .from("miembros_familia")
+          .insert({ grupo_id: grupoId, nombre_completo: nombre_completo, dni, parentesco: "Titular" })
+          .select()
+        if (mfErr) {
+          console.error("[socios-update] Error al crear miembro titular:", mfErr)
+          throw new Error(`Error al crear miembro titular: ${mfErr.message}`)
+        }
+        titularMiembroId = (mfNew as any)?.[0]?.id || null
+      }
+
+      console.log("[socios-update] titularMiembroId:", titularMiembroId)
+      if (titularMiembroId) {
+        // eliminar inscripciones previas del titular
+        await supabase.from("inscripciones").delete().eq("miembro_id", titularMiembroId)
+        // insertar nuevas
+        const toInsertTitular = titular_disciplinas.map((discId: string) => ({ miembro_id: titularMiembroId, disciplina_id: discId }))
+        if (toInsertTitular.length > 0) {
+          const { error: inscTitErr } = await supabase.from("inscripciones").insert(toInsertTitular)
+          if (inscTitErr) {
+            console.error("[socios-update] Error al insertar inscripciones del titular:", inscTitErr)
+            throw new Error(`Error al insertar inscripciones del titular: ${inscTitErr.message}`)
+          }
+        }
+      }
     }
 
     // Manejar miembros: crear/actualizar/eliminar y sincronizar inscripciones

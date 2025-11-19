@@ -1,12 +1,12 @@
 import { requireAuth } from "@/lib/auth"
-import { createClient } from "@/lib/supabase/server"
+import { createServiceRoleClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Trophy } from "lucide-react"
 
 export default async function DisciplinasPage() {
   const profile = await requireAuth(["socio"])
-  const supabase = await createClient()
+  const supabase = createServiceRoleClient()
 
   const { data: grupoFamiliar } = await supabase
     .from("grupos_familiares")

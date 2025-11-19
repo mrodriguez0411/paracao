@@ -28,23 +28,23 @@ export function AdminHeader({ profile }: AdminHeaderProps) {
   }
 
   return (
-    <header className="flex h-20 items-center justify-between border-b border-yellow-200 bg-yellow-500 px-6 shadow-sm">
-      <h1 className="text-xl font-bold text-gray-800">
+    <header className="flex h-20 items-center justify-between border-b border-yellow-300 bg-[#EFB600] px-6 shadow-md">
+      <h1 className="text-xl font-bold text-[#1e3a8a]">
         {profile.rol === "super_admin" ? "PANEL DE ADMINISTRACIÓN" : "PANEL DE DISCIPLINA"}
       </h1>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="gap-2 bg-yellow-400/20 text-gray-800 hover:bg-yellow-400/30 hover:text-gray-900">
+          <Button variant="ghost" size="sm" className="gap-2 bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 hover:text-[#1e3a8a]">
             <User className="h-4 w-4" />
             <span className="font-medium">{profile.nombre_completo}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="border-amber-200 bg-white">
-          <DropdownMenuLabel className="text-amber-800">Mi Cuenta</DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-amber-200" />
+        <DropdownMenuContent align="end" className="border-yellow-300 bg-white">
+          <DropdownMenuLabel className="text-[#1e3a8a]">Mi Cuenta</DropdownMenuLabel>
+          <DropdownMenuSeparator className="bg-yellow-300" />
           <DropdownMenuItem 
             onClick={handleLogout}
-            className="text-amber-900 focus:bg-amber-100 focus:text-amber-900"
+            className="text-[#1e3a8a] focus:bg-[#1e3a8a]/10 focus:text-[#1e3a8a]"
           >
             <LogOut className="mr-2 h-4 w-4" />
             <span>Cerrar Sesión</span>

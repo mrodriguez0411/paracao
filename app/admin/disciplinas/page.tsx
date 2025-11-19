@@ -41,10 +41,10 @@ export default async function DisciplinasPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Disciplinas</h2>
-          <p className="text-muted-foreground">Gestiona las disciplinas deportivas del club</p>
+          <h2 className="text-3xl font-bold tracking-tight" style={{ color: '#efb600' }}>Disciplinas</h2>
+          <p className="text-muted-foreground" style={{ color: '#efb600' }}>Gestiona las disciplinas deportivas del club</p>
         </div>
-        <Button asChild>
+        <Button asChild className="bg-[#efb600] hover:bg-[#efb600]/90 text-[#1e3a8a]">
           <Link href="/admin/disciplinas/nueva">
             <Plus className="mr-2 h-4 w-4" />
             Nueva Disciplina

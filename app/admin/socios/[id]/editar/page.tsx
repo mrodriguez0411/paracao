@@ -32,6 +32,9 @@ export default function EditarSocioPage() {
   const [socioData, setSocioData] = useState<SocioData | null>(null)
   const [disciplinas, setDisciplinas] = useState<Array<{ id: string; nombre: string }>>([])
   const [miembros, setMiembros] = useState<Array<any>>([])
+  const [titularDisciplinas, setTitularDisciplinas] = useState<string[]>([])
+  const [titularDiscSelect, setTitularDiscSelect] = useState<string>("")
+  const [miembroDiscSelect, setMiembroDiscSelect] = useState<Record<number, string>>({})
   const [formData, setFormData] = useState({
     email: "",
     nombre_grupo: "",
@@ -51,10 +54,10 @@ export default function EditarSocioPage() {
       if (!response.ok) {
         throw new Error("Error al cargar los datos del socio")
       }
-      const data = await response.json()
-      setSocioData(data)
+      const socio = await response.json()
+      setSocioData(socio)
       // preparar miembros con disciplinas
-      const miembrosData = (data.miembros_familia || []).map((m: any) => ({
+      const miembrosData = (socio.miembros_familia || []).map((m: any) => ({
         id: m.id,
         nombre_completo: m.nombre_completo,
         dni: m.dni,
@@ -62,6 +65,11 @@ export default function EditarSocioPage() {
         disciplinas: (m.inscripciones || []).map((i: any) => i.disciplina_id),
       }))
       setMiembros(miembrosData)
+      // preparar disciplinas del titular
+      const titularInsc = Array.isArray(socio.titular_inscripciones)
+        ? socio.titular_inscripciones.map((i: any) => i.disciplina_id)
+        : []
+      setTitularDisciplinas(titularInsc)
       // obtener disciplinas
       try {
         const resp = await fetch(`/api/admin/disciplinas`)
@@ -71,12 +79,12 @@ export default function EditarSocioPage() {
         console.warn("No se pudieron cargar disciplinas", e)
       }
       setFormData({
-        email: data.profiles?.email || "",
-        nombre_grupo: data.nombre,
-        nombre_completo: data.profiles?.nombre_completo || "",
-        dni: data.profiles?.dni || "",
-        telefono: data.profiles?.telefono || "",
-        cuota_social: data.cuota_social.toString(),
+        email: socio.profiles?.email || "",
+        nombre_grupo: socio.nombre,
+        nombre_completo: socio.profiles?.nombre_completo || "",
+        dni: socio.profiles?.dni || "",
+        telefono: socio.profiles?.telefono || "",
+        cuota_social: String(socio.cuota_social ?? ""),
       })
     } catch (error) {
       toast({
@@ -95,6 +103,19 @@ export default function EditarSocioPage() {
     setIsSaving(true)
 
     try {
+      // Incluir selección pendiente del titular si no se presionó "Agregar"
+      const titularToSend = Array.from(new Set([
+        ...titularDisciplinas,
+        ...(titularDiscSelect ? [titularDiscSelect] : []),
+      ]))
+
+      // Incluir selección pendiente de cada miembro si quedó en el select
+      const miembrosToSend = miembros.map((m, idx) => {
+        const sel = miembroDiscSelect[idx]
+        const actuales = Array.isArray(m.disciplinas) ? m.disciplinas : []
+        const nuevas = sel && !actuales.includes(sel) ? [...actuales, sel] : actuales
+        return { ...m, disciplinas: nuevas }
+      })
       const response = await fetch(`/api/admin/socios/${grupoId}`, {
         method: "PUT",
         headers: {
@@ -107,7 +128,8 @@ export default function EditarSocioPage() {
           dni: formData.dni,
           telefono: formData.telefono,
           cuota_social: Number.parseFloat(formData.cuota_social),
-          miembros: miembros,
+          miembros: miembrosToSend,
+          titular_disciplinas: titularToSend,
         }),
       })
 
@@ -121,7 +143,8 @@ export default function EditarSocioPage() {
         description: "Socio actualizado correctamente",
       })
 
-      router.push("/admin/socios")
+      // Redirigir al detalle del socio tras guardar
+      router.push(`/admin/socios/${grupoId}`)
     } catch (error) {
       toast({
         title: "Error",
@@ -143,16 +166,16 @@ export default function EditarSocioPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <Card>
+      <Card className="border border-gray-100 shadow-sm rounded-xl overflow-hidden">
         <CardHeader>
-          <CardTitle>Editar Socio</CardTitle>
+          <CardTitle className="text-[#1e3a8a] text-center p-2 font-bold text-2xl">Editar Socio</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="nombre_completo">Nombre Completo *</Label>
-                <Input
+                <Label htmlFor="nombre_completo" className="text-black font-bold">Nombre Completo *</Label>
+                <Input className="text-black"
                   id="nombre_completo"
                   required
                   value={formData.nombre_completo}
@@ -160,8 +183,8 @@ export default function EditarSocioPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="dni">DNI *</Label>
-                <Input
+                <Label htmlFor="dni" className="text-black font-bold">DNI *</Label>
+                <Input className="text-black"
                   id="dni"
                   type="text"
                   required
@@ -173,8 +196,8 @@ export default function EditarSocioPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
-              <Input
+              <Label htmlFor="email" className="text-black font-bold">Email *</Label>
+              <Input className="text-black"
                 id="email"
                 type="email"
                 required
@@ -185,8 +208,8 @@ export default function EditarSocioPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="telefono">Teléfono</Label>
-                <Input
+                <Label htmlFor="telefono" className="text-black font-bold">Teléfono</Label>
+                <Input className="text-black"
                   id="telefono"
                   type="tel"
                   value={formData.telefono}
@@ -194,8 +217,8 @@ export default function EditarSocioPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="nombre_grupo">Nombre Grupo Familiar *</Label>
-                <Input
+                <Label htmlFor="nombre_grupo" className="text-black font-bold">Nombre Grupo Familiar *</Label>
+                <Input className="text-black"
                   id="nombre_grupo"
                   required
                   placeholder="Ej: Familia García"
@@ -206,8 +229,8 @@ export default function EditarSocioPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cuota_social">Cuota Social Mensual *</Label>
-              <Input
+              <Label htmlFor="cuota_social" className="text-black font-bold">Cuota Social Mensual *</Label>
+              <Input className="text-black"
                 id="cuota_social"
                 type="number"
                 step="0.01"
@@ -218,6 +241,52 @@ export default function EditarSocioPage() {
               />
             </div>
 
+            {/* Disciplinas del Titular */}
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-semibold text-[#1e3a8a] mb-3">Disciplinas del Titular</h3>
+              <div className="flex items-center gap-2">
+                <select
+                  value={titularDiscSelect}
+                  onChange={(e) => setTitularDiscSelect(e.target.value)}
+                  className="flex-1 border rounded p-2 text-black"
+                >
+                  <option value="">Seleccioná una disciplina</option>
+                  {disciplinas.map((d) => (
+                    <option key={d.id} value={d.id}>{d.nombre}</option>
+                  ))}
+                </select>
+                <Button
+                  type="button"
+                  className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white"
+                  onClick={() => {
+                    if (!titularDiscSelect) return
+                    if (!titularDisciplinas.includes(titularDiscSelect)) {
+                      setTitularDisciplinas([...titularDisciplinas, titularDiscSelect])
+                    }
+                    setTitularDiscSelect("")
+                  }}
+                >Agregar</Button>
+              </div>
+              {titularDisciplinas.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {titularDisciplinas.map((id) => {
+                    const disc = disciplinas.find((d) => d.id === id)
+                    return (
+                      <span key={id} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-sm">
+                        {disc?.nombre || id}
+                        <button
+                          type="button"
+                          className="text-blue-800/70 hover:text-blue-900"
+                          onClick={() => setTitularDisciplinas(titularDisciplinas.filter((x) => x !== id))}
+                          aria-label="Quitar"
+                        >×</button>
+                      </span>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
             {/* Miembros del grupo: editar nombre/dni/parentesco y asignar disciplinas */}
             <div className="border-t pt-4">
               <h3 className="text-lg font-semibold text-[#1e3a8a] mb-3">Miembros del Grupo Familiar</h3>
@@ -226,31 +295,72 @@ export default function EditarSocioPage() {
                 <div key={m.id || idx} className="mb-3 p-3 bg-slate-50 rounded-md border">
                   <div className="grid gap-4 md:grid-cols-3">
                     <div>
-                      <Label>Nombre</Label>
-                      <Input value={m.nombre_completo} onChange={(e) => {
+                      <Label className="text-black font-bold">Nombre</Label>
+                      <Input className="text-black" value={m.nombre_completo} onChange={(e) => {
                         const copy = [...miembros]; copy[idx].nombre_completo = e.target.value; setMiembros(copy)
                       }} />
                     </div>
                     <div>
-                      <Label>DNI</Label>
-                      <Input value={m.dni} onChange={(e) => { const copy = [...miembros]; copy[idx].dni = e.target.value; setMiembros(copy) }} />
+                      <Label className="text-black font-bold">DNI</Label>
+                      <Input className="text-black" value={m.dni} onChange={(e) => { const copy = [...miembros]; copy[idx].dni = e.target.value; setMiembros(copy) }} />
                     </div>
                     <div>
-                      <Label>Parentesco</Label>
-                      <Input value={m.parentesco || ""} onChange={(e) => { const copy = [...miembros]; copy[idx].parentesco = e.target.value; setMiembros(copy) }} />
+                      <Label className="text-black font-bold">Parentesco</Label>
+                      <Input className="text-black" value={m.parentesco || ""} onChange={(e) => { const copy = [...miembros]; copy[idx].parentesco = e.target.value; setMiembros(copy) }} />
                     </div>
                   </div>
 
                   <div className="mt-3">
-                    <Label>Disciplinas</Label>
-                    <select multiple value={m.disciplinas || []} onChange={(e) => {
-                      const options = Array.from(e.target.selectedOptions).map(o => o.value)
-                      const copy = [...miembros]; copy[idx].disciplinas = options; setMiembros(copy)
-                    }} className="w-full border rounded p-2">
-                      {disciplinas.map((d) => (
-                        <option key={d.id} value={d.id}>{d.nombre}</option>
-                      ))}
-                    </select>
+                    <Label className="text-black font-bold">Disciplinas</Label>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={miembroDiscSelect[idx] || ""}
+                        onChange={(e) => setMiembroDiscSelect({ ...miembroDiscSelect, [idx]: e.target.value })}
+                        className="flex-1 border rounded p-2 text-black"
+                      >
+                        <option value="">Seleccioná una disciplina</option>
+                        {disciplinas.map((d) => (
+                          <option key={d.id} value={d.id}>{d.nombre}</option>
+                        ))}
+                      </select>
+                      <Button
+                        type="button"
+                        className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white"
+                        onClick={() => {
+                          const sel = miembroDiscSelect[idx]
+                          if (!sel) return
+                          const copy = [...miembros]
+                          const actuales = Array.isArray(copy[idx].disciplinas) ? copy[idx].disciplinas : []
+                          if (!actuales.includes(sel)) {
+                            copy[idx].disciplinas = [...actuales, sel]
+                            setMiembros(copy)
+                          }
+                          setMiembroDiscSelect({ ...miembroDiscSelect, [idx]: "" })
+                        }}
+                      >Agregar</Button>
+                    </div>
+                    {Array.isArray(m.disciplinas) && m.disciplinas.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {m.disciplinas.map((id: string) => {
+                          const disc = disciplinas.find((d) => d.id === id)
+                          return (
+                            <span key={id} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-sm">
+                              {disc?.nombre || id}
+                              <button
+                                type="button"
+                                className="text-blue-800/70 hover:text-blue-900"
+                                onClick={() => {
+                                  const copy = [...miembros]
+                                  copy[idx].disciplinas = (copy[idx].disciplinas || []).filter((x: string) => x !== id)
+                                  setMiembros(copy)
+                                }}
+                                aria-label="Quitar"
+                              >×</button>
+                            </span>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-3 flex justify-end">
@@ -260,15 +370,15 @@ export default function EditarSocioPage() {
               ))}
 
               <div>
-                <Button type="button" onClick={() => setMiembros([...miembros, { nombre_completo: "", dni: "", parentesco: "", disciplinas: [] }])} className="mt-2">Agregar Miembro</Button>
+                <Button type="button" onClick={() => setMiembros([...miembros, { nombre_completo: "", dni: "", parentesco: "", disciplinas: [] }])} className="mt-2 bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">Agregar Miembro</Button>
               </div>
             </div>
 
             <div className="flex gap-4">
-              <Button type="submit" disabled={isSaving} className="bg-[#1e3a8a] hover:bg-[#1e40af]">
+              <Button type="submit" disabled={isSaving} className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">
                 {isSaving ? "Guardando..." : "Guardar Cambios"}
               </Button>
-              <Button type="button" variant="outline" onClick={() => router.back()}>
+              <Button type="button" variant="outline" className="border-[#1e3a8a] text-[#1e3a8a] hover:bg-[#1e3a8a]/5" onClick={() => router.back()}>
                 Cancelar
               </Button>
             </div>

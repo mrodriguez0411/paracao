@@ -1,12 +1,12 @@
 import { requireAuth } from "@/lib/auth"
-import { createClient } from "@/lib/supabase/server"
+import { createServiceRoleClient } from "@/lib/supabase/server"
 import { CuotasSocioTable } from "@/components/portal/cuotas-socio-table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, CheckCircle } from "lucide-react"
 
 export default async function CuotasPage() {
   const profile = await requireAuth(["socio"])
-  const supabase = await createClient()
+  const supabase = createServiceRoleClient()
 
   const { data: grupoFamiliar } = await supabase
     .from("grupos_familiares")
@@ -34,8 +34,8 @@ export default async function CuotasPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Mis Cuotas</h2>
-        <p className="text-muted-foreground">Estado de pagos del grupo {grupoFamiliar.nombre}</p>
+        <h2 className="text-3xl font-bold tracking-tight" style={{color:"#efb600"}}>Mis Cuotas</h2>
+        <p className="text-muted-foreground" style={{color:"#efb600"}}>Estado de pagos del grupo {grupoFamiliar.nombre}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

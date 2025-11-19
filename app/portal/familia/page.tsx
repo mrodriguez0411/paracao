@@ -1,5 +1,5 @@
 import { requireAuth } from "@/lib/auth"
-import { createClient } from "@/lib/supabase/server"
+import { createServiceRoleClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MiembroCard } from "@/components/portal/miembro-card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -7,7 +7,7 @@ import { AlertCircle } from "lucide-react"
 
 export default async function FamiliaPage() {
   const profile = await requireAuth(["socio"])
-  const supabase = await createClient()
+  const supabase = createServiceRoleClient()
 
   const { data: grupoFamiliar } = await supabase
     .from("grupos_familiares")
@@ -40,8 +40,8 @@ export default async function FamiliaPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Mi Familia</h2>
-        <p className="text-muted-foreground">Grupo Familiar: {grupoFamiliar.nombre}</p>
+        <h2 className="text-3xl font-bold tracking-tight" style={{color:"#efb600"}}>Mi Familia</h2>
+        <p className="text-muted-foreground" style={{color:"#efb600"}}>Grupo Familiar: {grupoFamiliar.nombre}</p>
       </div>
 
       <Card>
@@ -69,7 +69,7 @@ export default async function FamiliaPage() {
       </Card>
 
       <div>
-        <h3 className="text-xl font-semibold mb-4">Miembros del Grupo</h3>
+        <h3 className="text-xl font-semibold mb-4" style={{color:"#efb600"}}>Miembros del Grupo</h3>
         {miembros && miembros.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2">
             {miembros.map((miembro) => (

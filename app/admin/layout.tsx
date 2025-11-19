@@ -3,6 +3,19 @@ import { requireAuth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { AdminHeader } from "@/components/admin/admin-header"
+import localFont from "next/font/local"
+
+const oswald = localFont({
+  src: [
+    { path: "../../public/Nueva carpeta/Oswald-ExtraLight.ttf", weight: "200", style: "normal" },
+    { path: "../../public/Nueva carpeta/Oswald-Light.ttf", weight: "300", style: "normal" },
+    { path: "../../public/Nueva carpeta/Oswald-Regular.ttf", weight: "400", style: "normal" },
+    { path: "../../public/Nueva carpeta/Oswald-SemiBold.ttf", weight: "600", style: "normal" },
+    { path: "../../public/Nueva carpeta/Oswald-Bold.ttf", weight: "700", style: "normal" },
+  ],
+  variable: "--font-oswald",
+  display: "swap",
+})
 
 export default async function AdminLayout({
   children,
@@ -16,14 +29,13 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{
-      backgroundImage: 'url(/Nueva%20carpeta/Patron%20azul.png)',
-      backgroundSize: '300px',
-      backgroundRepeat: 'repeat'
-    }}>
+    <div
+      className={`${oswald.className} flex h-screen overflow-hidden bg-repeat bg-fixed`}
+      style={{ backgroundImage: "url('/Nueva%20carpeta/Textura%20azul.png')" }}
+    >
       <div className="relative z-10 flex w-full h-full">
         <AdminSidebar profile={profile} />
-        <div className="flex flex-1 flex-col overflow-hidden bg-white/80">
+        <div className="flex flex-1 flex-col overflow-hidden">
           <AdminHeader profile={profile} />
           <main className="flex-1 overflow-y-auto p-6">{children}</main>
         </div>
