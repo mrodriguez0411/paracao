@@ -43,14 +43,14 @@ async function actualizarPerfil(supabase: any, userId: string, telefono: string,
   }
 }
 
-async function crearGrupoFamiliar(supabase: any, nombre_grupo: string, titular_id: string, cuota_social: string) {
+async function crearGrupoFamiliar(supabase: any, nombre_grupo: string, titular_id: string, tipo_cuota_id: string) {
   console.log("[crear-socio] Creando grupo familiar...")
   const { data: grupoData, error: grupoError } = await supabase
     .from("grupos_familiares")
     .insert({
       nombre: nombre_grupo,
       titular_id,
-      cuota_social: Number.parseFloat(cuota_social),
+      tipo_cuota_id: tipo_cuota_id,
     })
     .select()
 
@@ -108,12 +108,12 @@ async function crearMiembrosFamiliares(supabase: any, grupoId: string, miembros:
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, nombre_completo, dni, telefono, nombre_grupo, cuota_social, miembros, titular_disciplinas } = body
+    const { email, password, nombre_completo, dni, telefono, nombre_grupo, tipo_cuota_id, miembros, titular_disciplinas } = body
 
     console.log("[crear-socio] Iniciando con datos:", { email, nombre_completo, dni, nombre_grupo, miembros })
 
     // Validar campos requeridos
-    if (!email || !password || !nombre_completo || !dni || !nombre_grupo || !cuota_social) {
+    if (!email || !password || !nombre_completo || !dni || !nombre_grupo || !tipo_cuota_id) {
       return NextResponse.json(
         { error: "Faltan campos requeridos" },
         { status: 400 }
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     await actualizarPerfil(supabase, user.id, telefono, dni)
 
     // Crear grupo familiar
-    const grupoId = await crearGrupoFamiliar(supabase, nombre_grupo, user.id, cuota_social)
+    const grupoId = await crearGrupoFamiliar(supabase, nombre_grupo, user.id, tipo_cuota_id)
     console.log("[crear-socio] Grupo creado exitosamente")
 
     // Crear miembros familiares

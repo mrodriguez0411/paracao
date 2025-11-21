@@ -1,10 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-// usando input type="checkbox" nativo para evitar dependencia faltante
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Loader2, PlusCircle, RefreshCw, Trash2, Save } from "lucide-react"
 
 type TipoCuota = {
   id: string
@@ -26,6 +28,7 @@ const TIPOS = [
 export default function CuotasTiposPage() {
   const [tipos, setTipos] = useState<TipoCuota[]>([])
   const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState<Record<string, boolean>>({})
 
   const [form, setForm] = useState({
     tipo: "gf1",
@@ -39,7 +42,8 @@ export default function CuotasTiposPage() {
     setLoading(true)
     const res = await fetch("/api/admin/cuotas/tipos", { cache: "no-store" })
     const data = await res.json()
-    setTipos(Array.isArray(data) ? data : [])
+    const list = Array.isArray(data) ? data : []
+    setTipos(list.filter((x: any) => x && x.id))
     setLoading(false)
   }
 
@@ -70,113 +74,264 @@ export default function CuotasTiposPage() {
     }
   }
 
-  const handleUpdate = async (id: string, patch: Partial<TipoCuota>) => {
-    const res = await fetch(`/api/admin/cuotas/tipos/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(patch),
-    })
-    if (!res.ok) {
-      const err = await res.json()
-      alert(err.error || "No se pudo actualizar")
-    } else {
+  const handleUpdate = async (id: string, patch: Partial<TipoCuota>, showFeedback: boolean = true) => {
+    if (!id) {
+      alert("ID de tipo de cuota inválido")
+      return false
+    }
+    
+    setUpdating(prev => ({ ...prev, [id]: true }))
+    
+    try {
+      const res = await fetch(`/api/admin/cuotas/tipos/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      })
+      
+      if (!res.ok) {
+        const err = await res.json()
+        if (showFeedback) {
+          alert(err.error || "No se pudo actualizar")
+        }
+        return false
+      }
+      
+      if (showFeedback) {
+        const successElement = document.createElement('div')
+        successElement.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg'
+        successElement.textContent = '¡Cambios guardados!'
+        document.body.appendChild(successElement)
+        
+        setTimeout(() => {
+          successElement.remove()
+        }, 2000)
+      }
+      
+      return true
+    } catch (error) {
+      console.error('Error al actualizar:', error)
+      if (showFeedback) {
+        alert('Error al conectar con el servidor')
+      }
+      return false
+    } finally {
+      setUpdating(prev => ({ ...prev, [id]: false }))
       load()
     }
   }
 
-  const handleTipoChange = (value: string) => {
-    const preset = TIPOS.find(t => t.value === value)
-    setForm((f) => ({ ...f, tipo: value, nombre: preset ? preset.label : f.nombre }))
-  }
-
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight" style={{ color: "#efb600" }}>Tipos de Cuota</h2>
-        <p style={{ color: "#efb600" }}>Define los montos que usará la generación mensual</p>
+    <div className="container mx-auto py-6 space-y-6">
+      <div className="flex items-center justify-between" >
+        <div >
+          <h1 className="text-2xl font-bold" style={{ color: "#EFB600" }}>Tipos de Cuota</h1>
+          <p className="text-sm " style={{ color: "#EFB600" }}>Administra los diferentes tipos de cuotas para los socios</p>
+        </div>
+        <Button onClick={load} variant="outline" size="sm" style={{backgroundColor: "#efb600", color: "#1e3a8a" }}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Actualizar
+        </Button>
       </div>
 
-      <Card className="p-4 bg-white/80 backdrop-blur border border-[#1e3a8a]/20">
-        <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-6 gap-3">
-          <div className="md:col-span-2">
-            <label className="text-sm text-gray-700">Tipo</label>
-            <select
-              value={form.tipo}
-              onChange={(e) => handleTipoChange(e.target.value)}
-              className="w-full h-10 rounded-md border px-3"
-            >
-              {TIPOS.map(t => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-          </div>
-          <div className="md:col-span-2">
-            <label className="text-sm text-gray-700">Nombre</label>
-            <Input value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} />
-          </div>
-          <div className="md:col-span-1">
-            <label className="text-sm text-gray-700">Monto (ARS)</label>
-            <Input type="number" step="0.01" value={form.monto} onChange={(e) => setForm({ ...form, monto: e.target.value })} />
-          </div>
-          <div className="md:col-span-1 flex items-end gap-4">
-            <label className="flex items-center gap-2 text-sm text-gray-700">
-              <input type="checkbox" checked={form.por_disciplina} onChange={(e) => setForm({ ...form, por_disciplina: e.target.checked })} />
-              Por disciplina
-            </label>
-            <label className="flex items-center gap-2 text-sm text-gray-700">
-              <input type="checkbox" checked={form.activo} onChange={(e) => setForm({ ...form, activo: e.target.checked })} />
-              Activo
-            </label>
-          </div>
-          <div className="md:col-span-6 flex justify-end">
-            <Button type="submit" className="bg-[#efb600] hover:bg-[#efb600]/90 text-[#1e3a8a]">Agregar</Button>
-          </div>
-        </form>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg text-[#1e3a8a]">Nuevo Tipo de Cuota</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleCreate} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="tipo">Tipo</Label>
+                <Input
+                  id="tipo"
+                  value={form.tipo}
+                  onChange={(e) => setForm({ ...form, tipo: e.target.value })}
+                  placeholder="Ej: gf1, individual"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="nombre">Nombre</Label>
+                <Input
+                  id="nombre"
+                  value={form.nombre}
+                  onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                  placeholder="Ej: Grupo Familiar 1"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="monto">Monto (ARS)</Label>
+                <Input
+                  id="monto"
+                  type="number"
+                  step="0.01"
+                  value={form.monto}
+                  onChange={(e) => setForm({ ...form, monto: e.target.value })}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              <div className="flex items-end space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="por_disciplina"
+                    checked={form.por_disciplina}
+                    onCheckedChange={(checked) => setForm({ ...form, por_disciplina: Boolean(checked) })}
+                  />
+                  <Label htmlFor="por_disciplina" className="text-sm">
+                    Por disciplina
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="activo"
+                    checked={form.activo}
+                    onCheckedChange={(checked) => setForm({ ...form, activo: Boolean(checked) })}
+                  />
+                  <Label htmlFor="activo" className="text-sm">
+                    Activo
+                  </Label>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button type="submit" className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90" style={{backgroundColor: "#efb600", color: "#1e3a8a" }}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Agregar Tipo de Cuota
+              </Button>
+            </div>
+          </form>
+        </CardContent>
       </Card>
 
-      <Card className="border border-gray-100 shadow-sm rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-white border-b border-gray-100">
-              <tr>
-                <th className="text-left text-gray-500 font-medium text-[11px] tracking-wider uppercase py-3 pl-6">Tipo</th>
-                <th className="text-left text-gray-500 font-medium text-[11px] tracking-wider uppercase py-3">Nombre</th>
-                <th className="text-left text-gray-500 font-medium text-[11px] tracking-wider uppercase py-3">Monto (ARS)</th>
-                <th className="text-left text-gray-500 font-medium text-[11px] tracking-wider uppercase py-3">Por Disciplina</th>
-                <th className="text-left text-gray-500 font-medium text-[11px] tracking-wider uppercase py-3">Activo</th>
-                <th className="text-right text-gray-500 font-medium text-[11px] tracking-wider uppercase py-3 pr-6">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && (
-                <tr><td colSpan={6} className="p-6 text-center text-gray-500">Cargando...</td></tr>
-              )}
-              {!loading && tipos.map((t) => (
-                <tr key={t.id} className="border-b border-gray-50 last:border-0">
-                  <td className="py-3 pl-6 text-sm text-gray-800">{t.tipo}</td>
-                  <td className="py-3 text-sm text-gray-800">
-                    <Input defaultValue={t.nombre} onBlur={(e) => handleUpdate(t.id, { nombre: e.target.value })} />
-                  </td>
-                  <td className="py-3 text-sm text-gray-800">
-                    <Input type="number" step="0.01" defaultValue={t.monto} onBlur={(e) => handleUpdate(t.id, { monto: Number(e.target.value) })} />
-                  </td>
-                  <td className="py-3 text-sm text-gray-800">
-                    <input type="checkbox" defaultChecked={t.por_disciplina} onChange={(e) => handleUpdate(t.id, { por_disciplina: e.target.checked })} />
-                  </td>
-                  <td className="py-3 text-sm text-gray-800">
-                    <input type="checkbox" defaultChecked={t.activo} onChange={(e) => handleUpdate(t.id, { activo: e.target.checked })} />
-                  </td>
-                  <td className="py-3 pr-6 text-right">
-                    <Button size="sm" variant="outline" onClick={() => handleUpdate(t.id, {})}>Guardar</Button>
-                  </td>
-                </tr>
-              ))}
-              {!loading && tipos.length === 0 && (
-                <tr><td colSpan={6} className="p-6 text-center text-gray-500">No hay tipos configurados</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Tipos de Cuota Existentes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-[#1e3a8a]" />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-[#1e3a8a]/20">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-[#1e3a8a]">Tipo</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-[#1e3a8a]">Nombre</th>
+                    <th className="text-right py-3 px-4 text-sm font-medium text-[#1e3a8a]">Monto</th>
+                    <th className="text-center py-3 px-4 text-sm font-medium text-[#1e3a8a]">Por Disciplina</th>
+                    <th className="text-center py-3 px-4 text-sm font-medium text-[#1e3a8a]">Estado</th>
+                    <th className="text-right py-3 px-4 text-sm font-medium text-[#1e3a8a]">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1e3a8a]/10">
+                  {tipos.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-gray-500">
+                        No hay tipos de cuota configurados
+                      </td>
+                    </tr>
+                  ) : (
+                    tipos.map((tipo) => (
+                      <tr key={tipo.id} className="hover:bg-[#EFB600]/10 [&>td]:text-gray-800 [&>td]:hover:text-[#1e3a8a] transition-colors">
+                        <td className="py-3 px-4 text-sm text-gray-800">{tipo.tipo}</td>
+                        <td className="py-3 px-4">
+                          <Input
+                            name={`nombre-${tipo.id}`}
+                            className="w-full"
+                            defaultValue={tipo.nombre}
+                          />
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center justify-end">
+                            <span className="text-sm text-gray-500 mr-1">$</span>
+                            <Input
+                              name={`monto-${tipo.id}`}
+                              type="number"
+                              step="0.01"
+                              className="w-32 text-right"
+                              defaultValue={tipo.monto}
+                            />
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <Checkbox
+                            name={`por_disciplina-${tipo.id}`}
+                            defaultChecked={tipo.por_disciplina}
+                          />
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <label className="inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              name={`activo-${tipo.id}`}
+                              defaultChecked={tipo.activo}
+                              className="sr-only peer"
+                            />
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              tipo.activo
+                                ? 'bg-[#1e3a8a]/10 text-[#1e3a8a]'
+                                : 'bg-[#EFB600]/20 text-[#8a6e1e]'
+                            }`}>
+                              {tipo.activo ? 'Activo' : 'Inactivo'}
+                            </span>
+                          </label>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-[#1e3a8a] border-[#1e3a8a] hover:bg-[#1e3a8a]/10 hover:text-[#1e3a8a]"
+                              onClick={async () => {
+                                const updated = await handleUpdate(tipo.id, {
+                                  nombre: (document.querySelector(`input[name='nombre-${tipo.id}']`) as HTMLInputElement)?.value || tipo.nombre,
+                                  monto: parseFloat((document.querySelector(`input[name='monto-${tipo.id}']`) as HTMLInputElement)?.value) || tipo.monto,
+                                  por_disciplina: (document.querySelector(`input[name='por_disciplina-${tipo.id}']`) as HTMLInputElement)?.checked || tipo.por_disciplina,
+                                  activo: (document.querySelector(`input[name='activo-${tipo.id}']`) as HTMLInputElement)?.checked || tipo.activo,
+                                })
+                                if (updated) {
+                                  load()
+                                }
+                              }}
+                              disabled={updating[tipo.id]}
+                            >
+                              {updating[tipo.id] ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Save className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                              onClick={async () => {
+                                if (confirm("¿Estás seguro de eliminar este tipo de cuota?")) {
+                                  await fetch(`/api/admin/cuotas/tipos/${tipo.id}`, {
+                                    method: "DELETE",
+                                  })
+                                  load()
+                                }
+                              }}
+                              title="Eliminar"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
       </Card>
     </div>
   )

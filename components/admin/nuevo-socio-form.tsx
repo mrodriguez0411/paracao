@@ -30,7 +30,7 @@ export function NuevoSocioForm() {
     dni: "",
     telefono: "",
     nombre_grupo: "",
-    cuota_social: "",
+    tipo_cuota_id: "",
   })
   const [miembros, setMiembros] = useState<Miembro[]>([])
   const [nuevoMiembro, setNuevoMiembro] = useState({
@@ -42,6 +42,10 @@ export function NuevoSocioForm() {
   const [titularDisciplinas, setTitularDisciplinas] = useState<string[]>([])
   const [titularDiscSelect, setTitularDiscSelect] = useState<string>("")
   const [miembroDiscSelect, setMiembroDiscSelect] = useState<Record<string, string>>({})
+  const [tiposCuota, setTiposCuota] = useState<Array<{ id: string; tipo: string; nombre: string; monto: number; por_disciplina: boolean; activo: boolean }>>([])
+  const [tipoCuotaSelect, setTipoCuotaSelect] = useState<string>("")
+  const [tiposLoading, setTiposLoading] = useState<boolean>(false)
+  const [tiposError, setTiposError] = useState<string>("")
 
   useEffect(() => {
     const cargarDisciplinas = async () => {
@@ -54,6 +58,35 @@ export function NuevoSocioForm() {
       }
     }
     cargarDisciplinas()
+  }, [])
+
+  useEffect(() => {
+    const cargarTiposCuota = async () => {
+      setTiposLoading(true)
+      setTiposError("")
+      try {
+        const res = await fetch("/api/admin/cuotas/tipos", { cache: "no-store" })
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`)
+        }
+        const data = await res.json()
+        const lista = Array.isArray(data) ? data : []
+        const filtrados = lista.filter((t: any) => t.activo && !t.por_disciplina)
+        const normalizados = filtrados.map((t: any) => ({ ...t, id: String(t.id) }))
+        setTiposCuota(normalizados)
+        if (normalizados.length > 0) {
+          const first = normalizados[0]
+          setTipoCuotaSelect(first.id)
+          setFormData((fd) => ({ ...fd, tipo_cuota_id: first.id }))
+        }
+      } catch (e: any) {
+        setTiposError(e?.message || "No se pudieron cargar los tipos de cuota")
+        setTiposCuota([])
+      } finally {
+        setTiposLoading(false)
+      }
+    }
+    cargarTiposCuota()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,7 +107,7 @@ export function NuevoSocioForm() {
           dni: formData.dni,
           telefono: formData.telefono,
           nombre_grupo: formData.nombre_grupo,
-          cuota_social: formData.cuota_social,
+          tipo_cuota_id: formData.tipo_cuota_id,
           miembros: miembros,
           titular_disciplinas: titularDisciplinas,
         }),
@@ -183,16 +216,39 @@ export function NuevoSocioForm() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="cuota_social">Cuota Social Mensual *</Label>
-              <Input
+              <Label htmlFor="tipo_cuota_id">Tipo de Cuota *</Label>
+              <select
                 id="cuota_social"
-                type="number"
-                step="0.01"
                 required
-                placeholder="0.00"
-                value={formData.cuota_social}
-                onChange={(e) => setFormData({ ...formData, cuota_social: e.target.value })}
-              />
+                className="w-full border rounded p-2 text-black"
+                value={tipoCuotaSelect}
+                onChange={(e) => {
+                  const id = e.target.value
+                  setTipoCuotaSelect(id)
+                  const t = tiposCuota.find((x) => String(x.id) === id)
+                  if (t) {
+                    setFormData({ ...formData, tipo_cuota_id: t.id })
+                  } else {
+                    setFormData({ ...formData, tipo_cuota_id: "" })
+                  }
+                }}
+              >
+                <option value="">{tiposLoading ? "Cargando tipos..." : "Seleccioná un tipo de cuota"}</option>
+                {tiposError && (
+                  <option value="" disabled>¡Error: {tiposError}!</option>
+                )}
+                {!tiposLoading && !tiposError && tiposCuota.length === 0 && (
+                  <option value="" disabled>No hay tipos disponibles</option>
+                )}
+                {tiposCuota.map((t) => (
+                  <option key={String(t.id)} value={String(t.id)}>
+                    {t.nombre} - ${t.monto}
+                  </option>
+                ))}
+              </select>
+              {(!tiposLoading && tiposCuota.length === 0) && (
+                <p className="text-xs text-gray-500">Configura los tipos de cuota en Administración → Cuotas → Tipos. La cuota deportiva se gestiona por disciplina.</p>
+              )}
             </div>
           </div>
 

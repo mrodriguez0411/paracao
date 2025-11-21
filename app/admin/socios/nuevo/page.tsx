@@ -7,8 +7,8 @@ export default async function NuevoSocioPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Nuevo Socio</h2>
-        <p className="text-muted-foreground">Registra un nuevo grupo familiar en el club</p>
+        <h2 className="text-3xl font-bold tracking-tight" style={{ color: "#EFB600" }}>Nuevo Socio</h2>
+        <p className="text-muted-foreground" style={{ color: "#EFB600" }}>Registra un nuevo grupo familiar en el club</p>
       </div>
 
       <NuevoSocioForm />

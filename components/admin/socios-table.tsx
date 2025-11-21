@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Eye, Pencil, Loader2, Users, Search, Plus } from "lucide-react"
+import { Eye, Pencil, Loader2, Users, Search, Plus, CreditCard } from "lucide-react"
 import Link from "next/link"
 
 export interface ProfileData {
@@ -29,7 +29,15 @@ export interface MiembroFamilia {
 export interface GrupoWithData {
   id: string;
   nombre: string;
-  cuota_social: number;
+  cuota_social: number; // Mantenemos la compatibilidad hacia atrás
+  tipo_cuota_id: string | null;
+  cuotas_tipos: {
+    id: string;
+    nombre: string;
+    monto: number;
+    tipo: string;
+    activo: boolean;
+  } | null;
   created_at: string;
   titular_id: string;
   profiles: {
@@ -157,9 +165,16 @@ export const SociosTable = ({ grupos, loading = false }: SociosTableProps) => {
                       </div>
                     </TableCell>
                     <TableCell className="text-sm font-medium text-gray-900">
-                      <span className="px-2.5 py-1 rounded-full bg-gray-50 text-gray-800 text-sm font-medium">
-                        ${grupo.cuota_social?.toLocaleString('es-AR') || '0'}
-                      </span>
+                      <div className="flex flex-col">
+                        <span className="px-2.5 py-1 rounded-full bg-gray-50 text-gray-800 text-sm font-medium">
+                          {grupo.cuotas_tipos?.nombre || 'Sin tipo'}
+                        </span>
+                        {grupo.cuotas_tipos?.monto && (
+                          <span className="text-xs text-gray-500 mt-1">
+                            ${grupo.cuotas_tipos.monto.toLocaleString('es-AR')}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="pr-6">
                       <div className="flex justify-end gap-1.5">
@@ -181,6 +196,16 @@ export const SociosTable = ({ grupos, loading = false }: SociosTableProps) => {
                         >
                           <Link href={`/admin/socios/${grupo.id}/editar`} title="Editar">
                             <Pencil className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-gray-500 hover:bg-green-50 hover:text-green-700 rounded-lg p-2 h-9 w-9 transition-all duration-200"
+                          asChild
+                        >
+                          <Link href={`/admin/pagos/nuevo?socio_id=${grupo.id}`} title="Registrar pago">
+                            <CreditCard className="h-4 w-4" />
                           </Link>
                         </Button>
                       </div>

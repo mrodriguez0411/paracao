@@ -9,10 +9,20 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 
+interface CuotaTipo {
+  id: string
+  nombre: string
+  monto: number
+  tipo: string
+  activo: boolean
+}
+
 interface SocioData {
   id: string
   nombre: string
   cuota_social: number
+  tipo_cuota_id: string | null
+  cuotas_tipos: CuotaTipo | null
   profiles: {
     nombre_completo: string
     email: string
@@ -31,6 +41,8 @@ export default function EditarSocioPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [socioData, setSocioData] = useState<SocioData | null>(null)
   const [disciplinas, setDisciplinas] = useState<Array<{ id: string; nombre: string }>>([])
+  const [tiposCuota, setTiposCuota] = useState<CuotaTipo[]>([])
+  const [tiposLoading, setTiposLoading] = useState(false)
   const [miembros, setMiembros] = useState<Array<any>>([])
   const [titularDisciplinas, setTitularDisciplinas] = useState<string[]>([])
   const [titularDiscSelect, setTitularDiscSelect] = useState<string>("")
@@ -41,11 +53,33 @@ export default function EditarSocioPage() {
     nombre_completo: "",
     dni: "",
     telefono: "",
+    tipo_cuota_id: "",
     cuota_social: "",
   })
 
   useEffect(() => {
+    const fetchTiposCuota = async () => {
+      setTiposLoading(true)
+      try {
+        const res = await fetch('/api/admin/cuotas/tipos')
+        if (res.ok) {
+          const data = await res.json()
+          setTiposCuota(data)
+        }
+      } catch (error) {
+        console.error('Error cargando tipos de cuota:', error)
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los tipos de cuota",
+          variant: "destructive",
+        })
+      } finally {
+        setTiposLoading(false)
+      }
+    }
+    
     fetchSocioData()
+    fetchTiposCuota()
   }, [grupoId])
 
   async function fetchSocioData() {
@@ -84,7 +118,8 @@ export default function EditarSocioPage() {
         nombre_completo: socio.profiles?.nombre_completo || "",
         dni: socio.profiles?.dni || "",
         telefono: socio.profiles?.telefono || "",
-        cuota_social: String(socio.cuota_social ?? ""),
+        tipo_cuota_id: socio.tipo_cuota_id || "",
+        cuota_social: String(socio.cuotas_tipos?.monto ?? socio.cuota_social ?? ""),
       })
     } catch (error) {
       toast({
@@ -127,7 +162,8 @@ export default function EditarSocioPage() {
           nombre_completo: formData.nombre_completo,
           dni: formData.dni,
           telefono: formData.telefono,
-          cuota_social: Number.parseFloat(formData.cuota_social),
+          tipo_cuota_id: formData.tipo_cuota_id,
+          cuota_social: Number.parseFloat(formData.cuota_social) || 0,
           miembros: miembrosToSend,
           titular_disciplinas: titularToSend,
         }),
@@ -229,15 +265,48 @@ export default function EditarSocioPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cuota_social" className="text-black font-bold">Cuota Social Mensual *</Label>
-              <Input className="text-black"
+              <Label htmlFor="tipo_cuota_id" className="text-gray-800 font-bold">Tipo de Cuota *</Label>
+              <select
+                id="tipo_cuota_id"
+                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 focus:outline-none disabled:cursor-not-allowed disabled:opacity-70"
+                value={formData.tipo_cuota_id}
+                onChange={(e) => {
+                  const selectedTipo = tiposCuota.find(t => t.id === e.target.value)
+                  setFormData(prev => ({
+                    ...prev,
+                    tipo_cuota_id: e.target.value,
+                    cuota_social: selectedTipo ? String(selectedTipo.monto) : ''
+                  }))
+                }}
+                required
+                disabled={tiposLoading}
+              >
+                <option value="" className="text-gray-900">Seleccionar tipo de cuota</option>
+                {tiposCuota.map((tipo) => (
+                  <option key={tipo.id} value={tipo.id} className="text-gray-900">
+                    {tipo.nombre} (${tipo.monto.toLocaleString('es-AR')})
+                  </option>
+                ))}
+              </select>
+              {tiposLoading && <p className="text-sm text-muted-foreground">Cargando tipos de cuota...</p>}
+              {!tiposLoading && tiposCuota.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  No hay tipos de cuota disponibles. Configúralos en Administración → Cuotas → Tipos.
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cuota_social" className="text-black font-bold">Monto de Cuota *</Label>
+              <Input 
+                className="text-gray-900 bg-gray-100 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200"
                 id="cuota_social"
                 type="number"
                 step="0.01"
                 required
+                readOnly
                 placeholder="0.00"
                 value={formData.cuota_social}
-                onChange={(e) => setFormData({ ...formData, cuota_social: e.target.value })}
               />
             </div>
 

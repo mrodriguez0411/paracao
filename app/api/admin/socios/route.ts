@@ -11,7 +11,15 @@ export async function GET() {
         id,
         nombre,
         cuota_social,
+        tipo_cuota_id,
         created_at,
+        cuotas_tipos (
+          id,
+          nombre,
+          monto,
+          tipo,
+          activo
+        ),
         profiles:titular_id (
           id,
           nombre_completo,

@@ -10,11 +10,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const { data, error } = await supabase
       .from("grupos_familiares")
-      .select(
-        `
+      .select(`
         id,
         nombre,
         cuota_social,
+        tipo_cuota_id,
+        cuotas_tipos (
+          id,
+          nombre,
+          monto
+        ),
         created_at,
         profiles:titular_id (
           id,
@@ -24,8 +29,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           telefono
         ),
         miembros_familia (id, nombre_completo, dni, parentesco, socio_id, inscripciones (disciplina_id, disciplinas (id, nombre)))
-      `
-      )
+      `)
       .eq("id", grupoId)
       .single()
 
@@ -104,11 +108,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id: grupoId } = await params
     const body = await request.json()
-    const { nombre_grupo, nombre_completo, dni, telefono, cuota_social, titular_disciplinas } = body
+    const { nombre_grupo, nombre_completo, dni, telefono, tipo_cuota_id, titular_disciplinas } = body
 
     console.log("[socios-update] Actualizando socio:", grupoId)
 
-    if (!nombre_grupo || !nombre_completo || !dni || !cuota_social) {
+    if (!nombre_grupo || !nombre_completo || !dni || !tipo_cuota_id) {
       return NextResponse.json(
         { error: "Faltan campos requeridos" },
         { status: 400 }
@@ -137,7 +141,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       .from("grupos_familiares")
       .update({
         nombre: nombre_grupo,
-        cuota_social: Number.parseFloat(cuota_social),
+        tipo_cuota_id: tipo_cuota_id,
         updated_at: new Date().toISOString(),
       })
       .eq("id", grupoId)
