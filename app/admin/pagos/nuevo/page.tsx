@@ -1,3 +1,4 @@
+// app/admin/pagos/nuevo/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -81,49 +82,73 @@ export default function NuevoPagoPage() {
     notas: ''
   })
 
-  // Cargar datos del socio y sus cuotas
-useEffect(() => {
-  const fetchData = async () => {
-    if (!socioId) {
-      setError('No se ha especificado un socio')
-      setLoading(false)
-      return
-    }
-
-    try {
-      setLoading(true)
-      const [socioRes, pagosRes] = await Promise.all([
-        fetch(`/api/admin/socios/${socioId}/cuotas`),
-        fetch(`/api/admin/socios/${socioId}/pagos`)
-      ])
-
-      if (!socioRes.ok) throw new Error('Error al cargar los datos del socio')
-      if (!pagosRes.ok) throw new Error('Error al cargar los pagos')
-
-      const socioData = await socioRes.json()
-      const pagosData = await pagosRes.json()
-
-      setSocio(socioData.grupo)
-      setResumenPagos(socioData.resumen)
-      setPagos(pagosData)
-
-      // Establecer el monto por defecto según el total general
-      if (socioData.grupo?.total_general) {
-        setFormData(prev => ({
-          ...prev,
-          monto: socioData.grupo.total_general.toString()
-        }))
+  useEffect(() => {
+    const fetchData = async () => {
+      console.log('Iniciando fetchData con socioId:', socioId)
+      
+      if (!socioId) {
+        console.error('No se proporcionó un ID de socio')
+        setError('No se ha especificado un socio')
+        setLoading(false)
+        return
       }
-    } catch (err) {
-      console.error('Error al cargar los datos:', err)
-      setError('Error al cargar la información del socio y sus pagos')
-    } finally {
-      setLoading(false)
-    }
-  }
 
-  fetchData()
-}, [socioId])
+      try {
+        setLoading(true)
+        console.log('Haciendo petición a la API...')
+        
+        // Primero obtenemos los datos del socio
+        const url = new URL(`/api/admin/socios/${socioId}/cuotas`, window.location.origin)
+        console.log('URL de la API:', url.toString())
+        
+        const socioRes = await fetch(url.toString(), {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        
+        console.log('Respuesta de la API (status):', socioRes.status)
+        
+        if (!socioRes.ok) {
+          const errorData = await socioRes.json().catch(() => ({}))
+          console.error('Error en la respuesta de la API:', errorData)
+          throw new Error(errorData.error || 'Error al cargar los datos del socio')
+        }
+
+        const socioData = await socioRes.json()
+        console.log('Datos del socio recibidos:', socioData)
+
+        // Luego obtenemos los pagos (si es necesario)
+        const pagosUrl = new URL(`/api/admin/socios/${socioId}/pagos`, window.location.origin)
+        const pagosRes = await fetch(pagosUrl.toString(), {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        const pagosData = pagosRes.ok ? await pagosRes.json() : []
+
+        setSocio(socioData.grupo)
+        setResumenPagos(socioData.resumen)
+        setPagos(pagosData)
+
+        // Establecer el monto por defecto
+        if (socioData.grupo?.total_general) {
+          setFormData(prev => ({
+            ...prev,
+            monto: socioData.grupo.total_general.toString()
+          }))
+        }
+
+      } catch (err) {
+        console.error('Error al cargar los datos:', err)
+        setError(err instanceof Error ? err.message : 'Error al cargar la información del socio')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [socioId])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -159,6 +184,8 @@ useEffect(() => {
         mes_anio_cuota: formData.mes_anio_cuota
       }
 
+      console.log('Enviando pago:', payload)
+      
       const res = await fetch('/api/admin/pagos', {
         method: 'POST',
         headers: {
@@ -168,12 +195,16 @@ useEffect(() => {
       })
 
       if (!res.ok) {
-        const errorData = await res.json()
+        const errorData = await res.json().catch(() => ({}))
         throw new Error(errorData.error || 'Error al guardar el pago')
       }
 
+      const result = await res.json()
+      console.log('Pago guardado:', result)
+      
       // Redirigir al detalle del socio en la pestaña de pagos
       router.push(`/admin/socios/${socioId}?tab=pagos`)
+      
     } catch (err) {
       console.error('Error al guardar el pago:', err)
       setError(err instanceof Error ? err.message : 'Error al guardar el pago')
@@ -200,15 +231,13 @@ useEffect(() => {
           </div>
           <div className="ml-3">
             <p className="text-sm text-red-700">{error}</p>
+            <div className="mt-4">
+              <Link href="/admin/socios" className="inline-flex items-center text-sm font-medium text-red-600 hover:text-red-500">
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Volver a la lista de socios
+              </Link>
+            </div>
           </div>
-        </div>
-        <div className="mt-4">
-          <Link 
-            href="/admin/socios" 
-            className="text-blue-600 hover:underline text-sm font-medium"
-          >
-            &larr; Volver a la lista de socios
-          </Link>
         </div>
       </div>
     )
@@ -217,392 +246,297 @@ useEffect(() => {
   if (!socio) {
     return (
       <div className="text-center py-12">
-        <AlertTriangle className="h-12 w-12 mx-auto text-yellow-500" />
-        <h3 className="mt-2 text-lg font-medium text-gray-900">Socio no encontrado</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          No se pudo encontrar la información del socio solicitado.
-        </p>
+        <h2 className="text-lg font-medium text-gray-900">No se encontró el socio</h2>
+        <p className="mt-2 text-sm text-gray-500">El socio solicitado no existe o no se pudo cargar su información.</p>
         <div className="mt-6">
-          <Link
-            href="/admin/socios"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Volver a la lista de socios
+          <Link href="/admin/socios" className="text-sm font-medium text-blue-600 hover:text-blue-500">
+            <span aria-hidden="true">&larr;</span> Volver a la lista de socios
           </Link>
         </div>
       </div>
     )
   }
 
-  // Formatear fecha
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  }
-
-  // Obtener el mes y año formateado
-  const getMesAnio = (fecha: string) => {
-    const [anio, mes] = fecha.split('-')
-    const fechaObj = new Date(parseInt(anio), parseInt(mes) - 1, 1)
-    return fechaObj.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
-  }
-
   return (
     <div className="space-y-6">
-      {/* Encabezado con información del socio */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-        <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-          <div>
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Información del Socio
-            </h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
-              Detalles del grupo familiar y cuotas
-            </p>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => router.back()}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver
-          </Button>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Nuevo Pago</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Registra un nuevo pago para {socio.titular.nombre_completo}
+          </p>
         </div>
-        <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-          <dl className="sm:divide-y sm:divide-gray-200">
-            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500 flex items-center">
-                <User className="h-4 w-4 mr-2 text-gray-400" />
-                Titular
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {socio.titular.nombre_completo}
-                <p className="text-sm text-gray-500">{socio.titular.dni}</p>
-              </dd>
-            </div>
-            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500 flex items-center">
-                <Users className="h-4 w-4 mr-2 text-gray-400" />
-                Grupo Familiar
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {socio.nombre || 'Sin nombre de grupo'}
-              </dd>
-            </div>
-            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500 flex items-center">
-                <DollarSign className="h-4 w-4 mr-2 text-gray-400" />
-                Cuota Social
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                <div className="flex items-center justify-between">
-                  <span>Mensualidad</span>
-                  <span className="font-medium">${socio.cuota_social.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
-                </div>
-                {socio.tipo_cuota && (
-                  <Badge variant="outline" className="mt-1">
-                    {socio.tipo_cuota.nombre}
-                  </Badge>
-                )}
-              </dd>
-            </div>
-            {socio.disciplinas.length > 0 && (
-              <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">
-                  Cuotas Deportivas
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  <div className="space-y-2">
-                    {socio.disciplinas.map(disciplina => (
-                      <div key={disciplina.id} className="flex items-center justify-between">
-                        <span>{disciplina.nombre}</span>
-                        <span className="font-medium">${disciplina.monto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
-                      </div>
-                    ))}
-                    <div className="border-t border-gray-200 pt-2 mt-2 flex items-center justify-between font-medium">
-                      <span>Total Cuotas Deportivas:</span>
-                      <span>${socio.total_cuota_deportiva.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
-                    </div>
-                  </div>
-                </dd>
-              </div>
-            )}
-            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 bg-gray-50">
-              <dt className="text-sm font-medium text-gray-900">
-                Total Mensual
-              </dt>
-              <dd className="mt-1 text-lg font-bold text-gray-900 sm:mt-0 sm:col-span-2">
-                ${socio.total_general.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-              </dd>
-            </div>
-          </dl>
-        </div>
+        <Button variant="outline" asChild>
+          <Link href={`/admin/socios/${socioId}`}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Volver al detalle
+          </Link>
+        </Button>
       </div>
 
-      {/* Resumen de pagos */}
-      {resumenPagos && (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Resumen de Pagos
-            </h3>
-          </div>
-          <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-            <dl className="sm:divide-y sm:divide-gray-200">
-              <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">
-                  Total Pagado
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  ${resumenPagos.total_pagado.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                </dd>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Resumen del socio */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">Resumen del Socio</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Titular</p>
+                <p className="mt-1">{socio.titular.nombre_completo}</p>
               </div>
-              <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">
-                  Saldo Pendiente
-                </dt>
-                <dd className={`mt-1 text-sm font-medium sm:mt-0 sm:col-span-2 ${
-                  resumenPagos.total_pendiente > 0 ? 'text-red-600' : 'text-green-600'
-                }`}>
-                  ${Math.abs(resumenPagos.total_pendiente).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                  {resumenPagos.total_pendiente > 0 ? ' (Deuda)' : ' (A favor)'}
-                </dd>
-              </div>
-              {resumenPagos.ultimo_pago && (
-                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">
-                    Último Pago
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    <div className="flex justify-between">
-                      <span>
-                        {formatDate(resumenPagos.ultimo_pago.fecha)} - {getMesAnio(resumenPagos.ultimo_pago.mes_cuota)}
-                      </span>
-                      <span className="font-medium">
-                        ${resumenPagos.ultimo_pago.monto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                  </dd>
+              
+              {socio.tipo_cuota && (
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Tipo de Cuota</p>
+                  <p className="mt-1">
+                    {socio.tipo_cuota.nombre} - ${socio.tipo_cuota.monto}
+                  </p>
                 </div>
               )}
-            </dl>
-          </div>
+
+              <div>
+                <p className="text-sm font-medium text-gray-500">Cuota Social</p>
+                <p className="mt-1">${socio.cuota_social}</p>
+              </div>
+
+              {socio.disciplinas && socio.disciplinas.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Disciplinas</p>
+                  <div className="mt-1 space-y-1">
+                    {socio.disciplinas.map((disciplina) => (
+                      <div key={disciplina.id} className="flex justify-between">
+                        <span>{disciplina.nombre}</span>
+                        <span>${disciplina.monto}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2 border-t">
+                <div className="flex justify-between font-medium">
+                  <span>Total General</span>
+                  <span>${socio.total_general}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Resumen de pagos */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">Resumen de Pagos</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between">
+                <span className="text-sm font-medium text-gray-500">Total Pagado</span>
+                <span>${resumenPagos?.total_pagado || 0}</span>
+              </div>
+              <div className="flex justify-between font-medium">
+                <span>Total Pendiente</span>
+                <span>${resumenPagos?.total_pendiente || socio.total_general}</span>
+              </div>
+              {resumenPagos?.ultimo_pago && (
+                <div className="pt-2 border-t">
+                  <p className="text-sm font-medium text-gray-500">Último Pago</p>
+                  <div className="mt-1">
+                    <p>${resumenPagos.ultimo_pago.monto} - {new Date(resumenPagos.ultimo_pago.fecha).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-500">Mes: {resumenPagos.ultimo_pago.mes_cuota}</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
-      )}
 
-      {/* Formulario de pago */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg" style={{ color: '#1e3a8a' }}>Registrar Nuevo Pago</CardTitle>
-          <CardDescription>
-            Complete los datos del pago para el mes correspondiente
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Mes de Cuota */}
-              <div className="space-y-2">
-                <Label htmlFor="mes_anio_cuota">Mes de la Cuota</Label>
-                <Input
-                  id="mes_anio_cuota"
-                  name="mes_anio_cuota"
-                  type="month"
-                  value={formData.mes_anio_cuota.slice(0, 7)}
-                  onChange={(e) => {
-                    const value = e.target.value
-                    setFormData(prev => ({
-                      ...prev,
-                      mes_anio_cuota: value ? `${value}-01` : ''
-                    }))
-                  }}
-                  required
-                />
-              </div>
-
-              {/* Monto */}
-              <div className="space-y-2">
-                <Label htmlFor="monto">Monto (ARS)</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-gray-500">$</span>
-                  <Input
-                    id="monto"
-                    name="monto"
-                    type="number"
-                    step="0.01"
-                    value={formData.monto}
-                    onChange={handleChange}
-                    className="pl-8"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Fecha de Pago */}
-              <div className="space-y-2">
-                <Label htmlFor="fecha_pago">Fecha de Pago</Label>
-                <Input
-                  id="fecha_pago"
-                  name="fecha_pago"
-                  type="date"
-                  value={formData.fecha_pago}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              {/* Tipo de Pago */}
-              <div className="space-y-2">
-                <Label htmlFor="tipo_pago">Método de Pago</Label>
-                <Select
-                  value={formData.tipo_pago}
-                  onValueChange={(value) => handleSelectChange('tipo_pago', value as TipoPago)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccione un método" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="efectivo">Efectivo</SelectItem>
-                    <SelectItem value="transferencia">Transferencia</SelectItem>
-                    <SelectItem value="tarjeta">Tarjeta</SelectItem>
-                    <SelectItem value="otro">Otro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Referencia */}
-              <div className="space-y-2">
-                <Label htmlFor="referencia">Referencia / N° de Operación</Label>
-                <Input
-                  id="referencia"
-                  name="referencia"
-                  value={formData.referencia}
-                  onChange={handleChange}
-                  placeholder="Opcional"
-                />
-              </div>
-
-              {/* Notas */}
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="notas">Notas Adicionales</Label>
-                <textarea
-                  id="notas"
-                  name="notas"
-                  rows={3}
-                  value={formData.notas}
-                  onChange={handleChange}
-                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Ingrese cualquier información adicional sobre el pago"
-                />
-              </div>
-            </div>
-
-            {/* Errores */}
-            {error && (
-              <div className="bg-red-50 border-l-4 border-red-400 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <AlertTriangle className="h-5 w-5 text-red-400" />
+        {/* Formulario de pago */}
+        <div className="md:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Registrar Pago</CardTitle>
+              <CardDescription>
+                Completa los detalles del pago para {socio.titular.nombre_completo}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="monto">Monto</Label>
+                    <Input
+                      id="monto"
+                      name="monto"
+                      type="number"
+                      step="0.01"
+                      value={formData.monto}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-red-700">{error}</p>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="fecha_pago">Fecha de Pago</Label>
+                    <Input
+                      id="fecha_pago"
+                      name="fecha_pago"
+                      type="date"
+                      value={formData.fecha_pago}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="tipo_pago">Método de Pago</Label>
+                    <Select
+                      value={formData.tipo_pago}
+                      onValueChange={(value) => handleSelectChange('tipo_pago', value as TipoPago)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un método de pago" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="efectivo">Efectivo</SelectItem>
+                        <SelectItem value="transferencia">Transferencia</SelectItem>
+                        <SelectItem value="tarjeta">Tarjeta</SelectItem>
+                        <SelectItem value="otro">Otro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="referencia">Referencia (opcional)</Label>
+                    <Input
+                      id="referencia"
+                      name="referencia"
+                      type="text"
+                      value={formData.referencia}
+                      onChange={handleChange}
+                      placeholder="Número de transacción o referencia"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="mes_anio_cuota">Mes de la Cuota</Label>
+                    <Input
+                      id="mes_anio_cuota"
+                      name="mes_anio_cuota"
+                      type="month"
+                      value={formData.mes_anio_cuota.slice(0, 7)}
+                      onChange={(e) => {
+                        const value = e.target.value ? `${e.target.value}-01` : ''
+                        setFormData(prev => ({ ...prev, mes_anio_cuota: value }))
+                      }}
+                      required
+                    />
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2">
+                    <Label htmlFor="notas">Notas (opcional)</Label>
+                    <textarea
+                      id="notas"
+                      name="notas"
+                      rows={3}
+                      value={formData.notas}
+                      onChange={handleChange}
+                      className="flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      placeholder="Agrega cualquier nota adicional sobre el pago"
+                    />
                   </div>
                 </div>
-              </div>
-            )}
 
-            <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.back()}
-                disabled={saving}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={saving}
-                style={{ backgroundColor: '#EFB600', color: '#1e3a8a' }}
-                className="hover:bg-yellow-500"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Guardando...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Registrar Pago
-                  </>
+                {error && (
+                  <div className="bg-red-50 border-l-4 border-red-400 p-4">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <AlertTriangle className="h-5 w-5 text-red-400" />
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-red-700">{error}</p>
+                      </div>
+                    </div>
+                  </div>
                 )}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
 
-      {/* Historial de pagos */}
-      {pagos.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg" style={{ color: '#1e3a8a' }}>Historial de Pagos</CardTitle>
-            <CardDescription>Últimos pagos registrados</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fecha
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Mes Cuota
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Método
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Monto
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Referencia
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {pagos.map((pago) => (
-                    <tr key={pago.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(pago.fecha_pago)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {getMesAnio(pago.mes_anio_cuota)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                        {pago.tipo_pago}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
-                        ${pago.monto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {pago.referencia || '-'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                <div className="flex justify-end space-x-4 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => router.back()}
+                    disabled={saving}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={saving}>
+                    {saving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Guardando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Guardar Pago
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Historial de pagos */}
+          {pagos.length > 0 && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Historial de Pagos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Fecha
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Monto
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Método
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Referencia
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {pagos.map((pago) => (
+                        <tr key={pago.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(pago.fecha_pago).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            ${pago.monto}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
+                            {pago.tipo_pago}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {pago.referencia || '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

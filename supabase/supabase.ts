@@ -102,6 +102,39 @@ export type Database = {
           },
         ]
       }
+      cuotas_tipos: {
+        Row: {
+          activo: boolean
+          created_at: string | null
+          id: string
+          monto: number
+          nombre: string
+          por_disciplina: boolean
+          tipo: string
+          updated_at: string | null
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string | null
+          id?: string
+          monto: number
+          nombre: string
+          por_disciplina?: boolean
+          tipo: string
+          updated_at?: string | null
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string | null
+          id?: string
+          monto?: number
+          nombre?: string
+          por_disciplina?: boolean
+          tipo?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       disciplinas: {
         Row: {
           activa: boolean | null
@@ -143,80 +176,47 @@ export type Database = {
           },
         ]
       }
-      cuotas_tipos: {
-        Row: {
-          id: string
-          tipo: string
-          nombre: string
-          monto: number
-          por_disciplina: boolean
-          activo: boolean
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          tipo: string
-          nombre: string
-          monto: number
-          por_disciplina?: boolean
-          activo?: boolean
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          tipo?: string
-          nombre?: string
-          monto?: number
-          por_disciplina?: boolean
-          activo?: boolean
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      },
       grupos_familiares: {
         Row: {
           created_at: string | null
           cuota_social: number
-          tipo_cuota_id: string | null
           id: string
           nombre: string
+          tipo_cuota_id: string
           titular_id: string
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           cuota_social?: number
-          tipo_cuota_id?: string | null
           id?: string
           nombre: string
+          tipo_cuota_id: string
           titular_id: string
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           cuota_social?: number
-          tipo_cuota_id?: string | null
           id?: string
           nombre?: string
+          tipo_cuota_id?: string
           titular_id?: string
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "grupos_familiares_titular_id_fkey"
-            columns: ["titular_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "grupos_familiares_tipo_cuota_id_fkey"
             columns: ["tipo_cuota_id"]
             isOneToOne: false
             referencedRelation: "cuotas_tipos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grupos_familiares_titular_id_fkey"
+            columns: ["titular_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
