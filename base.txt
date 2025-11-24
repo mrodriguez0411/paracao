@@ -17,6 +17,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4eGJjc3pldG1heGt4a3Zmb3N3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzAxNTUzMiwiZXhwIjoyMDc4NTkxNTMyfQ._Ku30N8DA8gYkMBOy7TFuKd8e7jlCfuGnOJJ3xKXYWQ
 
 
+Texto azul #1e3a8a
+Texto amarillo #efb600
+
 Para agregar..
 
 una sección de documentos de interes o algo así, como por ejemplo modelo de nota me,bretada.
