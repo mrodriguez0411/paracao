@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -64,7 +65,14 @@ type TipoPago = 'efectivo' | 'transferencia' | 'tarjeta' | 'otro'
 export default function NuevoPagoPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const socioId = searchParams.get('socio_id')
+  const socioId = searchParams.get('socio_id') || searchParams.get('id')
+  
+  // Depuración de los parámetros de búsqueda
+  useEffect(() => {
+    console.log('Parámetros de búsqueda:', Object.fromEntries(searchParams.entries()))
+    console.log('socioId:', socioId)
+  }, [searchParams, socioId])
+  const supabase = createClient()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -97,25 +105,66 @@ export default function NuevoPagoPage() {
         setLoading(true)
         console.log('Haciendo petición a la API...')
         
-        // Primero obtenemos los datos del socio
+        // Verificar que el socioId no sea nulo
+        if (!socioId) {
+          throw new Error('No se ha especificado un ID de socio')
+        }
+        
+        // Construir la URL de la API
         const url = new URL(`/api/admin/socios/${socioId}/cuotas`, window.location.origin)
         console.log('URL de la API:', url.toString())
         
+        // Obtener la sesión actual para incluir el token de autenticación
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError || !session) {
+          console.error('Error al obtener la sesión:', sessionError?.message || 'No hay sesión activa')
+          setError('No estás autenticado. Por favor, inicia sesión nuevamente.')
+          setLoading(false)
+          return
+        }
+        
+        // Hacer la petición a la API
+        console.log('Realizando petición a:', url.toString())
+        console.log('Token de autenticación:', session.access_token ? 'Presente' : 'Ausente')
+        
         const socioRes = await fetch(url.toString(), {
+          method: 'GET',
           headers: {
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
           },
+          credentials: 'include',
+          cache: 'no-store'
         })
         
         console.log('Respuesta de la API (status):', socioRes.status)
         
+        // Obtener el contenido de la respuesta como texto primero
+        const responseText = await socioRes.text()
+        console.log('Respuesta de la API (texto):', responseText)
+        
         if (!socioRes.ok) {
-          const errorData = await socioRes.json().catch(() => ({}))
+          let errorData
+          try {
+            errorData = JSON.parse(responseText)
+          } catch (e) {
+            throw new Error(`Error en la respuesta del servidor (${socioRes.status}): ${responseText.substring(0, 200)}...`)
+          }
           console.error('Error en la respuesta de la API:', errorData)
-          throw new Error(errorData.error || 'Error al cargar los datos del socio')
+          throw new Error(errorData.error || `Error al cargar los datos del socio (${socioRes.status})`)
         }
 
-        const socioData = await socioRes.json()
+        // Parsear el JSON solo si la respuesta es exitosa
+        let socioData
+        try {
+          socioData = JSON.parse(responseText)
+          console.log('Datos del socio recibidos:', socioData)
+        } catch (e) {
+          console.error('Error al analizar la respuesta JSON:', e)
+          throw new Error('La respuesta del servidor no es un JSON válido')
+        }
         console.log('Datos del socio recibidos:', socioData)
 
         // Luego obtenemos los pagos (si es necesario)
@@ -266,7 +315,11 @@ export default function NuevoPagoPage() {
             Registra un nuevo pago para {socio.titular.nombre_completo}
           </p>
         </div>
-        <Button variant="outline" asChild>
+        <Button 
+          variant="outline" 
+          asChild
+          className="border-[#1e3a8a] text-[#1e3a8a] hover:bg-[#1e3a8a]/10 hover:text-[#1e3a8a]"
+        >
           <Link href={`/admin/socios/${socioId}`}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Volver al detalle
@@ -466,10 +519,15 @@ export default function NuevoPagoPage() {
                     variant="outline"
                     onClick={() => router.back()}
                     disabled={saving}
+                    className="border-[#1e3a8a] text-[#1e3a8a] hover:bg-[#1e3a8a]/10 hover:text-[#1e3a8a]"
                   >
                     Cancelar
                   </Button>
-                  <Button type="submit" disabled={saving}>
+                  <Button 
+                    type="submit" 
+                    disabled={saving}
+                    className="bg-[#efb600] hover:bg-[#d4a300] text-black"
+                  >
                     {saving ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

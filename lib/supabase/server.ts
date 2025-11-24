@@ -55,12 +55,42 @@ export const createServerSupabaseClient = createClient;
 // inside middleware). Make sure `SUPABASE_SERVICE_ROLE_KEY` is set in the
 // environment on the server and NEVER expose it to the browser.
 export function createServiceRoleClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-  if (!url || !key) {
-    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL in environment')
+    console.log('Creando cliente de servicio con URL:', url ? 'URL presente' : 'URL faltante')
+    console.log('Clave de servicio:', key ? 'Presente' : 'Faltante')
+
+    if (!url || !key) {
+      console.error('Error: Faltan variables de entorno necesarias')
+      console.error('NEXT_PUBLIC_SUPABASE_URL:', url ? 'Presente' : 'Faltante')
+      console.error('SUPABASE_SERVICE_ROLE_KEY:', key ? 'Presente' : 'Faltante')
+      throw new Error('Error de configuración: Faltan variables de entorno necesarias')
+    }
+
+    // Verificar que la URL y la clave tengan el formato correcto
+    if (!url.startsWith('http')) {
+      console.error('Error: URL de Supabase inválida')
+      throw new Error('URL de Supabase inválida')
+    }
+
+    if (key.length < 20) {
+      console.error('Error: Clave de servicio de Supabase inválida')
+      throw new Error('Clave de servicio de Supabase inválida')
+    }
+
+    const client = createSupabaseClient(url, key, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+
+    console.log('Cliente de servicio creado exitosamente')
+    return client
+  } catch (error) {
+    console.error('Error al crear el cliente de servicio:', error)
+    throw error // Relanzar el error para que sea manejado por el llamador
   }
-
-  return createSupabaseClient(url, key)
 }

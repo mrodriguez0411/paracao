@@ -125,13 +125,23 @@ export async function updateSession(request: NextRequest) {
     console.log('[middleware] fallback profile:', profile?.rol)
   }
 
-  // Redirigir a /portal solo si es socio
-  if (request.nextUrl.pathname.startsWith('/portal')) {
-    if (profile?.rol !== 'socio') {
+  // Check admin routes
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    const allowedRoles = ['super_admin', 'admin_disciplina']
+    if (!profile?.rol || !allowedRoles.includes(profile.rol)) {
+      console.log(`[middleware] Unauthorized access to admin area by role: ${profile?.rol}`)
       const url = request.nextUrl.clone()
       url.pathname = '/unauthorized'
       return NextResponse.redirect(url)
     }
+  }
+  
+  // Check portal routes
+  if (request.nextUrl.pathname.startsWith('/portal') && profile?.rol !== 'socio') {
+    console.log(`[middleware] Unauthorized access to portal by role: ${profile?.rol}`)
+    const url = request.nextUrl.clone()
+    url.pathname = '/unauthorized'
+    return NextResponse.redirect(url)
   }
 
   return supabaseResponse
