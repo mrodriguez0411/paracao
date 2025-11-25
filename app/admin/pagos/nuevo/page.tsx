@@ -310,15 +310,15 @@ export default function NuevoPagoPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Nuevo Pago</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold" style={{ color: "#efb600" }}>Nuevo Pago</h1>
+          <p className="text-sm text-gray-500 mt-1" style={{ color: "#efb600" }}>
             Registra un nuevo pago para {socio.titular.nombre_completo}
           </p>
         </div>
-        <Button 
+        <Button style={{ color: "#efb600" }}
           variant="outline" 
           asChild
-          className="border-[#1e3a8a] text-[#1e3a8a] hover:bg-[#1e3a8a]/10 hover:text-[#1e3a8a]"
+          className="border-[#1e3a8a] text-[#1e3a8a] hover:bg-[#efb600]/10 hover:text-[#1e3a8a]"
         >
           <Link href={`/admin/socios/${socioId}`}>
             <ArrowLeft className="h-4 w-4 mr-2" />
