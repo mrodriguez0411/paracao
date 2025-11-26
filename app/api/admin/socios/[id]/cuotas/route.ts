@@ -12,14 +12,6 @@ function createServiceClient() {
         autoRefreshToken: false,
         persistSession: false,
         detectSessionInUrl: false
-      },
-      global: {
-        headers: {
-          'Cache-Control': 'no-store'
-        }
-      },
-      db: {
-        schema: 'public'
       }
     }
   )
@@ -67,14 +59,16 @@ export async function GET(
         nombre,
         cuota_social,
         tipo_cuota_id,
-        titular_id,
+        titular:titular_id (
+            nombre_completo,
+            email,
+            dni
+        ),
         miembros_familia (
           id,
           socio_id,
           profiles (
-            nombre_completo,
-            email,
-            dni
+            nombre_completo
           )
         )
       `)
@@ -89,8 +83,6 @@ export async function GET(
     if (!grupo) {
         return NextResponse.json({ error: 'No se encontró el grupo familiar' }, { status: 404 });
     }
-
-    const titular = grupo.miembros_familia.find(m => m.socio_id === grupo.titular_id)?.profiles;
 
     const { data: tipoCuota, error: tipoCuotaError } = await supabase
       .from('cuotas_tipos')
@@ -130,22 +122,26 @@ export async function GET(
                 return NextResponse.json({ error: `Error al obtener los detalles de las disciplinas: ${disciplinasError.message}` }, { status: 500 });
             }
 
-            disciplinas = inscripcionesData.map(inscripcion => {
-                const disciplinaDetail = disciplinasDetails.find(d => d.id === inscripcion.disciplina_id);
-                const miembro = grupo.miembros_familia.find(m => m.id === inscripcion.miembro_id);
-                const monto = disciplinaDetail?.cuota_deportiva || 0;
-                totalCuotaDeportiva += monto;
-                return {
-                    id: disciplinaDetail?.id,
-                    nombre: disciplinaDetail?.nombre,
-                    monto: monto,
-                    miembro_nombre: miembro?.profiles?.nombre_completo || 'Miembro no encontrado'
-                };
-            }).filter(d => d.id);
+            if (disciplinasDetails) {
+              disciplinas = inscripcionesData.map(inscripcion => {
+                  const disciplinaDetail = disciplinasDetails.find(d => d.id === inscripcion.disciplina_id);
+                  const miembro = grupo.miembros_familia.find(m => m.id === inscripcion.miembro_id);
+                  const monto = disciplinaDetail?.cuota_deportiva || 0;
+                  totalCuotaDeportiva += monto;
+                  return {
+                      id: disciplinaDetail?.id,
+                      nombre: disciplinaDetail?.nombre,
+                      monto: monto,
+                      miembro_nombre: miembro?.profiles?.nombre_completo || 'Miembro no encontrado'
+                  };
+              }).filter(d => d.id);
+            }
         }
     }
 
     const totalGeneral = (grupo.cuota_social || 0) + (tipoCuota?.cuota || 0) + totalCuotaDeportiva;
+
+    const safeTitular = grupo.titular ? grupo.titular : { nombre_completo: 'Titular no disponible', email: 'N/A', dni: 'N/A' };
 
     const response = {
       grupo: {
@@ -154,13 +150,9 @@ export async function GET(
         cuota_social: grupo.cuota_social || 0,
         total_cuota_deportiva: totalCuotaDeportiva,
         total_general: totalGeneral,
-        titular: {
-          nombre_completo: titular?.nombre_completo || 'Titular no encontrado',
-          email: titular?.email || 'Sin email',
-          dni: titular?.dni || 'Sin DNI'
-        },
+        titular: safeTitular,
         disciplinas: disciplinas,
-        tipo_cuota: tipoCuota ? { ...tipoCuota, monto: tipoCuota.cuota } : null // Mantener compatibilidad
+        tipo_cuota: tipoCuota ? { ...tipoCuota, monto: tipoCuota.cuota } : null
       },
       resumen: { 
         total_pagado: 0,
@@ -175,50 +167,5 @@ export async function GET(
     const err = error as Error;
     console.error('Error inesperado en GET /api/admin/socios/[id]/cuotas:', err.message);
     return NextResponse.json({ error: "Error interno del servidor", details: err.message }, { status: 500 });
-  }
-}
-
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const supabase = createServiceClient();
-    const url = new URL(request.url);
-    const socioId = url.pathname.split('/')[4];
-
-    if (!socioId) {
-      return NextResponse.json({ error: "Se requiere el ID del socio" }, { status: 400 });
-    }
-
-    const body = await request.json();
-
-    if (!body.grupo_id || !body.monto || !body.fecha_pago) {
-      return NextResponse.json({ error: "Faltan datos requeridos para el pago" }, { status: 400 });
-    }
-
-    const { data: pago, error } = await supabase
-      .from("pagos")
-      .insert([
-        {
-          socio_id: socioId, 
-          grupo_id: body.grupo_id,
-          monto: parseFloat(body.monto),
-          fecha_pago: body.fecha_pago,
-          tipo_pago: body.tipo_pago || 'efectivo',
-          referencia: body.referencia || null,
-          mes_anio_cuota: body.mes_anio_cuota,
-          notas: body.notas || null,
-        }
-      ])
-      .select();
-
-    if (error) {
-      console.error("Error al crear el pago:", error);
-      return NextResponse.json({ error: "Error al registrar el pago" }, { status: 500 });
-    }
-
-    return NextResponse.json({ pago: pago?.[0] }, { status: 201 });
-
-  } catch (error) {
-    console.error("Error en servidor (POST):", error);
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }

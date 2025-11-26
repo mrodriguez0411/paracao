@@ -1,4 +1,3 @@
-// app/admin/pagos/nuevo/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -12,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, ArrowLeft, Save, CreditCard, Users, User, Calendar, DollarSign, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
+import ReciboFinal from '@/components/recibos/ReciboFinal';
 
 type Socio = {
   id: string
@@ -35,7 +35,8 @@ type Socio = {
   disciplinas: Array<{
     id: string
     nombre: string
-    monto: number
+    monto: number;
+    miembro_nombre: string;
   }>
 }
 
@@ -66,12 +67,6 @@ export default function NuevoPagoPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const socioId = searchParams.get('socio_id') || searchParams.get('id')
-  
-  // Depuración de los parámetros de búsqueda
-  useEffect(() => {
-    console.log('Parámetros de búsqueda:', Object.fromEntries(searchParams.entries()))
-    console.log('socioId:', socioId)
-  }, [searchParams, socioId])
   const supabase = createClient()
 
   const [loading, setLoading] = useState(true)
@@ -80,6 +75,8 @@ export default function NuevoPagoPage() {
   const [resumenPagos, setResumenPagos] = useState<ResumenPagos | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pagos, setPagos] = useState<Pago[]>([])
+  const [showRecibo, setShowRecibo] = useState(false);
+  const [pagoRealizado, setPagoRealizado] = useState(null);
 
   const [formData, setFormData] = useState({
     monto: '',
@@ -92,175 +89,94 @@ export default function NuevoPagoPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log('Iniciando fetchData con socioId:', socioId)
-      
       if (!socioId) {
-        console.error('No se proporcionó un ID de socio')
         setError('No se ha especificado un socio')
         setLoading(false)
         return
       }
-
       try {
         setLoading(true)
-        console.log('Haciendo petición a la API...')
-        
-        // Verificar que el socioId no sea nulo
-        if (!socioId) {
-          throw new Error('No se ha especificado un ID de socio')
-        }
-        
-        // Construir la URL de la API
-        const url = new URL(`/api/admin/socios/${socioId}/cuotas`, window.location.origin)
-        console.log('URL de la API:', url.toString())
-        
-        // Obtener la sesión actual para incluir el token de autenticación
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        
-        if (sessionError || !session) {
-          console.error('Error al obtener la sesión:', sessionError?.message || 'No hay sesión activa')
-          setError('No estás autenticado. Por favor, inicia sesión nuevamente.')
-          setLoading(false)
-          return
-        }
-        
-        // Hacer la petición a la API
-        console.log('Realizando petición a:', url.toString())
-        console.log('Token de autenticación:', session.access_token ? 'Presente' : 'Ausente')
-        
-        const socioRes = await fetch(url.toString(), {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          credentials: 'include',
-          cache: 'no-store'
-        })
-        
-        console.log('Respuesta de la API (status):', socioRes.status)
-        
-        // Obtener el contenido de la respuesta como texto primero
-        const responseText = await socioRes.text()
-        console.log('Respuesta de la API (texto):', responseText)
-        
+        const { data: { session } } = await supabase.auth.getSession()
+        const socioRes = await fetch(`/api/admin/socios/${socioId}/cuotas`, {
+            headers: { 'Authorization': `Bearer ${session?.access_token}` }
+        });
+
         if (!socioRes.ok) {
-          let errorData
-          try {
-            errorData = JSON.parse(responseText)
-          } catch (e) {
-            throw new Error(`Error en la respuesta del servidor (${socioRes.status}): ${responseText.substring(0, 200)}...`)
-          }
-          console.error('Error en la respuesta de la API:', errorData)
+          const errorData = await socioRes.json();
           throw new Error(errorData.error || `Error al cargar los datos del socio (${socioRes.status})`)
         }
 
-        // Parsear el JSON solo si la respuesta es exitosa
-        let socioData
-        try {
-          socioData = JSON.parse(responseText)
-          console.log('Datos del socio recibidos:', socioData)
-        } catch (e) {
-          console.error('Error al analizar la respuesta JSON:', e)
-          throw new Error('La respuesta del servidor no es un JSON válido')
-        }
-        console.log('Datos del socio recibidos:', socioData)
-
-        // Luego obtenemos los pagos (si es necesario)
-        const pagosUrl = new URL(`/api/admin/socios/${socioId}/pagos`, window.location.origin)
-        const pagosRes = await fetch(pagosUrl.toString(), {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-        const pagosData = pagosRes.ok ? await pagosRes.json() : []
-
+        const socioData = await socioRes.json();
         setSocio(socioData.grupo)
         setResumenPagos(socioData.resumen)
-        setPagos(pagosData)
-
-        // Establecer el monto por defecto
         if (socioData.grupo?.total_general) {
-          setFormData(prev => ({
-            ...prev,
-            monto: socioData.grupo.total_general.toString()
-          }))
+          setFormData(prev => ({ ...prev, monto: socioData.grupo.total_general.toString() }))
         }
 
       } catch (err) {
-        console.error('Error al cargar los datos:', err)
         setError(err instanceof Error ? err.message : 'Error al cargar la información del socio')
       } finally {
         setLoading(false)
       }
     }
-
     fetchData()
   }, [socioId])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    setFormData(prev => ({...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!socioId) {
-      setError('No se ha especificado un socio')
-      return
-    }
-
-    setSaving(true)
-    setError(null)
-
-    try {
-      const payload = {
-        ...formData,
-        grupo_id: socioId,
-        monto: parseFloat(formData.monto),
-        mes_anio_cuota: formData.mes_anio_cuota
-      }
-
-      console.log('Enviando pago:', payload)
-      
-      const res = await fetch('/api/admin/pagos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}))
-        throw new Error(errorData.error || 'Error al guardar el pago')
-      }
-
-      const result = await res.json()
-      console.log('Pago guardado:', result)
-      
-      // Redirigir al detalle del socio en la pestaña de pagos
-      router.push(`/admin/socios/${socioId}?tab=pagos`)
-      
-    } catch (err) {
-      console.error('Error al guardar el pago:', err)
-      setError(err instanceof Error ? err.message : 'Error al guardar el pago')
-    } finally {
-      setSaving(false)
-    }
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!socioId) {
+    setError('No se ha especificado un socio');
+    return;
   }
+
+  setSaving(true);
+  setError(null);
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const payload = {
+      ...formData,
+      monto: parseFloat(formData.monto),
+    };
+
+    const res = await fetch(`/api/admin/socios/${socioId}/pagos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Error al guardar el pago');
+    }
+
+    const result = await res.json();
+    setPagoRealizado(result.pago);
+    setShowRecibo(true);
+
+  } catch (err) {
+    setError(err instanceof Error ? err.message : 'Error al guardar el pago');
+  } finally {
+    setSaving(false);
+  }
+};
+
+  const handleCloseRecibo = () => {
+    setShowRecibo(false);
+    router.push(`/admin/socios/${socioId}?tab=pagos`);
+  };
 
   if (loading) {
     return (
@@ -269,6 +185,10 @@ export default function NuevoPagoPage() {
         <span className="ml-2">Cargando información del socio...</span>
       </div>
     )
+  }
+
+  if (showRecibo && pagoRealizado && socio) {
+    return <ReciboFinal pagoData={{ grupo: socio }} nuevoPago={pagoRealizado} onClose={handleCloseRecibo} />;
   }
 
   if (error) {
@@ -312,7 +232,7 @@ export default function NuevoPagoPage() {
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "#efb600" }}>Nuevo Pago</h1>
           <p className="text-sm text-gray-500 mt-1" style={{ color: "#efb600" }}>
-            Registra un nuevo pago para {socio.titular.nombre_completo}
+            Registra un nuevo pago para {socio?.titular?.nombre_completo || '...'}
           </p>
         </div>
         <Button style={{ color: "#efb600" }}
@@ -337,14 +257,14 @@ export default function NuevoPagoPage() {
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm font-medium text-gray-500">Titular</p>
-                <p className="mt-1">{socio.titular.nombre_completo}</p>
+                <p className="mt-1">{socio?.titular?.nombre_completo || 'No disponible'}</p>
               </div>
               
               {socio.tipo_cuota && (
                 <div>
                   <p className="text-sm font-medium text-gray-500">Tipo de Cuota</p>
                   <p className="mt-1">
-                    {socio.tipo_cuota.nombre} - ${socio.tipo_cuota.monto}
+                    {socio.tipo_cuota.nombre} - {socio.tipo_cuota.monto ? `$${socio.tipo_cuota.monto}` : ''}
                   </p>
                 </div>
               )}
@@ -378,30 +298,32 @@ export default function NuevoPagoPage() {
           </Card>
 
           {/* Resumen de pagos */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Resumen de Pagos</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-500">Total Pagado</span>
-                <span>${resumenPagos?.total_pagado || 0}</span>
-              </div>
-              <div className="flex justify-between font-medium">
-                <span>Total Pendiente</span>
-                <span>${resumenPagos?.total_pendiente || socio.total_general}</span>
-              </div>
-              {resumenPagos?.ultimo_pago && (
-                <div className="pt-2 border-t">
-                  <p className="text-sm font-medium text-gray-500">Último Pago</p>
-                  <div className="mt-1">
-                    <p>${resumenPagos.ultimo_pago.monto} - {new Date(resumenPagos.ultimo_pago.fecha).toLocaleDateString()}</p>
-                    <p className="text-sm text-gray-500">Mes: {resumenPagos.ultimo_pago.mes_cuota}</p>
-                  </div>
+          {resumenPagos && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Resumen de Pagos</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-500">Total Pagado</span>
+                  <span>${resumenPagos.total_pagado}</span>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <div className="flex justify-between font-medium">
+                  <span>Total Pendiente</span>
+                  <span>${resumenPagos.total_pendiente}</span>
+                </div>
+                {resumenPagos.ultimo_pago && (
+                  <div className="pt-2 border-t">
+                    <p className="text-sm font-medium text-gray-500">Último Pago</p>
+                    <div className="mt-1">
+                      <p>${resumenPagos.ultimo_pago.monto} - {new Date(resumenPagos.ultimo_pago.fecha).toLocaleDateString()}</p>
+                      <p className="text-sm text-gray-500">Mes: {resumenPagos.ultimo_pago.mes_cuota}</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Formulario de pago */}
@@ -410,7 +332,7 @@ export default function NuevoPagoPage() {
             <CardHeader>
               <CardTitle>Registrar Pago</CardTitle>
               <CardDescription>
-                Completa los detalles del pago para {socio.titular.nombre_completo}
+                Completa los detalles del pago para {socio?.titular?.nombre_completo || 'el socio'}
               </CardDescription>
             </CardHeader>
             <CardContent>
