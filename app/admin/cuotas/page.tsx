@@ -23,7 +23,7 @@ export default async function CuotasPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-[#efb600]">Cuotas</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-[#efb600]" style={{ color: "#efb600" }}>Cuotas</h2>
           <p className="text-[#efb600]">Gestiona los pagos de cuotas sociales y deportivas</p>
         </div>
         {profile.rol === "super_admin" && (

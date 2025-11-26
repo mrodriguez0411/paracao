@@ -1,14 +1,16 @@
 "use client"
 
-import { Card } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Check } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { createClient } from "@/lib/supabase/client"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
+import { Check, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+
 import { useToast } from "@/hooks/use-toast"
-import { useMemo, useState } from "react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 interface CuotaWithData {
   id: string
@@ -36,31 +38,24 @@ interface CuotasTableProps {
 }
 
 const meses = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
 ]
 
 export function CuotasTable({ cuotas }: CuotasTableProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [filtroTipo, setFiltroTipo] = useState<string>("todos")
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const formatoARS = useMemo(
     () => new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 2, maximumFractionDigits: 2 }),
     []
   )
-
-  const ahora = new Date()
 
   const lista = useMemo(() => {
     const base = Array.isArray(cuotas) ? cuotas : []
@@ -86,26 +81,33 @@ export function CuotasTable({ cuotas }: CuotasTableProps) {
       const supabase = createClient()
       const { error } = await supabase
         .from("cuotas")
-        .update({
-          pagada: true,
-          fecha_pago: new Date().toISOString(),
-          metodo_pago: "efectivo",
-        })
+        .update({ pagada: true, fecha_pago: new Date().toISOString(), metodo_pago: "efectivo" })
         .eq("id", cuotaId)
 
       if (error) throw error
 
-      toast({
-        title: "Cuota marcada como pagada",
-      })
-
+      toast({ title: "Cuota Actualizada", description: "La cuota ha sido marcada como pagada." })
       router.refresh()
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo actualizar la cuota",
-        variant: "destructive",
-      })
+    } catch (error: any) {
+      toast({ title: "Error al actualizar", description: error.message || "No se pudo actualizar la cuota", variant: "destructive" })
+    }
+  }
+
+  const handleDelete = async (cuotaId: string) => {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar esta cuota? Esta acción no se puede deshacer.")) {
+      return
+    }
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.from("cuotas").delete().eq("id", cuotaId)
+
+      if (error) throw error
+
+      toast({ title: "Cuota Eliminada", description: "La cuota ha sido eliminada exitosamente." })
+      router.refresh()
+    } catch (error: any) {
+      toast({ title: "Error al eliminar", description: error.message || "No se pudo eliminar la cuota.", variant: "destructive" })
     }
   }
 
@@ -123,15 +125,15 @@ export function CuotasTable({ cuotas }: CuotasTableProps) {
         <div className="text-sm text-gray-700">Filtrar por tipo</div>
         <div className="flex gap-2">
           <Button variant={filtroTipo === "todos" ? "default" : "outline"} size="sm" onClick={() => setFiltroTipo("todos")}
-            className={filtroTipo === "todos" ? "bg-[#1e3a8a] text-white hover:bg-[#1e3a8a]/90" : ""}>
+            className={filtroTipo === "todos" ? "bg-[#1e3a8a] text-white hover:bg-[#1e3a8a]/90" : "text-gray-700"}>
             Todos
           </Button>
           <Button variant={filtroTipo === "social" ? "default" : "outline"} size="sm" onClick={() => setFiltroTipo("social")}
-            className={filtroTipo === "social" ? "bg-[#1e3a8a] text-white hover:bg-[#1e3a8a]/90" : ""}>
+            className={filtroTipo === "social" ? "bg-[#1e3a8a] text-white hover:bg-[#1e3a8a]/90" : "text-gray-700"}>
             Social
           </Button>
           <Button variant={filtroTipo === "deportiva" ? "default" : "outline"} size="sm" onClick={() => setFiltroTipo("deportiva")}
-            className={filtroTipo === "deportiva" ? "bg-[#1e3a8a] text-white hover:bg-[#1e3a8a]/90" : ""}>
+            className={filtroTipo === "deportiva" ? "bg-[#1e3a8a] text-white hover:bg-[#1e3a8a]/90" : "text-gray-700"}>
             Deportiva
           </Button>
         </div>
@@ -158,7 +160,7 @@ export function CuotasTable({ cuotas }: CuotasTableProps) {
         </TableHeader>
         <TableBody>
           {lista.map((cuota) => {
-            const vencida = !cuota.pagada && new Date(cuota.fecha_vencimiento) < ahora
+            const vencida = isClient && !cuota.pagada && new Date(cuota.fecha_vencimiento) < new Date()
             const key = cuota.grupos_familiares?.nombre || "(sin nombre)"
             return (
             <TableRow key={cuota.id} className="hover:bg-gray-50/50 transition-colors border-b border-gray-50 last:border-0">
@@ -182,12 +184,34 @@ export function CuotasTable({ cuotas }: CuotasTableProps) {
                 </div>
               </TableCell>
               <TableCell className="text-right pr-6">
-                {!cuota.pagada && (
-                  <Button variant="ghost" size="sm" onClick={() => handleMarcarPagada(cuota.id)} className="text-gray-500 hover:bg-blue-50 hover:text-blue-700 rounded-lg p-2 h-9">
-                    <Check className="h-4 w-4 mr-2" />
-                    Marcar Pagada
-                  </Button>
-                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Abrir menú</span>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => router.push(`/admin/cuotas/${cuota.id}/editar`)}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      <span>Editar</span>
+                    </DropdownMenuItem>
+                    {!cuota.pagada && (
+                      <DropdownMenuItem onClick={() => handleMarcarPagada(cuota.id)}>
+                        <Check className="mr-2 h-4 w-4" />
+                        <span>Marcar Pagada</span>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handleDelete(cuota.id)}
+                      className="text-red-500 focus:text-red-500"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>Eliminar</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           )})}
