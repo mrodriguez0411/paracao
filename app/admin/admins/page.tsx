@@ -22,12 +22,12 @@ export default async function AdminsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Administradores de Disciplina</h2>
-          <p className="text-muted-foreground">Gestiona los administradores de cada disciplina</p>
+          <h2 className="text-3xl font-bold tracking-tight" style={{color: '#efb600'}}>Administradores de Disciplina</h2>
+          <p className="text-muted-foreground" style={{color: '#efb600'}}>Gestiona los administradores de cada disciplina</p>
         </div>
-        <Button asChild className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">
-          <Link href="/admin/admins/nuevo">
-            <Plus className="mr-2 h-4 w-4" />
+        <Button asChild className="bg-[#efb600] hover:bg-[#efb600]/90 text-white" >
+          <Link href="/admin/admins/nuevo" style={{color: '#1e3a8a'}}>
+            <Plus className="mr-2 h-4 w-4"/>
             Nuevo Admin
           </Link>
         </Button>

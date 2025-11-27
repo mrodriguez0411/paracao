@@ -7,8 +7,8 @@ export default async function NuevoAdminPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Nuevo Administrador de Disciplina</h2>
-        <p className="text-muted-foreground">Crea un nuevo administrador para gestionar una disciplina</p>
+        <h2 className="text-3xl font-bold tracking-tight" style={{color: '#efb600'}}>Nuevo Administrador de Disciplina</h2>
+        <p className="text-muted-foreground" style={{color: '#efb600'}}>Crea un nuevo administrador para gestionar una disciplina</p>
       </div>
 
       <NuevoAdminForm />
