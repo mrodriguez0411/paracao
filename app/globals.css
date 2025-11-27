@@ -61,21 +61,21 @@ select {
 /* Fonts and brand assets from public/Nueva carpeta */
 @font-face {
   font-family: 'Oswald';
-  src: url('/Nueva%20carpeta/Oswald-Regular.ttf') format('truetype');
+  src: url('/Nueva carpeta/Oswald-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Oswald';
-  src: url('/Nueva%20carpeta/Oswald-SemiBold.ttf') format('truetype');
+  src: url('/Nueva carpeta/Oswald-SemiBold.ttf') format('truetype');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Oswald';
-  src: url('/Nueva%20carpeta/Oswald-Bold.ttf') format('truetype');
+  src: url('/Nueva carpeta/Oswald-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -279,14 +279,14 @@ h1, h2, h3, .heading {
 
 /* Background texture helpers */
 .bg-textura-amarilla {
-  background-image: url('/Nueva%20carpeta/Textura%20amarilla.png');
+  background-image: url('/Nueva carpeta/Textura amarilla.png');
   background-size: cover;
   background-position: center;
 }
 
 .bg-textura-azul {
   /* texture with dark overlay to improve contrast */
-  background-image: linear-gradient(rgba(2,6,23,0.45), rgba(2,6,23,0.45)), url('/Nueva%20carpeta/Textura%20azul.png');
+  background-image: linear-gradient(rgba(2,6,23,0.45), rgba(2,6,23,0.45)), url('/Nueva carpeta/Textura azul.png');
   background-size: cover;
   background-position: center;
   color: #ffffff; /* default text color over blue */
@@ -294,7 +294,7 @@ h1, h2, h3, .heading {
 
 /* Amarilla with light overlay for headers */
 .bg-textura-amarilla--overlay {
-  background-image: linear-gradient(rgba(255,255,255,0.88), rgba(255,255,255,0.88)), url('/Nueva%20carpeta/Textura%20amarilla.png');
+  background-image: linear-gradient(rgba(255,255,255,0.88), rgba(255,255,255,0.88)), url('/Nueva carpeta/Textura amarilla.png');
   background-size: cover;
   background-position: center;
 }

@@ -24,7 +24,6 @@ export function NuevoAdminForm({}: NuevoAdminFormProps) {
     email: "",
     rol: "admin_disciplina", // default role
     password: "",
-    telefono: "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -114,15 +113,6 @@ export function NuevoAdminForm({}: NuevoAdminFormProps) {
                 minLength={6}
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="telefono">Teléfono</Label>
-              <Input
-                id="telefono"
-                type="tel"
-                value={formData.telefono}
-                onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
               />
             </div>
           </div>

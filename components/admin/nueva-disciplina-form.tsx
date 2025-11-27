@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import type React from "react"
 
@@ -115,25 +115,38 @@ export function NuevaDisciplinaForm({ admins }: NuevaDisciplinaFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="admin_id">Administrador de Disciplina</Label>
-            <Select value={formData.admin_id} onValueChange={(value) => setFormData({ ...formData, admin_id: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar administrador (opcional)" />
-              </SelectTrigger>
-              <SelectContent>
-                {admins.map((admin) => (
-                  <SelectItem key={admin.id} value={admin.id}>
-                    {admin.nombre_completo} ({admin.email})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {admins.length > 0 ? (
+              <Select 
+                value={formData.admin_id}
+                onValueChange={(value) => setFormData({ ...formData, admin_id: value === 'ninguno' ? '' : value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar administrador (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ninguno">Ninguno</SelectItem>
+                  {admins.map((admin) => (
+                    <SelectItem key={admin.id} value={admin.id}>
+                      {admin.nombre_completo} ({admin.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <>
+                <Input disabled placeholder="No hay administradores de disciplina disponibles" />
+                <p className="text-xs text-muted-foreground">
+                  Para poder asignar un administrador, primero debe crear un usuario con el rol de &quot;admin_disciplina&quot;.
+                </p>
+              </>
+            )}
           </div>
 
           <div className="flex gap-4">
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">
               {isLoading ? "Creando..." : "Crear Disciplina"}
             </Button>
-            <Button type="button" variant="outline" onClick={() => router.back()}>
+            <Button type="button" variant="outline" onClick={() => router.back()} className="border-[#efb600] text-[#efb600] hover:bg-[#efb600]/10">
               Cancelar
             </Button>
           </div>

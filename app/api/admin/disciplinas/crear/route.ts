@@ -1,49 +1,67 @@
 import { createServiceRoleClient } from "@/lib/supabase/server"
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
+import { v4 as uuidv4 } from "uuid"
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
+  const supabase = createServiceRoleClient()
+
   try {
     const body = await request.json()
-    const { nombre, descripcion, cuota_deportiva, admin_id } = body
+    const {
+      nombre,
+      descripcion,
+      cuota_deportiva,
+      admin_id,
+    } = body
 
-    console.log("[disciplinas-create] Creando disciplina:", nombre)
-
-    if (!nombre || cuota_deportiva === undefined) {
-      return NextResponse.json(
-        { error: "Faltan campos requeridos: nombre y cuota_deportiva" },
-        { status: 400 }
-      )
+    if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
+      return NextResponse.json({ error: 'El campo "nombre" es requerido.' }, { status: 400 });
     }
 
-    const supabase = createServiceRoleClient()
+    if (typeof cuota_deportiva !== 'number') {
+        return NextResponse.json({ error: 'El campo "cuota_deportiva" es requerido y debe ser un número.' }, { status: 400 });
+    }
 
-    const { data, error } = await supabase
+    const disciplina_id = uuidv4()
+
+    // 1. Insert into 'disciplinas' table.
+    const { data: disciplinaData, error: disciplinaError } = await supabase
       .from("disciplinas")
       .insert({
+        id: disciplina_id,
         nombre: nombre.trim(),
         descripcion: descripcion?.trim() || null,
-        cuota_deportiva: Number.parseFloat(cuota_deportiva),
-        admin_id: admin_id || null,
-        activa: true,
+        cuota_deportiva: cuota_deportiva, // It's already a number
       })
       .select()
+      .single();
 
-    if (error) {
-      console.error("[disciplinas-create] Error al crear disciplina:", error)
-      throw new Error(`Error al crear disciplina: ${error.message}`)
+    if (disciplinaError) {
+      throw new Error(`Error al crear la disciplina: ${disciplinaError.message}`)
     }
 
-    console.log("[disciplinas-create] Disciplina creada exitosamente:", data)
+    // 2. If an admin_id is provided, insert into 'admin_disciplinas' table.
+    if (admin_id) {
+      const { error: adminError } = await supabase.from("admin_disciplinas").insert({
+        disciplina_id: disciplina_id,
+        admin_id: admin_id,
+        nombre: null,
+      })
+
+      if (adminError) {
+        throw new Error(`Error al asignar el administrador: ${adminError.message}`)
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      data: data?.[0],
+      data: disciplinaData,
     })
   } catch (error) {
-    console.error("[disciplinas-create] Error:", error)
+    console.error("Server-side error in POST /api/admin/disciplinas/crear:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Error desconocido" },
-      { status: 500 }
+      { error: error instanceof Error ? error.message : "Error desconocido en el servidor" },
+      { status: 500 },
     )
   }
 }
