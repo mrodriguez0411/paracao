@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -194,81 +194,81 @@ export default function EditarSocioPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className='flex items-center justify-center min-h-screen'>
+        <Loader2 className='h-8 w-8 animate-spin' />
       </div>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <Card className="border border-gray-100 shadow-sm rounded-xl overflow-hidden">
+    <div className='max-w-2xl mx-auto p-4'>
+      <Card className='border border-gray-100 shadow-sm rounded-xl overflow-hidden'>
         <CardHeader>
-          <CardTitle className="text-[#1e3a8a] text-center p-2 font-bold text-2xl">Editar Socio</CardTitle>
+          <CardTitle className='text-[#1e3a8a] text-center p-2 font-bold text-2xl'>Editar Socio</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="nombre_completo" className="text-black font-bold">Nombre Completo *</Label>
-                <Input className="text-black"
-                  id="nombre_completo"
+          <form onSubmit={handleSubmit} className='space-y-4'>
+            <div className='grid gap-4 md:grid-cols-2'>
+              <div className='space-y-2'>
+                <Label htmlFor='nombre_completo' className='text-black font-bold'>Nombre Completo *</Label>
+                <Input className='text-black'
+                  id='nombre_completo'
                   required
                   value={formData.nombre_completo}
                   onChange={(e) => setFormData({ ...formData, nombre_completo: e.target.value })}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="dni" className="text-black font-bold">DNI *</Label>
-                <Input className="text-black"
-                  id="dni"
-                  type="text"
+              <div className='space-y-2'>
+                <Label htmlFor='dni' className='text-black font-bold'>DNI *</Label>
+                <Input className='text-black'
+                  id='dni'
+                  type='text'
                   required
-                  placeholder="Ej: 12345678"
+                  placeholder='Ej: 12345678'
                   value={formData.dni}
                   onChange={(e) => setFormData({ ...formData, dni: e.target.value })}
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-black font-bold">Email *</Label>
-              <Input className="text-black"
-                id="email"
-                type="email"
+            <div className='space-y-2'>
+              <Label htmlFor='email' className='text-black font-bold'>Email *</Label>
+              <Input className='text-black'
+                id='email'
+                type='email'
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="telefono" className="text-black font-bold">Teléfono</Label>
-                <Input className="text-black"
-                  id="telefono"
-                  type="tel"
+            <div className='grid gap-4 md:grid-cols-2'>
+              <div className='space-y-2'>
+                <Label htmlFor='telefono' className='text-black font-bold'>Teléfono</Label>
+                <Input className='text-black'
+                  id='telefono'
+                  type='tel'
                   value={formData.telefono}
                   onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="nombre_grupo" className="text-black font-bold">Nombre Grupo Familiar *</Label>
-                <Input className="text-black"
-                  id="nombre_grupo"
+              <div className='space-y-2'>
+                <Label htmlFor='nombre_grupo' className='text-black font-bold'>Nombre Grupo Familiar *</Label>
+                <Input className='text-black'
+                  id='nombre_grupo'
                   required
-                  placeholder="Ej: Familia García"
+                  placeholder='Ej: Familia García'
                   value={formData.nombre_grupo}
                   onChange={(e) => setFormData({ ...formData, nombre_grupo: e.target.value })}
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="tipo_cuota_id" className="text-gray-800 font-bold">Tipo de Cuota *</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='tipo_cuota_id' className='text-gray-800 font-bold'>Tipo de Cuota *</Label>
               <select
-                id="tipo_cuota_id"
-                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 focus:outline-none disabled:cursor-not-allowed disabled:opacity-70"
+                id='tipo_cuota_id'
+                className='flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 focus:outline-none disabled:cursor-not-allowed disabled:opacity-70'
                 value={formData.tipo_cuota_id}
                 onChange={(e) => {
                   const selectedTipo = tiposCuota.find(t => t.id === e.target.value)
@@ -281,73 +281,73 @@ export default function EditarSocioPage() {
                 required
                 disabled={tiposLoading}
               >
-                <option value="" className="text-gray-900">Seleccionar tipo de cuota</option>
+                <option value='' className='text-gray-900'>Seleccionar tipo de cuota</option>
                 {tiposCuota.map((tipo) => (
-                  <option key={tipo.id} value={tipo.id} className="text-gray-900">
+                  <option key={tipo.id} value={tipo.id} className='text-gray-900'>
                     {tipo.nombre} (${tipo.monto.toLocaleString('es-AR')})
                   </option>
                 ))}
               </select>
-              {tiposLoading && <p className="text-sm text-muted-foreground">Cargando tipos de cuota...</p>}
+              {tiposLoading && <p className='text-sm text-muted-foreground'>Cargando tipos de cuota...</p>}
               {!tiposLoading && tiposCuota.length === 0 && (
-                <p className="text-sm text-muted-foreground">
+                <p className='text-sm text-muted-foreground'>
                   No hay tipos de cuota disponibles. Configúralos en Administración → Cuotas → Tipos.
                 </p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="cuota_social" className="text-black font-bold">Monto de Cuota *</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='cuota_social' className='text-black font-bold'>Monto de Cuota *</Label>
               <Input 
-                className="text-gray-900 bg-gray-100 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200"
-                id="cuota_social"
-                type="number"
-                step="0.01"
+                className='text-gray-900 bg-gray-100 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200'
+                id='cuota_social'
+                type='number'
+                step='0.01'
                 required
                 readOnly
-                placeholder="0.00"
+                placeholder='0.00'
                 value={formData.cuota_social}
               />
             </div>
 
             {/* Disciplinas del Titular */}
-            <div className="border-t pt-4">
-              <h3 className="text-lg font-semibold text-[#1e3a8a] mb-3">Disciplinas del Titular</h3>
-              <div className="flex items-center gap-2">
+            <div className='border-t pt-4'>
+              <h3 className='text-lg font-semibold text-[#1e3a8a] mb-3'>Disciplinas del Titular</h3>
+              <div className='flex items-center gap-2'>
                 <select
                   value={titularDiscSelect}
                   onChange={(e) => setTitularDiscSelect(e.target.value)}
-                  className="flex-1 border rounded p-2 text-black"
+                  className='flex-1 border rounded p-2 text-black'
                 >
-                  <option value="">Seleccioná una disciplina</option>
+                  <option value=''>Seleccioná una disciplina</option>
                   {disciplinas.map((d) => (
                     <option key={d.id} value={d.id}>{d.nombre}</option>
                   ))}
                 </select>
                 <Button
-                  type="button"
-                  className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white"
+                  type='button'
+                  className='bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white'
                   onClick={() => {
                     if (!titularDiscSelect) return
                     if (!titularDisciplinas.includes(titularDiscSelect)) {
                       setTitularDisciplinas([...titularDisciplinas, titularDiscSelect])
                     }
-                    setTitularDiscSelect("")
+                    setTitularDiscSelect('')
                   }}
                 >Agregar</Button>
               </div>
               {titularDisciplinas.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className='mt-2 flex flex-wrap gap-2'>
                   {titularDisciplinas.map((id) => {
                     const disc = disciplinas.find((d) => d.id === id)
                     return (
-                      <span key={id} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-sm">
+                      <span key={id} className='inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-sm'>
                         {disc?.nombre || id}
                         <button
-                          type="button"
-                          className="text-blue-800/70 hover:text-blue-900"
+                          type='button'
+                          className='text-blue-800/70 hover:text-blue-900'
                           onClick={() => setTitularDisciplinas(titularDisciplinas.filter((x) => x !== id))}
-                          aria-label="Quitar"
+                          aria-label='Quitar'
                         >×</button>
                       </span>
                     )
@@ -357,44 +357,42 @@ export default function EditarSocioPage() {
             </div>
 
             {/* Miembros del grupo: editar nombre/dni/parentesco y asignar disciplinas */}
-            <div className="border-t pt-4">
-              <h3 className="text-lg font-semibold text-[#1e3a8a] mb-3">Miembros del Grupo Familiar</h3>
+            <div className='border-t pt-4'>
+              <h3 className='text-lg font-semibold text-[#1e3a8a] mb-3'>Miembros del Grupo Familiar</h3>
 
               {miembros.map((m, idx) => (
-                <div key={m.id || idx} className="mb-3 p-3 bg-slate-50 rounded-md border">
-                  <div className="grid gap-4 md:grid-cols-3">
+                <div key={m.id || idx} className='mb-3 p-3 bg-slate-50 rounded-md border'>
+                  <div className='grid gap-4 md:grid-cols-3'>
                     <div>
-                      <Label className="text-black font-bold">Nombre</Label>
-                      <Input className="text-black" value={m.nombre_completo} onChange={(e) => {
-                        const copy = [...miembros]; copy[idx].nombre_completo = e.target.value; setMiembros(copy)
-                      }} />
+                      <Label className='text-black font-bold'>Nombre</Label>
+                      <Input className='text-black' value={m.nombre_completo} onChange={(e) => { const copy = [...miembros]; copy[idx].nombre_completo = e.target.value; setMiembros(copy) }} />
                     </div>
                     <div>
-                      <Label className="text-black font-bold">DNI</Label>
-                      <Input className="text-black" value={m.dni} onChange={(e) => { const copy = [...miembros]; copy[idx].dni = e.target.value; setMiembros(copy) }} />
+                      <Label className='text-black font-bold'>DNI</Label>
+                      <Input className='text-black' value={m.dni} onChange={(e) => { const copy = [...miembros]; copy[idx].dni = e.target.value; setMiembros(copy) }} />
                     </div>
                     <div>
-                      <Label className="text-black font-bold">Parentesco</Label>
-                      <Input className="text-black" value={m.parentesco || ""} onChange={(e) => { const copy = [...miembros]; copy[idx].parentesco = e.target.value; setMiembros(copy) }} />
+                      <Label className='text-black font-bold'>Parentesco</Label>
+                      <Input className='text-black' value={m.parentesco || ''} onChange={(e) => { const copy = [...miembros]; copy[idx].parentesco = e.target.value; setMiembros(copy) }} />
                     </div>
                   </div>
 
-                  <div className="mt-3">
-                    <Label className="text-black font-bold">Disciplinas</Label>
-                    <div className="flex items-center gap-2">
+                  <div className='mt-3'>
+                    <Label className='text-black font-bold'>Disciplinas</Label>
+                    <div className='flex items-center gap-2'>
                       <select
-                        value={miembroDiscSelect[idx] || ""}
+                        value={miembroDiscSelect[idx] || ''}
                         onChange={(e) => setMiembroDiscSelect({ ...miembroDiscSelect, [idx]: e.target.value })}
-                        className="flex-1 border rounded p-2 text-black"
+                        className='flex-1 border rounded p-2 text-black'
                       >
-                        <option value="">Seleccioná una disciplina</option>
+                        <option value=''>Seleccioná una disciplina</option>
                         {disciplinas.map((d) => (
                           <option key={d.id} value={d.id}>{d.nombre}</option>
                         ))}
                       </select>
                       <Button
-                        type="button"
-                        className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white"
+                        type='button'
+                        className='bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white'
                         onClick={() => {
                           const sel = miembroDiscSelect[idx]
                           if (!sel) return
@@ -404,26 +402,26 @@ export default function EditarSocioPage() {
                             copy[idx].disciplinas = [...actuales, sel]
                             setMiembros(copy)
                           }
-                          setMiembroDiscSelect({ ...miembroDiscSelect, [idx]: "" })
+                          setMiembroDiscSelect({ ...miembroDiscSelect, [idx]: '' })
                         }}
                       >Agregar</Button>
                     </div>
                     {Array.isArray(m.disciplinas) && m.disciplinas.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-2">
+                      <div className='mt-2 flex flex-wrap gap-2'>
                         {m.disciplinas.map((id: string) => {
                           const disc = disciplinas.find((d) => d.id === id)
                           return (
-                            <span key={id} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-sm">
+                            <span key={id} className='inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-sm'>
                               {disc?.nombre || id}
                               <button
-                                type="button"
-                                className="text-blue-800/70 hover:text-blue-900"
+                                type='button'
+                                className='text-blue-800/70 hover:text-blue-900'
                                 onClick={() => {
                                   const copy = [...miembros]
                                   copy[idx].disciplinas = (copy[idx].disciplinas || []).filter((x: string) => x !== id)
                                   setMiembros(copy)
                                 }}
-                                aria-label="Quitar"
+                                aria-label='Quitar'
                               >×</button>
                             </span>
                           )
@@ -432,22 +430,22 @@ export default function EditarSocioPage() {
                     )}
                   </div>
 
-                  <div className="mt-3 flex justify-end">
-                    <Button variant="destructive" size="sm" onClick={() => { setMiembros(miembros.filter((_, i) => i !== idx)) }}>Eliminar</Button>
+                  <div className='mt-3 flex justify-end'>
+                    <Button variant='destructive' size='sm' onClick={() => { setMiembros(miembros.filter((_, i) => i !== idx)) }}>Eliminar</Button>
                   </div>
                 </div>
               ))}
 
               <div>
-                <Button type="button" onClick={() => setMiembros([...miembros, { nombre_completo: "", dni: "", parentesco: "", disciplinas: [] }])} className="mt-2 bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">Agregar Miembro</Button>
+                <Button type='button' onClick={() => setMiembros([...miembros, { nombre_completo: '', dni: '', parentesco: '', disciplinas: [] }])} className='mt-2 bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white'>Agregar Miembro</Button>
               </div>
             </div>
 
-            <div className="flex gap-4">
-              <Button type="submit" disabled={isSaving} className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">
-                {isSaving ? "Guardando..." : "Guardar Cambios"}
+            <div className='flex gap-4'>
+              <Button type='submit' disabled={isSaving} className='bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white'>
+                {isSaving ? 'Guardando...' : 'Guardar Cambios'}
               </Button>
-              <Button type="button" variant="outline" className="border-[#1e3a8a] text-[#1e3a8a] hover:bg-[#1e3a8a]/5" onClick={() => router.back()}>
+              <Button type='button' variant='outline' className='border-[#1e3a8a] text-[#1e3a8a] hover:bg-[#1e3a8a]/5' onClick={() => router.back()}>
                 Cancelar
               </Button>
             </div>
