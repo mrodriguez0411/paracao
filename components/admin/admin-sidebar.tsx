@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Users, Trophy, CreditCard, UserCog, Home } from 'lucide-react';
+import { LayoutDashboard, Users, Trophy, CreditCard, UserCog, Home, ClipboardEdit } from 'lucide-react';
 import type { Profile } from '@/lib/types';
 
 interface AdminSidebarProps {
@@ -20,6 +20,7 @@ export function AdminSidebar({ profile }: AdminSidebarProps) {
         { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, show: isSuperAdmin },
         { href: '/admin/socios', label: 'Socios', icon: Users, show: isSuperAdmin },
         { href: '/admin/disciplinas', label: 'Disciplinas', icon: Trophy, show: isSuperAdmin },
+        { href: '/admin/gestion-disciplinas', label: 'Gestión Disciplinas', icon: ClipboardEdit, show: isSuperAdmin },
         { href: '/admin/cuotas', label: 'Cuotas', icon: CreditCard, show: isSuperAdmin },
         { href: '/admin/cuotas/tipos', label: 'Tipos de Cuota', icon: CreditCard, show: isSuperAdmin },
         { href: '/admin/admins', label: 'Administradores', icon: UserCog, show: isSuperAdmin },

@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
@@ -23,8 +23,8 @@ export function AdminHeader({ profile }: AdminHeaderProps) {
 
   const handleLogout = async () => {
     const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push("/auth/login")
+    await supabase.auth.signOut() // 1. Invalida la sesión en el servidor
+    router.refresh()             // 2. Fuerza una recarga para limpiar el estado del cliente
   }
 
   return (

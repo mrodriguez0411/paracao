@@ -39,9 +39,43 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_disciplinas: {
+        Row: {
+          admin_id: string
+          disciplina_id: string
+          nombre: string
+        }
+        Insert: {
+          admin_id: string
+          disciplina_id: string
+          nombre: string
+        }
+        Update: {
+          admin_id?: string
+          disciplina_id?: string
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_disciplinas_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_disciplinas_disciplina_id_fkey"
+            columns: ["disciplina_id"]
+            isOneToOne: false
+            referencedRelation: "disciplinas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cuotas: {
         Row: {
           anio: number
+          comprobante_url: string | null
           created_at: string | null
           disciplina_id: string | null
           fecha_pago: string | null
@@ -57,6 +91,7 @@ export type Database = {
         }
         Insert: {
           anio: number
+          comprobante_url?: string | null
           created_at?: string | null
           disciplina_id?: string | null
           fecha_pago?: string | null
@@ -72,6 +107,7 @@ export type Database = {
         }
         Update: {
           anio?: number
+          comprobante_url?: string | null
           created_at?: string | null
           disciplina_id?: string | null
           fecha_pago?: string | null

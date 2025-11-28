@@ -1,3 +1,6 @@
+
+export const dynamic = 'force-dynamic';
+
 import type React from "react"
 import { requireAuth } from "@/lib/auth"
 import { redirect } from "next/navigation"
@@ -42,7 +45,14 @@ export default async function AdminLayout({
     >
       <div className="relative z-10 flex w-full h-full">
         <AdminSidebar profile={profile} />
-        <div className="flex flex-1 flex-col overflow-hidden">
+        {/* 
+          La siguiente `key` es la solución al problema de caché entre usuarios.
+          Al usar el ID del perfil como clave, React se ve forzado a recrear este 
+          componente y sus hijos (`AdminHeader`, `main`, `children`) desde cero
+          cada vez que el usuario cambia. Esto previene que un admin de disciplina
+          sea redirigido a una página de super_admin que vio en una sesión anterior.
+        */}
+        <div key={profile.id} className="flex flex-1 flex-col overflow-hidden">
           <AdminHeader profile={profile} />
           <main className="flex-1 overflow-y-auto p-6">{children}</main>
         </div>
