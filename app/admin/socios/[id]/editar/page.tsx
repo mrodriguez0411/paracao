@@ -9,12 +9,11 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 
+// Tipos de datos
 interface CuotaTipo {
   id: string
   nombre: string
   monto: number
-  tipo: string
-  activo: boolean
 }
 
 interface Miembro {
@@ -26,6 +25,7 @@ interface Miembro {
 }
 
 export default function EditarSocioPage() {
+  // Hooks y estado principal
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
@@ -35,7 +35,6 @@ export default function EditarSocioPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [disciplinas, setDisciplinas] = useState<Array<{ id: string; nombre: string }>>([])
   const [tiposCuota, setTiposCuota] = useState<CuotaTipo[]>([])
-  const [tiposLoading, setTiposLoading] = useState(false)
   const [miembros, setMiembros] = useState<Miembro[]>([])
   const [titularDisciplinas, setTitularDisciplinas] = useState<string[]>([])
   const [titularDiscSelect, setTitularDiscSelect] = useState<string>("")
@@ -50,12 +49,20 @@ export default function EditarSocioPage() {
     cuota_social: "",
   })
 
+  // Carga de datos inicial
   const fetchSocioData = useCallback(async () => {
+    setIsLoading(true)
     try {
-      const response = await fetch(`/api/admin/socios/${grupoId}`)
-      if (!response.ok) throw new Error("Error al cargar los datos del socio")
-      
-      const socio = await response.json()
+      const [socioRes, disciplinasRes, tiposCuotaRes] = await Promise.all([
+        fetch(`/api/admin/socios/${grupoId}`),
+        fetch("/api/admin/disciplinas"),
+        fetch("/api/admin/cuotas/tipos"),
+      ])
+
+      if (!socioRes.ok) throw new Error("Error al cargar los datos del socio")
+      const socio = await socioRes.json()
+      if (disciplinasRes.ok) setDisciplinas(await disciplinasRes.json())
+      if (tiposCuotaRes.ok) setTiposCuota(await tiposCuotaRes.json())
 
       setFormData({
         email: socio.profiles?.email || "",
@@ -82,11 +89,7 @@ export default function EditarSocioPage() {
       setTitularDisciplinas(titularInsc)
 
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Error desconocido",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: error instanceof Error ? error.message : "Error al cargar datos", variant: "destructive" })
       router.push("/admin/socios")
     } finally {
       setIsLoading(false)
@@ -94,40 +97,19 @@ export default function EditarSocioPage() {
   }, [grupoId, router, toast])
 
   useEffect(() => {
-    const fetchAuxData = async () => {
-      try {
-        setTiposLoading(true)
-        const [tiposRes, discRes] = await Promise.all([
-          fetch('/api/admin/cuotas/tipos'),
-          fetch('/api/admin/disciplinas')
-        ])
-        if (tiposRes.ok) setTiposCuota(await tiposRes.json())
-        if (discRes.ok) setDisciplinas(await discRes.json())
-      } catch (error) {
-        toast({ title: "Error", description: "No se pudieron cargar datos auxiliares.", variant: "destructive" })
-      } finally {
-        setTiposLoading(false)
-      }
-    }
-    
     fetchSocioData()
-    fetchAuxData()
-  }, [fetchSocioData, toast])
+  }, [fetchSocioData])
+
+  // --- MANEJADORES DE ESTADO SEGUROS (SIN MUTACIÓN) ---
 
   const handleMiembroChange = (index: number, field: keyof Miembro, value: any) => {
-    setMiembros(currentMiembros =>
-      currentMiembros.map((miembro, i) =>
-        i === index ? { ...miembro, [field]: value } : miembro
-      )
-    )
+    setMiembros(current => current.map((m, i) => (i === index ? { ...m, [field]: value } : m)))
   }
 
   const handleAddDisciplinaMiembro = (index: number) => {
     const disciplinaId = miembroDiscSelect[index]
     if (!disciplinaId) return
-
-    const miembro = miembros[index]
-    const currentDisciplinas = miembro.disciplinas || []
+    const currentDisciplinas = miembros[index]?.disciplinas || []
     if (!currentDisciplinas.includes(disciplinaId)) {
       handleMiembroChange(index, 'disciplinas', [...currentDisciplinas, disciplinaId])
     }
@@ -135,24 +117,51 @@ export default function EditarSocioPage() {
   }
 
   const handleRemoveDisciplinaMiembro = (miembroIndex: number, disciplinaId: string) => {
-    const miembro = miembros[miembroIndex]
-    const updatedDisciplinas = (miembro.disciplinas || []).filter(id => id !== disciplinaId)
-    handleMiembroChange(miembroIndex, 'disciplinas', updatedDisciplinas)
+    const currentDisciplinas = miembros[miembroIndex]?.disciplinas || []
+    handleMiembroChange(miembroIndex, 'disciplinas', currentDisciplinas.filter(id => id !== disciplinaId))
   }
+
+  const handleAddMiembro = () => {
+    setMiembros(current => [...current, { nombre_completo: "", dni: "", parentesco: "", disciplinas: [] }])
+  }
+
+  const handleRemoveMiembro = (index: number) => {
+    setMiembros(current => current.filter((_, i) => i !== index))
+  }
+
+  // --- FUNCIÓN DE GUARDADO (CORREGIDA) ---
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSaving(true)
 
     try {
+      // SALVAGUARDA: Incluir disciplinas pendientes que no se "agregaron" con el botón.
+      const finalTitularDisciplinas = Array.from(new Set([
+        ...titularDisciplinas,
+        ...(titularDiscSelect ? [titularDiscSelect] : []),
+      ]));
+
+      const finalMiembros = miembros.map((miembro, idx) => {
+        const pendingSelection = miembroDiscSelect[idx];
+        const currentDisciplinas = miembro.disciplinas || [];
+        if (pendingSelection && !currentDisciplinas.includes(pendingSelection)) {
+          return {
+            ...miembro,
+            disciplinas: [...currentDisciplinas, pendingSelection],
+          };
+        }
+        return miembro;
+      });
+
       const response = await fetch(`/api/admin/socios/${grupoId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           cuota_social: Number.parseFloat(formData.cuota_social) || 0,
-          miembros: miembros,
-          titular_disciplinas: titularDisciplinas,
+          miembros: finalMiembros, // Enviar la lista de miembros corregida
+          titular_disciplinas: finalTitularDisciplinas, // Enviar la lista del titular corregida
         }),
       })
 
@@ -162,18 +171,17 @@ export default function EditarSocioPage() {
       }
 
       toast({ title: "Éxito", description: "Socio actualizado correctamente" })
-      router.push(`/admin/socios`) // Forzar recarga de la tabla
+      router.push(`/admin/socios`) // Volver a la tabla para ver el reflejo de los cambios
+      router.refresh() // Forzar la actualización de datos en la página de destino
+
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Error desconocido",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: error instanceof Error ? error.message : "Error desconocido", variant: "destructive" })
     } finally {
       setIsSaving(false)
     }
   }
 
+  // Renderizado del componente
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>
   }
@@ -184,49 +192,29 @@ export default function EditarSocioPage() {
         <CardHeader><CardTitle className="text-[#1e3a8a] text-center p-2 font-bold text-2xl">Editar Socio</CardTitle></CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Formulario del titular... */}
+            
+            {/* --- CAMPOS DEL TITULAR --- */}
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="nombre_completo" className="text-black font-bold">Nombre Completo *</Label>
-                <Input className="text-black" id="nombre_completo" required value={formData.nombre_completo} onChange={(e) => setFormData({ ...formData, nombre_completo: e.target.value })}/>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dni" className="text-black font-bold">DNI *</Label>
-                <Input className="text-black" id="dni" type="text" required value={formData.dni} onChange={(e) => setFormData({ ...formData, dni: e.target.value })}/>
-              </div>
+              <div><Label htmlFor="nombre_completo" className="text-black font-bold">Nombre Completo *</Label><Input className="text-black" id="nombre_completo" required value={formData.nombre_completo} onChange={(e) => setFormData({ ...formData, nombre_completo: e.target.value })}/></div>
+              <div><Label htmlFor="dni" className="text-black font-bold">DNI *</Label><Input className="text-black" id="dni" required value={formData.dni} onChange={(e) => setFormData({ ...formData, dni: e.target.value })}/></div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-black font-bold">Email *</Label>
-              <Input className="text-black" id="email" type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}/>
-            </div>
-            {/* ... otros campos del titular ... */}
+            <div><Label htmlFor="email" className="text-black font-bold">Email *</Label><Input className="text-black" id="email" type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}/></div>
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="telefono" className="text-black font-bold">Teléfono</Label>
-                <Input className="text-black" id="telefono" type="tel" value={formData.telefono} onChange={(e) => setFormData({ ...formData, telefono: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="nombre_grupo" className="text-black font-bold">Nombre Grupo Familiar *</Label>
-                <Input className="text-black" id="nombre_grupo" required value={formData.nombre_grupo} onChange={(e) => setFormData({ ...formData, nombre_grupo: e.target.value })} />
-              </div>
+              <div><Label htmlFor="telefono" className="text-black font-bold">Teléfono</Label><Input className="text-black" id="telefono" type="tel" value={formData.telefono} onChange={(e) => setFormData({ ...formData, telefono: e.target.value })} /></div>
+              <div><Label htmlFor="nombre_grupo" className="text-black font-bold">Nombre Grupo Familiar *</Label><Input className="text-black" id="nombre_grupo" required value={formData.nombre_grupo} onChange={(e) => setFormData({ ...formData, nombre_grupo: e.target.value })} /></div>
             </div>
-            {/* ... select de tipo de cuota y monto ... */}
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="tipo_cuota_id" className="text-gray-800 font-bold">Tipo de Cuota *</Label>
-              <select id="tipo_cuota_id" className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900" value={formData.tipo_cuota_id} onChange={(e) => { const selected = tiposCuota.find(t => t.id === e.target.value); setFormData(prev => ({...prev, tipo_cuota_id: e.target.value, cuota_social: selected ? String(selected.monto) : ''}))}} required disabled={tiposLoading}>
+              <select id="tipo_cuota_id" className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900" value={formData.tipo_cuota_id} onChange={(e) => { const selected = tiposCuota.find(t => t.id === e.target.value); setFormData(prev => ({...prev, tipo_cuota_id: e.target.value, cuota_social: selected ? String(selected.monto) : ''}))}} required>
                 <option value="">Seleccionar tipo</option>
                 {tiposCuota.map((tipo) => <option key={tipo.id} value={tipo.id}>{tipo.nombre} (${tipo.monto.toLocaleString('es-AR')})</option>)}
               </select>
             </div>
-             <div className="space-y-2">
-              <Label htmlFor="cuota_social" className="text-black font-bold">Monto de Cuota *</Label>
-              <Input className="text-gray-900 bg-gray-100" id="cuota_social" type="number" step="0.01" required readOnly value={formData.cuota_social} />
-            </div>
+            <div><Label htmlFor="cuota_social" className="text-black font-bold">Monto de Cuota *</Label><Input className="text-gray-900 bg-gray-100" id="cuota_social" type="number" required readOnly value={formData.cuota_social} /></div>
 
-            {/* Disciplinas del Titular */}
+            {/* --- DISCIPLINAS DEL TITULAR --- */}
             <div className="border-t pt-4">
               <h3 className="text-lg font-semibold text-[#1e3a8a] mb-3">Disciplinas del Titular</h3>
-              {/* ... UI para disciplinas del titular ... */}
               <div className="flex items-center gap-2">
                 <select value={titularDiscSelect} onChange={(e) => setTitularDiscSelect(e.target.value)} className="flex-1 border rounded p-2 text-black">
                   <option value="">Seleccioná una disciplina</option>
@@ -242,19 +230,16 @@ export default function EditarSocioPage() {
               </div>
             </div>
 
-            {/* Miembros del grupo */}
+            {/* --- MIEMBROS DEL GRUPO --- */}
             <div className="border-t pt-4">
               <h3 className="text-lg font-semibold text-[#1e3a8a] mb-3">Miembros del Grupo Familiar</h3>
               {miembros.map((m, idx) => (
                 <div key={m.id || idx} className="mb-3 p-3 bg-slate-50 rounded-md border">
-                  {/* Inputs para nombre, dni, parentesco */}
                   <div className="grid gap-4 md:grid-cols-3">
                     <div><Label className="text-black font-bold">Nombre</Label><Input className="text-black" value={m.nombre_completo} onChange={(e) => handleMiembroChange(idx, 'nombre_completo', e.target.value)} /></div>
                     <div><Label className="text-black font-bold">DNI</Label><Input className="text-black" value={m.dni} onChange={(e) => handleMiembroChange(idx, 'dni', e.target.value)} /></div>
                     <div><Label className="text-black font-bold">Parentesco</Label><Input className="text-black" value={m.parentesco || ""} onChange={(e) => handleMiembroChange(idx, 'parentesco', e.target.value)} /></div>
                   </div>
-
-                  {/* UI para disciplinas de miembros */}
                   <div className="mt-3">
                     <Label className="text-black font-bold">Disciplinas</Label>
                     <div className="flex items-center gap-2">
@@ -271,14 +256,13 @@ export default function EditarSocioPage() {
                       })}
                     </div>
                   </div>
-                  
-                  <div className="mt-3 flex justify-end"><Button variant="destructive" size="sm" onClick={() => setMiembros(miembros.filter((_, i) => i !== idx))}>Eliminar Miembro</Button></div>
+                  <div className="mt-3 flex justify-end"><Button variant="destructive" size="sm" onClick={() => handleRemoveMiembro(idx)}>Eliminar Miembro</Button></div>
                 </div>
               ))}
-              <Button type="button" onClick={() => setMiembros([...miembros, { nombre_completo: "", dni: "", parentesco: "", disciplinas: [] }])} className="mt-2 bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">Agregar Miembro</Button>
+              <Button type="button" onClick={handleAddMiembro} className="mt-2 bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">Agregar Miembro</Button>
             </div>
 
-            {/* Botones de acción */}
+            {/* --- BOTONES DE ACCIÓN --- */}
             <div className="flex gap-4 pt-4 border-t">
               <Button type="submit" disabled={isSaving} className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">{isSaving ? "Guardando..." : "Guardar Cambios"}</Button>
               <Button type="button" variant="outline" className="border-[#1e3a8a] text-[#1e3a8a] hover:bg-[#1e3a8a]/5" onClick={() => router.back()}>Cancelar</Button>
