@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { AdminHeader } from "@/components/admin/admin-header"
 import localFont from "next/font/local"
+import { headers } from "next/headers"
 
 const oswald = localFont({
   src: [
@@ -23,9 +24,15 @@ export default async function AdminLayout({
   children: React.ReactNode
 }) {
   const profile = await requireAuth(["super_admin", "admin_disciplina"])
-
   if (!profile) {
     redirect("/auth/login")
+  }
+
+  const heads = headers()
+  const pathname = heads.get("next-url")
+
+  if (profile.rol === "admin_disciplina" && pathname === "/admin") {
+    redirect("/admin/mi-disciplina")
   }
 
   return (

@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import type { Tables } from "@/lib/types/supabase";
+import type * as supabase from "@/lib/types/supabase";
 
 interface Admin {
   id: string
@@ -19,7 +19,7 @@ interface Admin {
 }
 
 // Combine the database type with the potentially added admin_id
-type DisciplinaForForm = Tables<"disciplinas"> & { admin_id: string | null };
+type DisciplinaForForm = supabase.Tables<"disciplinas"> & { admin_id: string | null };
 
 interface EditarDisciplinaFormProps {
   disciplina: DisciplinaForForm
@@ -106,6 +106,7 @@ export function EditarDisciplinaForm({ disciplina, admins }: EditarDisciplinaFor
               placeholder="Ej: Fútbol, Natación, Tenis"
               value={formData.nombre}
               onChange={e => setFormData({ ...formData, nombre: e.target.value })}
+              className="text-black"
             />
           </div>
 
@@ -118,6 +119,7 @@ export function EditarDisciplinaForm({ disciplina, admins }: EditarDisciplinaFor
               onChange={e =>
                 setFormData({ ...formData, descripcion: e.target.value })
               }
+              className="text-black"
             />
           </div>
 
@@ -133,6 +135,7 @@ export function EditarDisciplinaForm({ disciplina, admins }: EditarDisciplinaFor
               onChange={e =>
                 setFormData({ ...formData, cuota_deportiva: e.target.value })
               }
+              className="text-black"
             />
           </div>
 
@@ -168,14 +171,14 @@ export function EditarDisciplinaForm({ disciplina, admins }: EditarDisciplinaFor
           </div>
 
           <div className="flex gap-4">
-            <Button type="submit" disabled={isLoading} className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">
+            <Button type="submit" disabled={isLoading} className="bg-blue-800 hover:bg-blue-800/90 text-white">
               {isLoading ? 'Guardando...' : 'Guardar Cambios'}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => router.back()}
-               className="border-[#efb600] text-[#efb600] hover:bg-[#efb600]/10"
+               className="border-yellow-500 text-yellow-500 hover:bg-yellow-500/10"
             >
               Cancelar
             </Button>

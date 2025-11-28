@@ -1,119 +1,108 @@
 import { requireAuth } from "@/lib/auth"
-import { createClient } from "@/lib/supabase/server"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, CreditCard, TrendingUp } from "lucide-react"
+import { createServiceRoleClient } from "@/lib/supabase/server"
 import { MiDisciplinaTable } from "@/components/admin/mi-disciplina-table"
 
 export default async function MiDisciplinaPage() {
   const profile = await requireAuth(["admin_disciplina"])
-  const supabase = await createClient()
+  if (!profile) {
+    // This should be handled by requireAuth, but as a safeguard
+    return null
+  }
 
-  // Obtener la disciplina del admin
-  const { data: disciplina } = await supabase.from("disciplinas").select("*").eq("admin_id", profile.id).single()
+  // Use the service role client to bypass RLS for this diagnostic query
+  const supabase = createServiceRoleClient()
 
-  if (!disciplina) {
+  // 1. Find the discipline administered by the current user
+  const { data: disciplina, error: disciplinaError } = await supabase
+    .from("disciplinas")
+    .select("id")
+    .eq("admin_id", profile.id)
+    .single()
+
+  if (disciplinaError || !disciplina) {
+    console.error("Error fetching discipline for admin:", profile.id, disciplinaError)
     return (
       <div className="space-y-6">
-        <Card className="p-8 text-center">
-          <CardTitle className="mb-4">No tienes una disciplina asignada</CardTitle>
-          <p className="text-muted-foreground">Contacta al administrador principal para que te asigne una disciplina</p>
-        </Card>
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight" style={{color: '#efb600'}}>Miembros de mi Disciplina</h2>
+          <p className="text-muted-foreground" style={{color: '#efb600'}}>
+            No se encontró una disciplina asignada a tu usuario o ocurrió un error al buscarla.
+          </p>
+        </div>
+        <MiDisciplinaTable miembros={[]} />
       </div>
     )
   }
 
-  // Obtener inscripciones de la disciplina
-  const { data: inscripciones } = await supabase
+  // 2. Get all member IDs from the 'inscripciones' table for that discipline
+  const { data: inscripciones, error: inscripcionesError } = await supabase
     .from("inscripciones")
-    .select(`
-      *,
-      miembros_familia(
-        *,
-        grupos_familiares(
-          *,
-          profiles:titular_id(nombre_completo, email)
-        )
-      ),
-      disciplinas(nombre, cuota_deportiva)
-    `)
+    .select("miembro_id")
     .eq("disciplina_id", disciplina.id)
-    .eq("activa", true)
 
-  // Obtener cuotas deportivas de esta disciplina
-  const { data: cuotas } = await supabase
-    .from("cuotas")
-    .select("*")
-    .eq("disciplina_id", disciplina.id)
-    .eq("tipo", "deportiva")
+  if (inscripcionesError) {
+    console.error("Error fetching inscriptions:", inscripcionesError)
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight" style={{color: '#efb600'}}>Miembros de mi Disciplina</h2>
+          <p className="text-muted-foreground" style={{color: '#efb600'}}>Error al consultar los miembros de la disciplina.</p>
+        </div>
+        <MiDisciplinaTable miembros={[]} />
+      </div>
+    )
+  }
 
-  const totalInscritos = inscripciones?.length || 0
-  const cuotasPendientes = cuotas?.filter((c) => !c.pagada).length || 0
-  const totalRecaudado = cuotas?.filter((c) => c.pagada).reduce((sum, c) => sum + Number(c.monto), 0) || 0
+  if (!inscripciones || inscripciones.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight" style={{color: '#efb600'}}>Miembros de mi Disciplina</h2>
+          <p className="text-muted-foreground" style={{color: '#efb600'}}>Aún no hay miembros registrados en tu disciplina.</p>
+        </div>
+        <MiDisciplinaTable miembros={[]} />
+      </div>
+    )
+  }
 
-  const stats = [
-    {
-      title: "Socios Inscritos",
-      value: totalInscritos,
-      icon: Users,
-    },
-    {
-      title: "Cuotas Pendientes",
-      value: cuotasPendientes,
-      icon: CreditCard,
-    },
-    {
-      title: "Total Recaudado",
-      value: `$${totalRecaudado.toFixed(2)}`,
-      icon: TrendingUp,
-    },
-  ]
+  const miembroIds = inscripciones.map((i) => i.miembro_id)
+
+  // 3. Fetch all member profiles for those IDs
+  const { data: miembros, error: miembrosError } = await supabase
+    .from("miembros_familia")
+    .select(
+      `
+      id,
+      nombre_completo,
+      email,
+      telefono,
+      dni,
+      created_at
+    `
+    )
+    .in("id", miembroIds)
+    .order("nombre_completo")
+
+  if (miembrosError) {
+    console.error("Error fetching members:", miembrosError)
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight" style={{color: '#efb600'}}>Miembros de mi Disciplina</h2>
+          <p className="text-muted-foreground" style={{color: '#efb600'}}>Error al consultar los perfiles de los miembros.</p>
+        </div>
+        <MiDisciplinaTable miembros={[]} />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">{disciplina.nombre}</h2>
-        <p className="text-muted-foreground">Gestiona los socios de tu disciplina</p>
+        <h2 className="text-3xl font-bold tracking-tight" style={{color: '#efb600'}}>Miembros de mi Disciplina</h2>
+        <p className="text-muted-foreground" style={{color: '#efb600'}}>Aquí puedes ver los miembros que están registrados en tu disciplina.</p>
       </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        {stats.map((stat) => {
-          const Icon = stat.icon
-          return (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
-                <Icon className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Información de la Disciplina</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Cuota Deportiva:</span>
-            <span className="font-medium">${disciplina.cuota_deportiva}</span>
-          </div>
-          {disciplina.descripcion && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Descripción:</span>
-              <span className="font-medium">{disciplina.descripcion}</span>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <div>
-        <h3 className="text-xl font-semibold mb-4">Socios Inscritos</h3>
-        <MiDisciplinaTable inscripciones={inscripciones || []} />
-      </div>
+      <MiDisciplinaTable miembros={miembros || []} />
     </div>
   )
 }
