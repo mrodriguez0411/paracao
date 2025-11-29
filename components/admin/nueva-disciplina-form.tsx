@@ -87,6 +87,7 @@ export function NuevaDisciplinaForm({ admins }: NuevaDisciplinaFormProps) {
               placeholder="Ej: Fútbol, Natación, Tenis"
               value={formData.nombre}
               onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+              className="text-black"
             />
           </div>
 
@@ -110,6 +111,7 @@ export function NuevaDisciplinaForm({ admins }: NuevaDisciplinaFormProps) {
               placeholder="0.00"
               value={formData.cuota_deportiva}
               onChange={(e) => setFormData({ ...formData, cuota_deportiva: e.target.value })}
+              className="text-black"
             />
           </div>
 

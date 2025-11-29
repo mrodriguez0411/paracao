@@ -16,8 +16,8 @@ export default async function NuevaDisciplinaPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Nueva Disciplina</h2>
-        <p className="text-muted-foreground">Registra una nueva disciplina deportiva</p>
+        <h2 className="text-3xl font-bold tracking-tight" style={{color: '#efb600'}}>Nueva Disciplina</h2>
+        <p className="text-muted-foreground" style={{color: '#efb600'}}>Registra una nueva disciplina deportiva</p>
       </div>
 
       <NuevaDisciplinaForm admins={admins || []} />
