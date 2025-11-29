@@ -17,7 +17,7 @@ textarea {
 .login-input:-webkit-autofill:hover,
 .login-input:-webkit-autofill:focus,
 .login-input:-webkit-autofill:active {
-    box-shadow: 0 0 0 30px #EFB600 inset !important; /* Use brand yellow to match card texture */
+    box-shadow: 0 0 0 30px #efb600 inset !important; /* Use correct brand yellow */
     -webkit-text-fill-color: #1e3a8a !important; /* Keep text color consistent */
 }
 
@@ -86,17 +86,17 @@ select {
 :root {
   /* Brand colors (from public/Nueva carpeta) */
   --brand-blue: #1e3a8a;
-  --brand-yellow: #EFB600;
+  --brand-yellow: #efb600;
   
-  /* Primary (mapped to brand-blue) */
-  --primary: #1e3a8a;
-  --primary-foreground: #ffffff;
-  --primary-hover: #1e40af;
-  --ring: #1e40af;
+  /* Primary (mapped to brand-yellow) */
+  --primary: var(--brand-yellow);
+  --primary-foreground: var(--brand-blue);
+  --primary-hover: #d6a300; /* Darker yellow for hover */
+  --ring: var(--brand-yellow);
   
   /* Secondary */
-  --secondary: #EFB600;
-  --secondary-foreground: #020617;
+  --secondary: var(--brand-blue);
+  --secondary-foreground: #ffffff;
   
   /* Neutral & Layout */
   --background: #ffffff;
@@ -109,8 +109,8 @@ select {
   /* Muted & Accents */
   --muted: #f5f5f5;
   --muted-foreground: #666666;
-  --accent: #EFB600;
-  --accent-foreground: #020617;
+  --accent: var(--brand-yellow);
+  --accent-foreground: var(--brand-blue);
   
   /* Destructive */
   --destructive: #ef4444;
@@ -122,7 +122,7 @@ select {
   
   /* Charts */
   --chart-1: #1e3a8a;
-  --chart-2: #EFB600;
+  --chart-2: var(--brand-yellow);
   --chart-3: #10b981;
   --chart-4: #f59e0b;
   --chart-5: #8b5cf6;
@@ -135,8 +135,8 @@ select {
   --sidebar-foreground: #020617;
   --sidebar-primary: #1e3a8a;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #EFB600;
-  --sidebar-accent-foreground: #020617;
+  --sidebar-accent: var(--brand-yellow);
+  --sidebar-accent-foreground: var(--brand-blue);
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #1e3a8a;
 }
@@ -148,8 +148,8 @@ select {
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.145 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: oklch(85.6% 0.19 83.3);
+  --primary-foreground: #1e3a8a;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -203,8 +203,8 @@ select {
   --color-card-foreground: #0a0a0a;
   --color-popover: #ffffff;
   --color-popover-foreground: #0a0a0a;
-  --color-primary: #0f766e;
-  --color-primary-foreground: #f0fdfa;
+  --color-primary: #efb600;
+  --color-primary-foreground: #1e3a8a;
   --color-secondary: #f4f4f5;
   --color-secondary-foreground: #18181b;
   --color-muted: #f4f4f5;
@@ -215,7 +215,7 @@ select {
   --color-destructive-foreground: #fef2f2;
   --color-border: #e4e4e7;
   --color-input: #e4e4e7;
-  --color-ring: #0f766e;
+  --color-ring: #efb600;
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -244,8 +244,8 @@ select {
     --color-card-foreground: #fafafa;
     --color-popover: #0a0a0a;
     --color-popover-foreground: #fafafa;
-    --color-primary: #14b8a6;
-    --color-primary-foreground: #0f766e;
+    --color-primary: #efb600;
+    --color-primary-foreground: #1e3a8a;
     --color-secondary: #27272a;
     --color-secondary-foreground: #fafafa;
     --color-muted: #27272a;
@@ -256,7 +256,7 @@ select {
     --color-destructive-foreground: #fef2f2;
     --color-border: #27272a;
     --color-input: #2727a;
-    --color-ring: #14b8a6;
+    --color-ring: #efb600;
   }
 }
 
