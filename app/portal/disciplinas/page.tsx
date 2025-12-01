@@ -23,7 +23,7 @@ export default async function DisciplinasPage() {
     .from("inscripciones")
     .select(`
       *,
-      miembros_familia(nombre_completo),
+      miembros_familia(nombre),
       disciplinas(nombre, descripcion, cuota_deportiva)
     `)
     .eq("miembros_familia.grupo_id", grupoFamiliar.id)
