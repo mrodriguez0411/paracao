@@ -1,9 +1,10 @@
+
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Users, Trophy, CreditCard, UserCog, Home, ClipboardEdit } from 'lucide-react';
+import { LayoutDashboard, Users, Trophy, CreditCard, UserCog, Home, ClipboardEdit, History } from 'lucide-react'; // Importar History
 import type { Profile } from '@/lib/types';
 
 interface AdminSidebarProps {
@@ -16,7 +17,9 @@ export function AdminSidebar({ profile }: AdminSidebarProps) {
     const isSuperAdmin = profile.rol === 'super_admin';
     const isAdminDisciplina = profile.rol === 'admin_disciplina';
 
+    // Menú de navegación actualizado con Historial
     const navItems = [
+        // --- Rutas para Super Admin ---
         { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, show: isSuperAdmin },
         { href: '/admin/socios', label: 'Socios', icon: Users, show: isSuperAdmin },
         { href: '/admin/disciplinas', label: 'Disciplinas', icon: Trophy, show: isSuperAdmin },
@@ -24,7 +27,11 @@ export function AdminSidebar({ profile }: AdminSidebarProps) {
         { href: '/admin/cuotas', label: 'Cuotas', icon: CreditCard, show: isSuperAdmin },
         { href: '/admin/cuotas/tipos', label: 'Tipos de Cuota', icon: CreditCard, show: isSuperAdmin },
         { href: '/admin/admins', label: 'Administradores', icon: UserCog, show: isSuperAdmin },
-        { href: '/admin/mi-disciplina', label: 'Mi Disciplina', icon: Trophy, show: isAdminDisciplina },
+        
+        // --- Rutas para Admin Disciplina ---
+        { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, show: isAdminDisciplina },
+        { href: '/admin/mi-disciplina', label: 'Miembros', icon: Users, show: isAdminDisciplina },
+        { href: '/admin/historial-cuotas', label: 'Historial de Cuotas', icon: History, show: isAdminDisciplina }, // Nueva ruta
     ];
 
     return (
@@ -40,7 +47,7 @@ export function AdminSidebar({ profile }: AdminSidebarProps) {
                     .filter((item) => item.show)
                     .map((item) => {
                         const Icon = item.icon;
-                        const isActive = pathname === item.href;
+                        const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
                         return (
                             <Link
                                 key={item.href}
