@@ -22,8 +22,9 @@ export default function DisciplinasCarousel({ disciplinas }: DisciplinasCarousel
   const [itemsPerView, setItemsPerView] = useState(1);
   const carouselRef = useRef(null);
 
-  // Ajustar elementos visibles según el ancho de la pantalla
+  // Configurar autoplay y ajuste de elementos visibles
   useEffect(() => {
+    // Función para actualizar la cantidad de elementos visibles
     const updateItemsPerView = () => {
       const width = window.innerWidth;
       if (width >= 1280) {
@@ -35,10 +36,23 @@ export default function DisciplinasCarousel({ disciplinas }: DisciplinasCarousel
       }
     };
 
+    // Configurar intervalo para el autoplay
+    const autoplayInterval = setInterval(() => {
+      setCurrentIndex(prevIndex => 
+        prevIndex >= Math.ceil(disciplinas.length / itemsPerView) - 1 ? 0 : prevIndex + 1
+      );
+    }, 3000); // Cambia cada 3 segundos
+
+    // Configurar el evento de redimensionado
     updateItemsPerView();
     window.addEventListener('resize', updateItemsPerView);
-    return () => window.removeEventListener('resize', updateItemsPerView);
-  }, []);
+
+    // Limpiar el intervalo y el event listener al desmontar el componente
+    return () => {
+      clearInterval(autoplayInterval);
+      window.removeEventListener('resize', updateItemsPerView);
+    };
+  }, [disciplinas.length, itemsPerView]); // Dependencias para recalcular cuando cambien
 
   const getIconForDisciplina = (nombre: string) => {
     const lowerCaseName = nombre.toLowerCase();
