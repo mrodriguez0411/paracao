@@ -3,6 +3,7 @@
 import type React from 'react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -11,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import type * as supabase from "@/lib/types/supabase";
+import { uploadImage } from "@/app/actions/upload-image"
 
 interface Admin {
   id: string
@@ -30,11 +32,13 @@ export function EditarDisciplinaForm({ disciplina, admins }: EditarDisciplinaFor
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [formData, setFormData] = useState({
     nombre: disciplina.nombre,
     descripcion: disciplina.descripcion || '',
     cuota_deportiva: disciplina.cuota_deportiva.toString(),
     admin_id: disciplina.admin_id || '',
+    imagen_url: disciplina.imagen_url || '',
   })
 
   // Sync state if initial prop changes
@@ -45,12 +49,31 @@ export function EditarDisciplinaForm({ disciplina, admins }: EditarDisciplinaFor
     }));
   }, [disciplina.admin_id]);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0])
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
+    let imageUrl = formData.imagen_url
+
     try {
+      if (imageFile) {
+        const imageFormData = new FormData()
+        imageFormData.append('file', imageFile)
+        
+        const uploadResult = await uploadImage(imageFormData)
+        if (uploadResult.url) {
+          imageUrl = uploadResult.url
+        } else {
+          throw new Error("Error al subir la imagen")
+        }
+      }
+
       const response = await fetch(`/api/admin/disciplinas/${disciplina.id}`,
         {
           method: 'PUT',
@@ -62,6 +85,7 @@ export function EditarDisciplinaForm({ disciplina, admins }: EditarDisciplinaFor
             descripcion: formData.descripcion || null,
             cuota_deportiva: Number.parseFloat(formData.cuota_deportiva),
             admin_id: formData.admin_id || null,
+            imagen_url: imageUrl || null,
           }),
         },
       )
@@ -121,6 +145,29 @@ export function EditarDisciplinaForm({ disciplina, admins }: EditarDisciplinaFor
               }
               className="text-black"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="imagen">Imagen</Label>
+            {formData.imagen_url && (
+              <div className="my-4">
+                  <Image 
+                    src={formData.imagen_url} 
+                    alt={`Imagen de ${formData.nombre}`} 
+                    width={100} 
+                    height={100} 
+                    className="rounded-lg object-cover"
+                  />
+              </div>
+            )}
+            <Input
+              id="imagen"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="text-black"
+            />
+            {imageFile && <p className="text-sm text-muted-foreground">Nuevo archivo seleccionado: {imageFile.name}</p>}
           </div>
 
           <div className="space-y-2">

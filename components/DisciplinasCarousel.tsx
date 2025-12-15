@@ -24,9 +24,19 @@ export default function DisciplinasCarousel({ disciplinas }) {
           <div key={disciplina.nombre} className="w-80 flex-shrink-0 sm:w-96">
             <div className="h-full transition-all hover:shadow-xl hover:-translate-y-2 flex flex-col items-center justify-between text-center p-6 min-h-[320px] rounded-lg border bg-card text-card-foreground shadow-sm">
               <div className="text-center flex flex-col items-center">
-                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
-                  {getIconForDisciplina(disciplina.nombre)}
-                </div>
+                {disciplina.imagen_url ? (
+                  <div className="w-full h-40 mb-4 relative">
+                    <img
+                      src={disciplina.imagen_url}
+                      alt={disciplina.nombre}
+                      className="rounded-lg object-cover w-full h-full"
+                    />
+                  </div>
+                ) : (
+                  <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
+                    {getIconForDisciplina(disciplina.nombre)}
+                  </div>
+                )}
                 <h3 className="text-2xl font-bold">{disciplina.nombre}</h3>
               </div>
               <div className="text-center flex flex-col items-center flex-grow">

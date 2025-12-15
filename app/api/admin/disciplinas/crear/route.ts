@@ -12,6 +12,7 @@ export async function POST(request: Request) {
       descripcion,
       cuota_deportiva,
       admin_id,
+      imagen_url, // <-- AÑADIDO
     } = body
 
     if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
@@ -31,7 +32,8 @@ export async function POST(request: Request) {
         id: disciplina_id,
         nombre: nombre.trim(),
         descripcion: descripcion?.trim() || null,
-        cuota_deportiva: cuota_deportiva, // It's already a number
+        cuota_deportiva: cuota_deportiva,
+        imagen_url: imagen_url || null, // <-- AÑADIDO
       })
       .select()
       .single();

@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import Image from "next/image"
 import { Trophy, Users, Target, Award, Calendar, Phone, Mail, MapPin, Menu, X } from "lucide-react"
-//import Image from "next/image"
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -12,7 +11,7 @@ export default async function HomePage() {
   // Obtener disciplinas activas
   const { data: disciplinas } = await supabase
     .from("disciplinas")
-    .select("nombre, descripcion")
+    .select("nombre, descripcion, imagen_url")
     .eq("activa", true)
     .order("nombre")
 
@@ -156,99 +155,64 @@ export default async function HomePage() {
           </div>
 
           {disciplinas && disciplinas.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {disciplinas.map((disciplina) => {
-                // Seleccionar ícono basado en el nombre de la disciplina
-                let icon = (
+                const imageUrl = disciplina.imagen_url;
+
+                if (imageUrl) {
+                  return (
+                    <Card
+                      key={disciplina.nombre}
+                      className="relative min-h-[250px] flex flex-col justify-end overflow-hidden rounded-lg transition-all hover:shadow-xl hover:-translate-y-1"
+                      style={{
+                        backgroundImage: `url(${imageUrl})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+                      <div className="relative z-10 p-6 text-white">
+                        <CardTitle className="text-2xl font-bold">{disciplina.nombre}</CardTitle>
+                        <p className="mt-2 text-sm text-gray-300">
+                          {disciplina.descripcion || 'Descripción detallada de la disciplina y sus beneficios.'}
+                        </p>
+                        <Button variant="link" className="mt-4 px-0 text-amber-400 hover:text-amber-300" asChild>
+                          <Link href="#contacto">
+                            Más información
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1">
+                              <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                            </svg>
+                          </Link>
+                        </Button>
+                      </div>
+                    </Card>
+                  )
+                }
+                
+                // Fallback Card (sin imagen)
+                const fallbackIcon = (
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
                     <path d="M12 2v20M2 12h20" />
                   </svg>
                 );
 
-                if (disciplina.nombre.toLowerCase().includes('fútbol') || disciplina.nombre.toLowerCase().includes('futbol')) {
-                  icon = (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
-                      <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" />
-                      <path d="M8.5 8.5v.01" />
-                      <path d="M16 15.5v.01" />
-                      <path d="M12 12a1 1 0 1 0 0-2 1 1 0 0 0 0 2" />
-                      <path d="M7 10c2 2 5 2 10 0" />
-                    </svg>
-                  );
-                } else if (disciplina.nombre.toLowerCase().includes('natación') || disciplina.nombre.toLowerCase().includes('natacion')) {
-                  icon = (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
-                      <path d="M19 16.2L12 22l-7-5.6v-1.2M19 8.8 12 14 5 8.8" />
-                      <path d="M19 12.5 12 18l-7-5.5" />
-                      <path d="M19 7.8 12 13 5 7.8" />
-                      <path d="M12 12v9" />
-                      <path d="M5 5.3c.7-.5 2.2-1.1 4.5-1.1s4.8.6 5.5 1.1" />
-                      <path d="M5 10.2c.7-.5 2.2-1.1 4.5-1.1s4.8.6 5.5 1.1" />
-                    </svg>
-                  );
-                } else if (disciplina.nombre.toLowerCase().includes('tenis')) {
-                  icon = (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
-                      <path d="M12 22c4.97 0 9-2.24 9-5s-4.03-5-9-5-9 2.24-9 5 4.03 5 9 5Z" />
-                      <path d="M12 12c4.97 0 9-2.24 9-5s-4.03-5-9-5-9 2.24-9 5 4.03 5 9 5Z" />
-                      <path d="M3 12v5c0 2.76 4.03 5 9 5s9-2.24 9-5v-5" />
-                    </svg>
-                  );
-                } else if (disciplina.nombre.toLowerCase().includes('hockey') || disciplina.nombre.toLowerCase().includes('jockey')) {
-                  icon = (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
-                      <path d="M4 6h16" />
-                      <path d="m4 12 14-3" />
-                      <path d="M4 18h8" />
-                      <path d="m18 9.5 1-.9a1.5 1.5 0 0 1 2 2.2L18 14" />
-                      <path d="M18 14h1a2 2 0 1 0 0-4h-1" />
-                    </svg>
-                  );
-                } else if (disciplina.nombre.toLowerCase().includes('basquet') || disciplina.nombre.toLowerCase().includes('básquet')) {
-                  icon = (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
-                      <path d="M12 2v20" />
-                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                    </svg>
-                  );
-                } else if (disciplina.nombre.toLowerCase().includes('voley') || disciplina.nombre.toLowerCase().includes('vóley')) {
-                  icon = (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
-                      <path d="M12 2v20" />
-                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                    </svg>
-                  );
-                } else if (disciplina.nombre.toLowerCase().includes('gimnasia') || disciplina.nombre.toLowerCase().includes('gimnasio')) {
-                  icon = (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
-                      <path d="M6 4v16" />
-                      <path d="M18 4v16" />
-                      <path d="M2 12h20" />
-                      <path d="M12 2v20" />
-                      <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
-                      <path d="M12 14a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2z" />
-                    </svg>
-                  );
-                }
-
                 return (
-                  <Card key={disciplina.nombre} className="h-full transition-all hover:shadow-lg hover:-translate-y-1">
+                  <Card key={disciplina.nombre} className="h-full transition-all hover:shadow-lg hover:-translate-y-1 flex flex-col">
                     <CardHeader className="text-center">
                       <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit mb-4">
-                        {icon}
+                        {fallbackIcon}
                       </div>
                       <CardTitle className="text-xl">{disciplina.nombre}</CardTitle>
                     </CardHeader>
-                    <CardContent className="text-center">
+                    <CardContent className="text-center flex-grow flex flex-col justify-between">
                       <p className="text-muted-foreground">
                         {disciplina.descripcion || 'Descripción detallada de la disciplina y sus beneficios.'}
                       </p>
-                      <Button variant="link" className="mt-4 px-0" asChild>
+                      <Button variant="link" className="mt-4 px-0 self-center" asChild>
                         <Link href="#contacto">
                           Más información
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1">
-                            <path d="M5 12h14" />
-                            <path d="m12 5 7 7-7 7" />
+                            <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
                           </svg>
                         </Link>
                       </Button>
@@ -261,9 +225,7 @@ export default async function HomePage() {
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 16v-4" />
-                  <path d="M12 8h.01" />
+                  <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
                 </svg>
                 Próximamente más información sobre nuestras disciplinas
               </p>

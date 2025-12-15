@@ -7,7 +7,7 @@ export async function PUT(
 ) {
   try {
     const body = await request.json()
-    const { nombre, descripcion, cuota_deportiva, admin_id } = body
+    const { nombre, descripcion, cuota_deportiva, admin_id, imagen_url } = body // <-- AÑADIDO
     const { id: disciplina_id } = params
 
     if (!disciplina_id) {
@@ -31,6 +31,7 @@ export async function PUT(
         nombre: nombre.trim(),
         descripcion: descripcion?.trim() || null,
         cuota_deportiva: cuota_deportiva,
+        imagen_url: imagen_url || null, // <-- AÑADIDO
       })
       .eq("id", disciplina_id)
       .select()

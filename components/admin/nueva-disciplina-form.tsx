@@ -1,7 +1,6 @@
 'use client'
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -11,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
+import { uploadImage } from "@/app/actions/upload-image"
 
 interface Admin {
   id: string
@@ -26,6 +26,7 @@ export function NuevaDisciplinaForm({ admins }: NuevaDisciplinaFormProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [formData, setFormData] = useState({
     nombre: "",
     descripcion: "",
@@ -33,11 +34,31 @@ export function NuevaDisciplinaForm({ admins }: NuevaDisciplinaFormProps) {
     admin_id: "",
   })
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0])
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
+    let imageUrl = ""
+
     try {
+      if (imageFile) {
+        const imageFormData = new FormData()
+        imageFormData.append('file', imageFile)
+        
+        const uploadResult = await uploadImage(imageFormData)
+        if (uploadResult.url) {
+          imageUrl = uploadResult.url
+        } else {
+          throw new Error("Error al subir la imagen")
+        }
+      }
+
       const response = await fetch("/api/admin/disciplinas/crear", {
         method: "POST",
         headers: {
@@ -48,6 +69,7 @@ export function NuevaDisciplinaForm({ admins }: NuevaDisciplinaFormProps) {
           descripcion: formData.descripcion || null,
           cuota_deportiva: Number.parseFloat(formData.cuota_deportiva),
           admin_id: formData.admin_id || null,
+          imagen_url: imageUrl || null,
         }),
       })
 
@@ -61,6 +83,7 @@ export function NuevaDisciplinaForm({ admins }: NuevaDisciplinaFormProps) {
       })
 
       router.push("/admin/disciplinas")
+      router.refresh()
     } catch (error) {
       toast({
         title: "Error",
@@ -99,6 +122,18 @@ export function NuevaDisciplinaForm({ admins }: NuevaDisciplinaFormProps) {
               value={formData.descripcion}
               onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="imagen">Imagen</Label>
+            <Input
+              id="imagen"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="text-black"
+            />
+            {imageFile && <p className="text-sm text-muted-foreground">Archivo seleccionado: {imageFile.name}</p>}
           </div>
 
           <div className="space-y-2">
