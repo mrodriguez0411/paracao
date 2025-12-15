@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import Image from "next/image"
 import { Trophy, Users, Target, Award, Calendar, Phone, Mail, MapPin, Menu, X } from "lucide-react"
+import DisciplinasCarousel from "@/components/DisciplinasCarousel"
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -155,71 +156,8 @@ export default async function HomePage() {
           </div>
 
           {disciplinas && disciplinas.length > 0 ? (
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {disciplinas.map((disciplina) => {
-                const imageUrl = disciplina.imagen_url;
-
-                if (imageUrl) {
-                  return (
-                    <Card
-                      key={disciplina.nombre}
-                      className="relative min-h-[250px] flex flex-col justify-end overflow-hidden rounded-lg transition-all hover:shadow-xl hover:-translate-y-1"
-                      style={{
-                        backgroundImage: `url(${imageUrl})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                      }}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-                      <div className="relative z-10 p-6 text-white">
-                        <CardTitle className="text-2xl font-bold">{disciplina.nombre}</CardTitle>
-                        <p className="mt-2 text-sm text-gray-300">
-                          {disciplina.descripcion || 'Descripción detallada de la disciplina y sus beneficios.'}
-                        </p>
-                        <Button variant="link" className="mt-4 px-0 text-amber-400 hover:text-amber-300" asChild>
-                          <Link href="#contacto">
-                            Más información
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1">
-                              <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                            </svg>
-                          </Link>
-                        </Button>
-                      </div>
-                    </Card>
-                  )
-                }
-                
-                // Fallback Card (sin imagen)
-                const fallbackIcon = (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
-                    <path d="M12 2v20M2 12h20" />
-                  </svg>
-                );
-
-                return (
-                  <Card key={disciplina.nombre} className="h-full transition-all hover:shadow-lg hover:-translate-y-1 flex flex-col">
-                    <CardHeader className="text-center">
-                      <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit mb-4">
-                        {fallbackIcon}
-                      </div>
-                      <CardTitle className="text-xl">{disciplina.nombre}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-center flex-grow flex flex-col justify-between">
-                      <p className="text-muted-foreground">
-                        {disciplina.descripcion || 'Descripción detallada de la disciplina y sus beneficios.'}
-                      </p>
-                      <Button variant="link" className="mt-4 px-0 self-center" asChild>
-                        <Link href="#contacto">
-                          Más información
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1">
-                            <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                          </svg>
-                        </Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+            <div className="w-full">
+              <DisciplinasCarousel disciplinas={disciplinas} />
             </div>
           ) : (
             <Card className="p-8 text-center">
