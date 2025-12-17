@@ -12,9 +12,428 @@ Configuración: Ajustes del sistema
 
 prueba
 
-NEXT_PUBLIC_SUPABASE_URL=https://qxxbcszetmaxkxkvfosw.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4eGJjc3pldG1heGt4a3Zmb3N3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwMTU1MzIsImV4cCI6MjA3ODU5MTUzMn0.t_YX-2FcksY8WSXNk6RrjIGp33y-BjxEpbLb7Lu5dcg
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4eGJjc3pldG1heGt4a3Zmb3N3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzAxNTUzMiwiZXhwIjoyMDc4NTkxNTMyfQ._Ku30N8DA8gYkMBOy7TFuKd8e7jlCfuGnOJJ3xKXYWQ
+tory rule violations found for refs/heads/main.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   —————————————————————————————————————————        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:      (?) This repository does not have Secret Scanning enabled, but is eligible. Enable Secret Scanning to view and manage detected secrets.        
+remote:      Visit the repository settings page, https://github.com/mrodriguez0411/paracao/settings/security_analysis        
+remote:             
+remote:             
+remote:       —— GitHub Personal Access Token ——————————————————————        
+remote:        locations:        
+remote:          - commit: ff6f8e6fbdaa3178af0835a7eb8d9739140efa06        
+remote:            path: 1.txt:1        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/mrodriguez0411/paracao/security/secret-scanning/unblock-secret/36yWYC8sEg1XFPY1k643rpirTz2        
+remote:             
+remote: 
+remote: 
+To https://github.com/mrodriguez0411/paracao
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/mrodriguez0411/paracao'
+2025-12-17 13:48:56.785 [info] > git config --get commit.template [17ms]
+2025-12-17 13:48:56.790 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [7ms]
+2025-12-17 13:48:56.821 [info] > git status -z -uall [15ms]
+2025-12-17 13:48:56.827 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [8ms]
+2025-12-17 13:48:57.066 [info] > git ls-files --stage -- README.md [5ms]
+2025-12-17 13:48:57.082 [info] > git cat-file -s a41eb437a9196aa218435cacc4119d1ccfb23cfe [5ms]
+2025-12-17 13:48:57.268 [info] > git show --textconv :README.md [7ms]
+2025-12-17 13:49:04.461 [info] > git show --textconv :.git/COMMIT_EDITMSG [12ms]
+2025-12-17 13:49:04.462 [warning] [GitFileSystemProvider][readFile] File not found - git:/home/user/paracao/.git/COMMIT_EDITMSG.git?%7B%22path%22%3A%22%2Fhome%2Fuser%2Fparacao%2F.git%2FCOMMIT_EDITMSG%22%2C%22ref%22%3A%22%22%7D
+2025-12-17 13:49:04.464 [info] > git ls-files --stage -- .git/COMMIT_EDITMSG [5ms]
+2025-12-17 13:49:04.465 [warning] [GitFileSystemProvider][stat] File not found - git:/home/user/paracao/.git/COMMIT_EDITMSG.git?%7B%22path%22%3A%22%2Fhome%2Fuser%2Fparacao%2F.git%2FCOMMIT_EDITMSG%22%2C%22ref%22%3A%22%22%7D
+2025-12-17 13:49:10.044 [info] > git -c user.useConfigOnly=true commit --quiet --allow-empty [6246ms]
+2025-12-17 13:49:10.044 [info] Aborting commit due to empty commit message.
+2025-12-17 13:49:10.063 [info] > git config --get commit.template [9ms]
+2025-12-17 13:49:10.068 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [6ms]
+2025-12-17 13:49:10.088 [info] > git status -z -uall [11ms]
+2025-12-17 13:49:10.092 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [6ms]
+2025-12-17 13:49:10.405 [info] > git show --textconv :README.md [14ms]
+2025-12-17 13:49:10.410 [info] > git ls-files --stage -- README.md [7ms]
+2025-12-17 13:49:10.425 [info] > git cat-file -s a41eb437a9196aa218435cacc4119d1ccfb23cfe [5ms]
+2025-12-17 13:49:20.781 [info] > git log --oneline --cherry main...main@{upstream} -- [9ms]
+2025-12-17 13:49:21.014 [info] > git pull --tags origin main [223ms]
+2025-12-17 13:49:21.014 [info] From https://github.com/mrodriguez0411/paracao
+ * branch            main       -> FETCH_HEAD
+2025-12-17 13:49:22.248 [info] > git push origin main:main [1221ms]
+2025-12-17 13:49:22.248 [info] remote: error: GH013: Repository rule violations found for refs/heads/main.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   —————————————————————————————————————————        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:      (?) This repository does not have Secret Scanning enabled, but is eligible. Enable Secret Scanning to view and manage detected secrets.        
+remote:      Visit the repository settings page, https://github.com/mrodriguez0411/paracao/settings/security_analysis        
+remote:             
+remote:             
+remote:       —— GitHub Personal Access Token ——————————————————————        
+remote:        locations:        
+remote:          - commit: ff6f8e6fbdaa3178af0835a7eb8d9739140efa06        
+remote:            path: 1.txt:1        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/mrodriguez0411/paracao/security/secret-scanning/unblock-secret/36yWYC8sEg1XFPY1k643rpirTz2        
+remote:             
+remote: 
+remote: 
+To https://github.com/mrodriguez0411/paracao
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/mrodriguez0411/paracao'
+2025-12-17 13:49:22.271 [info] > git config --get commit.template [12ms]
+2025-12-17 13:49:22.277 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [7ms]
+2025-12-17 13:49:22.302 [info] > git status -z -uall [13ms]
+2025-12-17 13:49:22.305 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [6ms]
+2025-12-17 13:49:22.621 [info] > git ls-files --stage -- README.md [6ms]
+2025-12-17 13:49:22.637 [info] > git cat-file -s a41eb437a9196aa218435cacc4119d1ccfb23cfe [7ms]
+2025-12-17 13:49:22.823 [info] > git show --textconv :README.md [5ms]
+2025-12-17 13:49:35.629 [info] > git config --get commit.template [90ms]
+2025-12-17 13:49:35.649 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [23ms]
+2025-12-17 13:49:35.718 [info] > git status -z -uall [35ms]
+2025-12-17 13:49:35.737 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [23ms]
+2025-12-17 13:49:41.939 [info] > git fetch [291ms]
+2025-12-17 13:49:41.966 [info] > git config --get commit.template [16ms]
+2025-12-17 13:49:41.968 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [9ms]
+2025-12-17 13:49:41.992 [info] > git status -z -uall [14ms]
+2025-12-17 13:49:42.001 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [11ms]
+2025-12-17 13:49:43.168 [info] > git config --get commit.template [12ms]
+2025-12-17 13:49:43.174 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [6ms]
+2025-12-17 13:49:43.196 [info] > git status -z -uall [12ms]
+2025-12-17 13:49:43.202 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [6ms]
+2025-12-17 13:49:58.683 [info] > git show --textconv :1.txt [106ms]
+2025-12-17 13:49:58.703 [info] > git ls-files --stage -- 1.txt [70ms]
+2025-12-17 13:49:58.790 [info] > git cat-file -s dc2dbe6c35b25a72abdc873df85621f68f65dcfb [58ms]
+2025-12-17 13:50:01.437 [info] > git blame --root --incremental 76a020d0c9f0f43df1e5bcef5ef9163653597e78 -- 1.txt [7ms]
+2025-12-17 13:50:04.650 [info] > git ls-files --stage -- base.txt [6ms]
+2025-12-17 13:50:04.667 [info] > git show --textconv :base.txt [35ms]
+2025-12-17 13:50:04.671 [info] > git cat-file -s f87377572ef5914b2b3fe50f421d4697116587ed [6ms]
+2025-12-17 13:50:06.156 [info] > git blame --root --incremental 76a020d0c9f0f43df1e5bcef5ef9163653597e78 -- base.txt [563ms]
+2025-12-17 13:50:13.495 [info] > git config --get commit.template [22ms]
+2025-12-17 13:50:13.499 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [7ms]
+2025-12-17 13:50:13.522 [info] > git status -z -uall [12ms]
+2025-12-17 13:50:13.524 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [4ms]
+2025-12-17 13:50:18.551 [info] > git config --get commit.template [12ms]
+2025-12-17 13:50:18.555 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [6ms]
+2025-12-17 13:50:18.577 [info] > git status -z -uall [12ms]
+2025-12-17 13:50:18.583 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [7ms]
+2025-12-17 13:50:23.567 [info] > git add -A -- . [9ms]
+2025-12-17 13:50:23.598 [info] > git -c user.useConfigOnly=true commit --quiet --allow-empty-message --file - [20ms]
+2025-12-17 13:50:23.614 [info] > git config --get commit.template [5ms]
+2025-12-17 13:50:23.644 [info] > git config --get commit.template [15ms]
+2025-12-17 13:50:23.651 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [8ms]
+2025-12-17 13:50:23.681 [info] > git status -z -uall [15ms]
+2025-12-17 13:50:23.686 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [7ms]
+2025-12-17 13:50:23.729 [info] > git merge-base refs/heads/main refs/remotes/origin/main [9ms]
+2025-12-17 13:50:23.742 [info] > git blame --root --incremental 3773dbd2419f1ff3731bb83cda417e7d3ac1703f -- base.txt [39ms]
+2025-12-17 13:50:23.750 [info] > git diff --name-status -z --diff-filter=ADMR ea9eceb3714e6cab66639930871faa8c27ef25f2...refs/remotes/origin/main [8ms]
+2025-12-17 13:50:23.961 [info] > git config --get commit.template [22ms]
+2025-12-17 13:50:23.965 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [7ms]
+2025-12-17 13:50:23.994 [info] > git status -z -uall [15ms]
+2025-12-17 13:50:23.999 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [6ms]
+2025-12-17 13:50:25.182 [info] > git ls-files --stage -- base.txt [6ms]
+2025-12-17 13:50:25.196 [info] > git cat-file -s ed7d751b1575bd4f37c948aff9161b683a682d56 [5ms]
+2025-12-17 13:50:25.390 [info] > git show --textconv :base.txt [6ms]
+2025-12-17 13:50:26.840 [info] > git log --oneline --cherry main...main@{upstream} -- [9ms]
+2025-12-17 13:50:27.070 [info] > git pull --tags origin main [218ms]
+2025-12-17 13:50:27.070 [info] From https://github.com/mrodriguez0411/paracao
+ * branch            main       -> FETCH_HEAD
+2025-12-17 13:50:28.305 [info] > git push origin main:main [1221ms]
+2025-12-17 13:50:28.305 [info] remote: error: GH013: Repository rule violations found for refs/heads/main.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   —————————————————————————————————————————        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:      (?) This repository does not have Secret Scanning enabled, but is eligible. Enable Secret Scanning to view and manage detected secrets.        
+remote:      Visit the repository settings page, https://github.com/mrodriguez0411/paracao/settings/security_analysis        
+remote:             
+remote:             
+remote:       —— GitHub Personal Access Token ——————————————————————        
+remote:        locations:        
+remote:          - commit: ff6f8e6fbdaa3178af0835a7eb8d9739140efa06        
+remote:            path: 1.txt:1        
+remote:          - commit: 3773dbd2419f1ff3731bb83cda417e7d3ac1703f        
+remote:            path: base.txt:28        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/mrodriguez0411/paracao/security/secret-scanning/unblock-secret/36yWYC8sEg1XFPY1k643rpirTz2        
+remote:             
+remote: 
+remote: 
+To https://github.com/mrodriguez0411/paracao
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/mrodriguez0411/paracao'
+2025-12-17 13:50:28.333 [info] > git config --get commit.template [13ms]
+2025-12-17 13:50:28.339 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [7ms]
+2025-12-17 13:50:28.370 [info] > git status -z -uall [17ms]
+2025-12-17 13:50:28.376 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [8ms]
+2025-12-17 13:50:28.671 [info] > git ls-files --stage -- base.txt [6ms]
+2025-12-17 13:50:28.686 [info] > git cat-file -s ed7d751b1575bd4f37c948aff9161b683a682d56 [5ms]
+2025-12-17 13:50:28.880 [info] > git show --textconv :base.txt [10ms]
+2025-12-17 13:51:08.287 [info] > git config --get commit.template [13ms]
+2025-12-17 13:51:08.293 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [8ms]
+2025-12-17 13:51:08.325 [info] > git status -z -uall [24ms]
+2025-12-17 13:51:08.325 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [11ms]
+2025-12-17 13:51:08.350 [info] > git merge-base refs/heads/main refs/remotes/origin/main [6ms]
+2025-12-17 13:51:08.367 [info] > git diff --name-status -z --diff-filter=ADMR ea9eceb3714e6cab66639930871faa8c27ef25f2...refs/remotes/origin/main [7ms]
+2025-12-17 13:51:15.654 [info] > git config --get commit.template [14ms]
+2025-12-17 13:51:15.659 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [6ms]
+2025-12-17 13:51:15.692 [info] > git status -z -uall [17ms]
+2025-12-17 13:51:15.695 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [5ms]
+2025-12-17 13:51:20.295 [info] > git fetch [200ms]
+2025-12-17 13:51:20.323 [info] > git config --get commit.template [15ms]
+2025-12-17 13:51:20.345 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [23ms]
+2025-12-17 13:51:20.388 [info] > git status -z -uall [26ms]
+2025-12-17 13:51:20.391 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [8ms]
+2025-12-17 13:51:21.496 [info] > git add -A -- . [8ms]
+2025-12-17 13:51:21.519 [info] > git -c user.useConfigOnly=true commit --quiet --allow-empty-message --file - [14ms]
+2025-12-17 13:51:21.532 [info] > git config --get commit.template [4ms]
+2025-12-17 13:51:21.560 [info] > git config --get commit.template [11ms]
+2025-12-17 13:51:21.565 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [6ms]
+2025-12-17 13:51:21.591 [info] > git status -z -uall [15ms]
+2025-12-17 13:51:21.597 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [9ms]
+2025-12-17 13:51:21.634 [info] > git merge-base refs/heads/main refs/remotes/origin/main [24ms]
+2025-12-17 13:51:21.647 [info] > git config --get commit.template [14ms]
+2025-12-17 13:51:21.658 [info] > git diff --name-status -z --diff-filter=ADMR ea9eceb3714e6cab66639930871faa8c27ef25f2...refs/remotes/origin/main [12ms]
+2025-12-17 13:51:21.663 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [6ms]
+2025-12-17 13:51:21.691 [info] > git status -z -uall [13ms]
+2025-12-17 13:51:21.696 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [6ms]
+2025-12-17 13:51:21.847 [info] > git config --get commit.template [11ms]
+2025-12-17 13:51:21.851 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [5ms]
+2025-12-17 13:51:21.875 [info] > git status -z -uall [14ms]
+2025-12-17 13:51:21.881 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [7ms]
+2025-12-17 13:51:25.119 [info] > git log --oneline --cherry main...main@{upstream} -- [4ms]
+2025-12-17 13:51:25.324 [info] > git pull --tags origin main [194ms]
+2025-12-17 13:51:25.325 [info] From https://github.com/mrodriguez0411/paracao
+ * branch            main       -> FETCH_HEAD
+2025-12-17 13:51:26.519 [info] > git push origin main:main [1185ms]
+2025-12-17 13:51:26.519 [info] remote: error: GH013: Repository rule violations found for refs/heads/main.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   —————————————————————————————————————————        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:      (?) This repository does not have Secret Scanning enabled, but is eligible. Enable Secret Scanning to view and manage detected secrets.        
+remote:      Visit the repository settings page, https://github.com/mrodriguez0411/paracao/settings/security_analysis        
+remote:             
+remote:             
+remote:       —— GitHub Personal Access Token ——————————————————————        
+remote:        locations:        
+remote:          - commit: ff6f8e6fbdaa3178af0835a7eb8d9739140efa06        
+remote:            path: 1.txt:1        
+remote:          - commit: 7efe2ba31003a044a8b9f41d2a930479d8d211a7        
+remote:            path: base.txt:28        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/mrodriguez0411/paracao/security/secret-scanning/unblock-secret/36yWYC8sEg1XFPY1k643rpirTz2        
+remote:             
+remote: 
+remote: 
+To https://github.com/mrodriguez0411/paracao
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/mrodriguez0411/paracao'
+2025-12-17 13:51:26.543 [info] > git config --get commit.template [12ms]
+2025-12-17 13:51:26.545 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [4ms]
+2025-12-17 13:51:26.572 [info] > git status -z -uall [18ms]
+2025-12-17 13:51:26.578 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [9ms]
+2025-12-17 13:52:29.920 [info] > git config --get commit.template [4ms]
+2025-12-17 13:52:29.948 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [9ms]
+2025-12-17 13:52:29.992 [info] > git status -z -uall [27ms]
+2025-12-17 13:52:29.997 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [9ms]
+2025-12-17 13:52:36.537 [info] > git show --textconv HEAD:base.txt [11ms]
+2025-12-17 13:52:36.542 [info] > git ls-tree -l HEAD -- base.txt [6ms]
+2025-12-17 13:52:36.719 [info] > git config --get commit.template [14ms]
+2025-12-17 13:52:36.722 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [6ms]
+2025-12-17 13:52:36.746 [info] > git status -z -uall [15ms]
+2025-12-17 13:52:36.747 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [4ms]
+2025-12-17 13:52:36.763 [info] > git merge-base refs/heads/main refs/remotes/origin/main [5ms]
+2025-12-17 13:52:36.782 [info] > git diff --name-status -z --diff-filter=ADMR ea9eceb3714e6cab66639930871faa8c27ef25f2...refs/remotes/origin/main [7ms]
+2025-12-17 13:52:36.984 [info] > git ls-tree -l HEAD -- base.txt [5ms]
+2025-12-17 13:52:37.178 [info] > git show --textconv HEAD:base.txt [6ms]
+2025-12-17 13:52:41.779 [info] > git config --get commit.template [9ms]
+2025-12-17 13:52:41.785 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [7ms]
+2025-12-17 13:52:41.806 [info] > git status -z -uall [12ms]
+2025-12-17 13:52:41.810 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [5ms]
+2025-12-17 13:52:46.627 [info] > git add -A -- . [8ms]
+2025-12-17 13:52:46.668 [info] > git -c user.useConfigOnly=true commit --quiet --allow-empty-message --file - [31ms]
+2025-12-17 13:52:46.681 [info] > git config --get commit.template [4ms]
+2025-12-17 13:52:46.703 [info] > git config --get commit.template [11ms]
+2025-12-17 13:52:46.708 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [7ms]
+2025-12-17 13:52:46.730 [info] > git status -z -uall [11ms]
+2025-12-17 13:52:46.732 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [6ms]
+2025-12-17 13:52:46.761 [info] > git blame --root --incremental a8881e24edc55095cf0124a6dd98613354c590b1 -- base.txt [18ms]
+2025-12-17 13:52:46.764 [info] > git merge-base refs/heads/main refs/remotes/origin/main [7ms]
+2025-12-17 13:52:46.778 [info] > git diff --name-status -z --diff-filter=ADMR ea9eceb3714e6cab66639930871faa8c27ef25f2...refs/remotes/origin/main [5ms]
+2025-12-17 13:52:46.974 [info] > git config --get commit.template [8ms]
+2025-12-17 13:52:46.978 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [5ms]
+2025-12-17 13:52:47.000 [info] > git status -z -uall [13ms]
+2025-12-17 13:52:47.003 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [6ms]
+2025-12-17 13:52:48.290 [info] > git ls-tree -l HEAD -- base.txt [7ms]
+2025-12-17 13:52:48.475 [info] > git show --textconv HEAD:base.txt [6ms]
+2025-12-17 13:52:49.299 [info] > git config --get commit.template [14ms]
+2025-12-17 13:52:49.305 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [7ms]
+2025-12-17 13:52:49.328 [info] > git status -z -uall [13ms]
+2025-12-17 13:52:49.333 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [6ms]
+2025-12-17 13:52:49.431 [info] > git log --oneline --cherry main...main@{upstream} -- [8ms]
+2025-12-17 13:52:49.642 [info] > git pull --tags origin main [202ms]
+2025-12-17 13:52:49.642 [info] From https://github.com/mrodriguez0411/paracao
+ * branch            main       -> FETCH_HEAD
+2025-12-17 13:52:50.903 [info] > git push origin main:main [1246ms]
+2025-12-17 13:52:50.903 [info] remote: error: GH013: Repository rule violations found for refs/heads/main.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   —————————————————————————————————————————        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:      (?) This repository does not have Secret Scanning enabled, but is eligible. Enable Secret Scanning to view and manage detected secrets.        
+remote:      Visit the repository settings page, https://github.com/mrodriguez0411/paracao/settings/security_analysis        
+remote:             
+remote:             
+remote:       —— GitHub Personal Access Token ——————————————————————        
+remote:        locations:        
+remote:          - commit: ff6f8e6fbdaa3178af0835a7eb8d9739140efa06        
+remote:            path: 1.txt:1        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/mrodriguez0411/paracao/security/secret-scanning/unblock-secret/36yWYC8sEg1XFPY1k643rpirTz2        
+remote:             
+remote: 
+remote: 
+To https://github.com/mrodriguez0411/paracao
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/mrodriguez0411/paracao'
+2025-12-17 13:52:50.933 [info] > git config --get commit.template [16ms]
+2025-12-17 13:52:50.940 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [8ms]
+2025-12-17 13:52:50.963 [info] > git status -z -uall [12ms]
+2025-12-17 13:52:50.970 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [8ms]
+2025-12-17 13:52:51.236 [info] > git ls-tree -l HEAD -- base.txt [5ms]
+2025-12-17 13:52:51.426 [info] > git show --textconv HEAD:base.txt [6ms]
+2025-12-17 13:52:54.358 [info] > git config --get commit.template [10ms]
+2025-12-17 13:52:54.362 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [6ms]
+2025-12-17 13:52:54.383 [info] > git status -z -uall [12ms]
+2025-12-17 13:52:54.386 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [5ms]
+2025-12-17 13:53:08.186 [info] > git config --get commit.template [11ms]
+2025-12-17 13:53:08.192 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [6ms]
+2025-12-17 13:53:08.217 [info] > git status -z -uall [15ms]
+2025-12-17 13:53:08.219 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [5ms]
+2025-12-17 13:53:08.239 [info] > git merge-base refs/heads/main refs/remotes/origin/main [6ms]
+2025-12-17 13:53:08.252 [info] > git diff --name-status -z --diff-filter=ADMR ea9eceb3714e6cab66639930871faa8c27ef25f2...refs/remotes/origin/main [5ms]
+2025-12-17 13:53:09.501 [info] > git ls-tree -l HEAD -- base.txt [6ms]
+2025-12-17 13:53:09.691 [info] > git show --textconv HEAD:base.txt [7ms]
+2025-12-17 13:53:10.526 [info] > git config --get commit.template [19ms]
+2025-12-17 13:53:10.539 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [16ms]
+2025-12-17 13:53:10.573 [info] > git status -z -uall [19ms]
+2025-12-17 13:53:10.577 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [6ms]
+2025-12-17 13:53:14.700 [info] > git checkout -q -- 1.txt base.txt [11ms]
+2025-12-17 13:53:14.748 [info] > git config --get commit.template [18ms]
+2025-12-17 13:53:14.754 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [7ms]
+2025-12-17 13:53:14.796 [info] > git status -z -uall [29ms]
+2025-12-17 13:53:14.804 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [11ms]
+2025-12-17 13:53:16.238 [info] > git ls-tree -l HEAD -- base.txt [4ms]
+2025-12-17 13:53:16.445 [info] > git show --textconv HEAD:base.txt [6ms]
+2025-12-17 13:53:17.244 [info] > git config --get commit.template [5ms]
+2025-12-17 13:53:17.258 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [5ms]
+2025-12-17 13:53:17.292 [info] > git status -z -uall [23ms]
+2025-12-17 13:53:17.292 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [9ms]
+2025-12-17 13:53:20.043 [info] > git config --get commit.template [9ms]
+2025-12-17 13:53:20.047 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [4ms]
+2025-12-17 13:53:20.065 [info] > git status -z -uall [11ms]
+2025-12-17 13:53:20.067 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [5ms]
+2025-12-17 13:53:26.156 [info] > git log --oneline --cherry main...main@{upstream} -- [5ms]
+2025-12-17 13:53:26.359 [info] > git pull --tags origin main [192ms]
+2025-12-17 13:53:26.359 [info] From https://github.com/mrodriguez0411/paracao
+ * branch            main       -> FETCH_HEAD
+2025-12-17 13:53:27.521 [info] > git push origin main:main [1154ms]
+2025-12-17 13:53:27.521 [info] remote: error: GH013: Repository rule violations found for refs/heads/main.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   —————————————————————————————————————————        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:      (?) This repository does not have Secret Scanning enabled, but is eligible. Enable Secret Scanning to view and manage detected secrets.        
+remote:      Visit the repository settings page, https://github.com/mrodriguez0411/paracao/settings/security_analysis        
+remote:             
+remote:             
+remote:       —— GitHub Personal Access Token ——————————————————————        
+remote:        locations:        
+remote:          - commit: ff6f8e6fbdaa3178af0835a7eb8d9739140efa06        
+remote:            path: 1.txt:1        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/mrodriguez0411/paracao/security/secret-scanning/unblock-secret/36yWYC8sEg1XFPY1k643rpirTz2        
+remote:             
+remote: 
+remote: 
+To https://github.com/mrodriguez0411/paracao
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/mrodriguez0411/paracao'
+2025-12-17 13:53:27.542 [info] > git config --get commit.template [11ms]
+2025-12-17 13:53:27.547 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [6ms]
+2025-12-17 13:53:27.566 [info] > git status -z -uall [10ms]
+2025-12-17 13:53:27.571 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [6ms]
+2025-12-17 13:53:27.995 [info] > git ls-tree -l HEAD -- base.txt [5ms]
+2025-12-17 13:53:28.183 [info] > git show --textconv HEAD:base.txt [5ms]
+2025-12-17 13:53:29.002 [info] > git config --get commit.template [12ms]
+2025-12-17 13:53:29.006 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [6ms]
+2025-12-17 13:53:29.031 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [6ms]
+2025-12-17 13:53:29.033 [info] > git status -z -uall [17ms]
+2025-12-17 13:53:51.104 [info] > git ls-tree -l HEAD -- base.txt [6ms]
+2025-12-17 13:54:17.391 [info] > git config --get commit.template [9ms]
+2025-12-17 13:54:17.397 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [7ms]
+2025-12-17 13:54:17.418 [info] > git status -z -uall [12ms]
+2025-12-17 13:54:17.421 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [5ms]
+2025-12-17 13:54:20.593 [info] > git fetch [186ms]
+2025-12-17 13:54:20.614 [info] > git config --get commit.template [9ms]
+2025-12-17 13:54:20.620 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [7ms]
+2025-12-17 13:54:20.638 [info] > git status -z -uall [10ms]
+2025-12-17 13:54:20.643 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [6ms]
+2025-12-17 13:54:22.169 [info] > git ls-tree -l HEAD -- base.txt [5ms]
+2025-12-17 13:54:22.360 [info] > git show --textconv HEAD:base.txt [5ms]
+2025-12-17 13:54:22.449 [info] > git config --get commit.template [13ms]
+2025-12-17 13:54:22.453 [info] > git for-each-ref --format=%(refname)%00%(upstream:short)%00%(objectname)%00%(upstream:track)%00%(upstream:remotename)%00%(upstream:remoteref) refs/heads/main refs/remotes/main [6ms]
+2025-12-17 13:54:22.475 [info] > git status -z -uall [12ms]
+2025-12-17 13:54:22.478 [info] > git for-each-ref --sort -committerdate --format %(refname)%00%(objectname)%00%(*objectname) [4ms]
+
+
 
 
 Texto azul #1e3a8a
