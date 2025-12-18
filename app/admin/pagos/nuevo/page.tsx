@@ -338,9 +338,9 @@ export default function NuevoPagoPage() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
+                  <div className="space-y-2 " >
                     <Label htmlFor="monto">Monto</Label>
-                    <Input
+                    <Input className='text-black'
                       id="monto"
                       name="monto"
                       type="number"
@@ -353,7 +353,7 @@ export default function NuevoPagoPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="fecha_pago">Fecha de Pago</Label>
-                    <Input
+                    <Input className='text-black'
                       id="fecha_pago"
                       name="fecha_pago"
                       type="date"
@@ -383,7 +383,7 @@ export default function NuevoPagoPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="referencia">Referencia (opcional)</Label>
-                    <Input
+                    <Input className='text-black'
                       id="referencia"
                       name="referencia"
                       type="text"
@@ -395,7 +395,7 @@ export default function NuevoPagoPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="mes_anio_cuota">Mes de la Cuota</Label>
-                    <Input
+                    <Input className='text-black'
                       id="mes_anio_cuota"
                       name="mes_anio_cuota"
                       type="month"
