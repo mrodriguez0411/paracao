@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Printer, X } from 'lucide-react';
 
 interface ReciboProps {
   pagoData: any;
@@ -11,12 +13,9 @@ interface ReciboProps {
 const ReciboFinal: React.FC<ReciboProps> = ({ pagoData, nuevoPago, onClose }) => {
   const receiptRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (receiptRef.current) {
-      receiptRef.current.style.display = 'block';
-      setTimeout(() => window.print(), 100);
-    }
-  }, []);
+  const handlePrint = () => {
+    window.print();
+  };
 
   const formatCurrency = (amount: number | null | undefined) => {
     const numAmount = Number(amount || 0);
@@ -30,87 +29,95 @@ const ReciboFinal: React.FC<ReciboProps> = ({ pagoData, nuevoPago, onClose }) =>
     if (!dateString) return 'Fecha no disponible';
     try {
       const date = new Date(dateString);
+      // Adjust for timezone offset to show the correct local date
       const offset = date.getTimezoneOffset();
       const correctedDate = new Date(date.getTime() + offset * 60000);
-      return correctedDate.toLocaleDateString('es-AR');
+      return correctedDate.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     } catch (e) {
       return 'Fecha inválida';
     }
   };
 
+  const pago = nuevoPago || { id: '0', monto: 0, fecha_pago: '' };
   const grupo = pagoData?.grupo || {};
   const titular = grupo.titular || { nombre_completo: 'Socio no especificado', email: 'N/A', dni: 'N/A' };
-  const tipo_cuota = grupo.tipo_cuota || null;
-  const disciplinas = grupo.disciplinas || [];
-  const pago = nuevoPago || { id: '0', monto: 0, fecha_pago: '' };
-
+  const cuotasPagadas = pagoData?.disciplinas || []; // Renamed for clarity from `disciplinas` to `cuotasPagadas`
+  
   return (
-    <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50 print-hidden">
-      <div ref={receiptRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm printable-area text-black text-sm">
-        
-        <div className="text-center mb-4">
-          <h1 className="text-xl font-bold">CLUB PARACAO</h1>
-          <p className="text-xs">RECIBO N° {String(pago.id).padStart(8, '0')}</p>
-        </div>
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-80 flex justify-center items-center z-50 print:bg-white">
+      <div className="flex flex-col w-full max-w-sm">
+        <div ref={receiptRef} className="bg-white p-8 rounded-t-lg shadow-2xl text-black text-sm printable-area">
+          
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold">CLUB ATLÉTICO PARACAO</h1>
+            <p className="text-xs text-gray-600">RECIBO OFICIAL N° {String(pago.id).slice(-8).padStart(8, '0')}</p>
+          </div>
 
-        <div className="border-t border-dashed border-gray-400 pt-2 mb-2">
-          <p>Socio: {titular.nombre_completo}</p>
-          <p>Fecha: {formatDate(pago.fecha_pago)}</p>
-        </div>
+          <div className="border-t border-b border-gray-300 py-2 mb-4 text-xs">
+            <div className="flex justify-between"><span className="font-semibold">Socio:</span> <span>{titular.nombre_completo}</span></div>
+            <div className="flex justify-between"><span className="font-semibold">Fecha de Emisión:</span> <span>{formatDate(pago.fecha_pago)}</span></div>
+            <div className="flex justify-between"><span className="font-semibold">DNI:</span> <span>{titular.dni || 'N/A'}</span></div>
+          </div>
 
-        <h2 className="font-bold text-center border-y border-dashed border-gray-400 my-2 py-1">Detalle del Pago</h2>
-        
-        <table className="w-full mb-2">
-          <thead>
-            <tr>
-              <th className="text-left font-semibold">Concepto</th>
-              <th className="text-right font-semibold">Importe</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tipo_cuota && tipo_cuota.monto > 0 && (
-              <tr>
-                <td>Cuota Social ({tipo_cuota.nombre})</td>
-                <td className="text-right">{formatCurrency(tipo_cuota.monto)}</td>
+          <h2 className="font-bold text-center border-y border-dashed border-gray-400 my-3 py-1">Detalle del Pago</h2>
+          
+          <table className="w-full mb-4 text-xs">
+            <thead>
+              <tr className="border-b border-gray-300">
+                <th className="text-left font-bold py-1">Concepto</th>
+                <th className="text-right font-bold py-1">Importe</th>
               </tr>
-            )}
-            {disciplinas.map((d: any, index: number) => (
-              <tr key={index}>
-                <td>{d.nombre} ({d.miembro_nombre})</td>
-                <td className="text-right">{formatCurrency(d.monto)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {cuotasPagadas.map((cuota: any, index: number) => (
+                <tr key={index} className="border-b border-gray-200">
+                  <td className="py-1.5">{cuota.descripcion || 'Cuota'}</td>
+                  <td className="text-right py-1.5">{formatCurrency(cuota.monto)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-        <div className="border-t border-dashed border-gray-400 pt-2 mt-2">
-            <p><span className="font-semibold">Forma de Pago:</span> {pago.tipo_pago || 'No especificada'}</p>
-        </div>
+          <div className="border-t-2 border-dashed border-gray-400 pt-3 mt-4 space-y-1 text-xs">
+              <p><span className="font-semibold">Forma de Pago:</span> <span className="capitalize">{pago.tipo_pago || 'No especificada'}</span></p>
+          </div>
 
-        <div className="border-t border-dashed border-gray-400 pt-2 mt-2">
-          <div className="flex justify-end">
-            <p className="text-lg font-bold">TOTAL: {formatCurrency(pago.monto)}</p>
+          <div className="border-t-2 border-gray-900 pt-3 mt-4">
+            <div className="flex justify-end items-baseline">
+              <p className="text-base font-bold mr-2">TOTAL:</p>
+              <p className="text-xl font-bold">{formatCurrency(pago.monto)}</p>
+            </div>
+          </div>
+
+          <div className="mt-6 text-center text-xs text-gray-500">
+             <p className="font-mono">ID de Pago: {pago.id}</p>
+             <p className="mt-2 font-semibold">Gracias por su pago.</p>
           </div>
         </div>
 
-        <div className="mt-4 text-center text-xs text-gray-600">
-           <p>Cód. Pago: {String(pago.id).padStart(16, '0')}</p>
-           <p className="mt-2">Gracias por su pago.</p>
-        </div>
-
-        <div className="mt-6 text-center print-hidden">
-          <button
+        {/* Action Buttons */}
+        <div className="bg-gray-800 p-4 rounded-b-lg flex justify-between print-hidden shadow-2xl">
+          <Button
             onClick={onClose}
-            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+            variant="outline"
+            className="text-white border-gray-600 hover:bg-gray-700 hover:text-white"
           >
+            <X className="h-4 w-4 mr-2" />
             Cerrar
-          </button>
+          </Button>
+          <Button
+            onClick={handlePrint}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+          >
+            <Printer className="h-4 w-4 mr-2" />
+            Imprimir Recibo
+          </Button>
         </div>
       </div>
        <style jsx global>{`
             @media print {
                 body {
-                    background-color: white !important;
+                    background: white !important;
                 }
                 .print-hidden {
                     display: none !important;
@@ -119,11 +126,17 @@ const ReciboFinal: React.FC<ReciboProps> = ({ pagoData, nuevoPago, onClose }) =>
                     position: absolute;
                     left: 0;
                     top: 0;
+                    margin: 0;
+                    padding: 20px;
                     width: 100%;
+                    height: auto;
                     max-width: 100%;
                     box-shadow: none;
                     border-radius: 0;
-                    padding: 10px;
+                    border: none;
+                }
+                .fixed {
+                  position: relative !important;
                 }
             }
         `}</style>

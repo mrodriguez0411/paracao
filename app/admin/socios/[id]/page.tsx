@@ -92,7 +92,7 @@ export default function VerSocioPage() {
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" className="text-[#1e3a8a] hover:bg-[#1e3a8a]/10" onClick={() => router.back()}>
+        <Button variant="ghost" size="sm" className="text-[#1e3a8a] hover:bg-[#1e3a8a]/10"  style={{background:"#efb600"}}  onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Volver
         </Button>
@@ -134,7 +134,7 @@ export default function VerSocioPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">DNI</p>
-                <p className="font-medium font-mono">{socioData.profiles?.dni}</p>
+                <p className="font-medium">{socioData.profiles?.dni}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Email</p>
@@ -160,15 +160,15 @@ export default function VerSocioPage() {
                     <div className="grid gap-3 md:grid-cols-3">
                       <div>
                         <p className="text-sm text-gray-600">Nombre</p>
-                        <p className="font-medium">{miembro.nombre_completo}</p>
+                        <p className="font-medium text-black">{miembro.nombre_completo}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">DNI</p>
-                        <p className="font-mono font-semibold">{miembro.dni || "N/A"}</p>
+                        <p className="font-mono font-semibold text-black">{miembro.dni || "N/A"}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Parentesco</p>
-                        <p className="font-medium">{miembro.parentesco || "No especificado"}</p>
+                        <p className="font-medium text-black">{miembro.parentesco || "No especificado"}</p>
                       </div>
                     </div>
                   </div>
