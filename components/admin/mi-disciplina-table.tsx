@@ -49,7 +49,7 @@ export function MiDisciplinaTable({ miembros }: MiDisciplinaTableProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold tracking-tight text-[#efb600]">Listado de Miembros</h3>
+        <h3 className="text-xl font-bold tracking-tight" style={{color: '#efb600'}}>Listado de Miembros</h3>
         <Button onClick={handleExport} disabled={exporting}>
           {exporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
           Exportar a Excel
