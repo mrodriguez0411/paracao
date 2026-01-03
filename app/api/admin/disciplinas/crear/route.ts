@@ -34,6 +34,7 @@ export async function POST(request: Request) {
         descripcion: descripcion?.trim() || null,
         cuota_deportiva: cuota_deportiva,
         imagen_url: imagen_url || null, // <-- AÑADIDO
+        admin_id: admin_id || null,
       })
       .select()
       .single();
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
       const { error: adminError } = await supabase.from("admin_disciplinas").insert({
         disciplina_id: disciplina_id,
         admin_id: admin_id,
-        nombre: null,
+        nombre: nombre.trim(),
       })
 
       if (adminError) {

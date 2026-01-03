@@ -33,8 +33,8 @@ export async function updateDisciplinaAdmin(
     return { error: "No se pudo actualizar la asignación en la base de datos." };
   }
 
-  // Invalida la caché de la página de gestión para que los cambios se reflejen inmediatamente.
-  revalidatePath("/admin/gestion-disciplinas");
+  // Invalida la caché de la lista de disciplinas para que los cambios se reflejen inmediatamente.
+  revalidatePath("/admin/disciplinas");
 
   return { success: true };
 }

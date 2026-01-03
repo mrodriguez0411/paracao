@@ -32,6 +32,7 @@ export async function PUT(
         descripcion: descripcion?.trim() || null,
         cuota_deportiva: cuota_deportiva,
         imagen_url: imagen_url || null, // <-- AÑADIDO
+        admin_id: admin_id || null, // set/clear the admin reference on the disciplina
       })
       .eq("id", disciplina_id)
       .select()
@@ -55,13 +56,15 @@ export async function PUT(
 
     // If an admin_id is provided, insert the new association.
     if (admin_id) {
-      const { error: insertError } = await supabase
+      const { data: adminDisciplinaData, error: insertError } = await supabase
         .from("admin_disciplinas")
         .insert({
           disciplina_id: disciplina_id,
           admin_id: admin_id,
-          nombre: null,
+          nombre: disciplinaData?.nombre || null,
         })
+        .select()
+        .single()
 
       if (insertError) {
         throw new Error(`Error al asignar el nuevo administrador: ${insertError.message}`)

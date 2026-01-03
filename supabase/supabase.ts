@@ -179,6 +179,7 @@ export type Database = {
           cuota_deportiva: number
           descripcion: string | null
           id: string
+          imagen_url: string | null
           nombre: string
           updated_at: string | null
         }
@@ -189,6 +190,7 @@ export type Database = {
           cuota_deportiva?: number
           descripcion?: string | null
           id?: string
+          imagen_url?: string | null
           nombre: string
           updated_at?: string | null
         }
@@ -199,6 +201,7 @@ export type Database = {
           cuota_deportiva?: number
           descripcion?: string | null
           id?: string
+          imagen_url?: string | null
           nombre?: string
           updated_at?: string | null
         }
@@ -297,6 +300,13 @@ export type Database = {
             referencedRelation: "miembros_familia"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "inscripciones_miembro_id_fkey"
+            columns: ["miembro_id"]
+            isOneToOne: false
+            referencedRelation: "miembros_sin_rls"
+            referencedColumns: ["id"]
+          },
         ]
       }
       miembros_familia: {
@@ -382,9 +392,70 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      miembros_sin_rls: {
+        Row: {
+          grupo_id: string | null
+          id: string | null
+          socio_id: string | null
+        }
+        Insert: {
+          grupo_id?: string | null
+          id?: string | null
+          socio_id?: string | null
+        }
+        Update: {
+          grupo_id?: string | null
+          id?: string | null
+          socio_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "miembros_familia_grupo_id_fkey"
+            columns: ["grupo_id"]
+            isOneToOne: false
+            referencedRelation: "grupos_familiares"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "miembros_familia_socio_id_fkey"
+            columns: ["socio_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      es_admin_de_disciplina_del_grupo: {
+        Args: { grupo_id_param: string }
+        Returns: boolean
+      }
+      es_admin_de_disciplina_del_miembro: {
+        Args: { miembro_id_param: string }
+        Returns: boolean
+      }
+      get_miembros_de_mi_disciplina: {
+        Args: never
+        Returns: {
+          activa: boolean
+          dni_miembro: string
+          estado_cuota: string
+          id: string
+          nombre_miembro: string
+          nombre_titular: string
+        }[]
+      }
+      get_miembros_disciplina_por_mes: {
+        Args: { admin_id_param: string; anio_param: number; mes_param: number }
+        Returns: Database["public"]["CompositeTypes"]["miembro_estado_cuota"][]
+        SetofOptions: {
+          from: "*"
+          to: "miembro_estado_cuota"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_miembros_familia: {
         Args: { p_grupo_id: string }
         Returns: {
@@ -404,6 +475,33 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_miembros_por_disciplina:
+        | {
+            Args: never
+            Returns: Database["public"]["CompositeTypes"]["miembro_disciplina"][]
+            SetofOptions: {
+              from: "*"
+              to: "miembro_disciplina"
+              isOneToOne: false
+              isSetofReturn: true
+            }
+          }
+        | {
+            Args: {
+              admin_id_param: string
+              anio_param: number
+              mes_param: number
+            }
+            Returns: {
+              dni: string
+              estado_cuota: string
+              fecha_inscripcion: string
+              id: string
+              nombre_completo: string
+            }[]
+          }
+      get_my_group_id: { Args: never; Returns: string }
+      get_my_grupo_id: { Args: never; Returns: string }
       get_profile_by_id: {
         Args: { profile_id: string }
         Returns: {
@@ -424,13 +522,83 @@ export type Database = {
         }
       }
       get_user_role: { Args: never; Returns: string }
+      is_member_of_same_group: {
+        Args: { profile_id_to_check: string }
+        Returns: boolean
+      }
       is_super_admin: { Args: never; Returns: boolean }
+      registrar_pago_cuotas: {
+        Args: {
+          p_cuota_ids: string[]
+          p_fecha_pago: string
+          p_tipo_pago: string
+        }
+        Returns: {
+          anio: number
+          comprobante_url: string | null
+          created_at: string | null
+          disciplina_id: string | null
+          fecha_pago: string | null
+          fecha_vencimiento: string
+          grupo_id: string
+          id: string
+          mes: number
+          metodo_pago: string | null
+          monto: number
+          pagada: boolean | null
+          tipo: string
+          updated_at: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "cuotas"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      registrar_pago_y_actualizar_cuotas: {
+        Args: {
+          p_cuota_ids: string[]
+          p_fecha_pago: string
+          p_grupo_id: string
+          p_monto: number
+          p_notas?: string
+          p_referencia?: string
+          p_tipo_pago: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
     }
     CompositeTypes: {
-      [_ in never]: never
+      miembro_disciplina: {
+        id: string | null
+        nombre_completo: string | null
+        email: string | null
+        telefono: string | null
+        dni: string | null
+        created_at: string | null
+      }
+      miembro_disciplina_info: {
+        id: string | null
+        miembro_id: string | null
+        nombre_completo: string | null
+        dni: string | null
+        fecha_inscripcion: string | null
+        activo: boolean | null
+        titular_nombre: string | null
+        titular_email: string | null
+        titular_telefono: string | null
+      }
+      miembro_estado_cuota: {
+        id: string | null
+        nombre_completo: string | null
+        dni: string | null
+        fecha_inscripcion: string | null
+        estado_cuota: string | null
+      }
     }
   }
 }

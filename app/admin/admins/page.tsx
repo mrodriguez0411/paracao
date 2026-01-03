@@ -9,14 +9,39 @@ export default async function AdminsPage() {
   await requireAuth(["super_admin"])
   const supabase = await createClient()
 
-  const { data: admins } = await supabase
-    .from("profiles")
-    .select(`
-      *,
-      disciplinas:disciplinas!admin_id(nombre)
-    `)
-    .eq("rol", "admin_disciplina")
-    .order("nombre_completo")
+  // Fetch all profiles with role admin_disciplina
+  const { data: profiles, error: profilesError } = await supabase
+    .from('profiles')
+    .select('id, nombre_completo, email, telefono, created_at')
+    .eq('rol', 'admin_disciplina')
+    .order('nombre_completo')
+
+  if (profilesError) {
+    console.error('[admins-page] Error fetching profiles:', profilesError)
+  }
+
+  const adminIds = (profiles || []).map((p: any) => p.id)
+
+  // Fetch admin_disciplinas assignments for these admins (skip if none)
+  let assignments: any[] = []
+  if (adminIds.length > 0) {
+    const { data: assignmentsData, error: assignmentsError } = await supabase
+      .from('admin_disciplinas')
+      .select('admin_id, disciplina_id, nombre')
+      .in('admin_id', adminIds)
+
+    if (assignmentsError) {
+      console.error('[admins-page] Error fetching admin_disciplinas:', assignmentsError)
+    } else {
+      assignments = assignmentsData || []
+    }
+  }
+
+  // Map profiles to the shape expected by AdminsTable
+  const admins = (profiles || []).map((p: any) => ({
+    ...p,
+    disciplinas: assignments.filter((a: any) => a.admin_id === p.id).map((a: any) => ({ nombre: a.nombre }))
+  }))
 
   return (
     <div className="space-y-6">

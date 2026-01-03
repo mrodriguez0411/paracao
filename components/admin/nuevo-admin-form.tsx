@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,18 +19,43 @@ export function NuevoAdminForm({}: NuevoAdminFormProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [disciplinas, setDisciplinas] = useState<Array<{ id: string; nombre: string }>>([])
   const [formData, setFormData] = useState({
     nombre_completo: "",
     email: "",
     rol: "admin_disciplina", // default role
+    disciplina_id: "",
     password: "",
   })
+
+  // Load disciplinas for the selector
+  useEffect(() => {
+    let mounted = true
+    const load = async () => {
+      try {
+        const res = await fetch('/api/admin/disciplinas')
+        const data = await res.json()
+        if (mounted) setDisciplinas(data || [])
+      } catch (err) {
+        console.error('[nuevo-admin] Error cargando disciplinas', err)
+      }
+    }
+    load()
+    return () => { mounted = false }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
+      // If creating an admin for a disciplina, ensure a disciplina is selected
+      if (formData.rol === 'admin_disciplina' && !formData.disciplina_id) {
+        toast({ title: 'Seleccioná una disciplina', variant: 'destructive' })
+        setIsLoading(false)
+        return
+      }
+
       const response = await fetch("/api/admin/admins/crear", {
         method: "POST",
         headers: {
@@ -104,6 +129,26 @@ export function NuevoAdminForm({}: NuevoAdminFormProps) {
                 </SelectContent>
               </Select>
             </div>
+
+            {formData.rol === 'admin_disciplina' && (
+              <div className="space-y-2">
+                <Label htmlFor="disciplina_id">Disciplina *</Label>
+                <Select
+                  required
+                  value={formData.disciplina_id}
+                  onValueChange={(value) => setFormData({ ...formData, disciplina_id: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={disciplinas.length ? 'Seleccionar disciplina' : 'Cargando...'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {disciplinas.map((d) => (
+                      <SelectItem key={d.id} value={d.id}>{d.nombre}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña *</Label>
               <Input
