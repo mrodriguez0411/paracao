@@ -1,3 +1,4 @@
+
 import { requireAuth } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
@@ -9,39 +10,39 @@ export default async function AdminsPage() {
   await requireAuth(["super_admin"])
   const supabase = await createClient()
 
-  // Fetch all profiles with role admin_disciplina
-  const { data: profiles, error: profilesError } = await supabase
-    .from('profiles')
-    .select('id, nombre_completo, email, telefono, created_at')
-    .eq('rol', 'admin_disciplina')
-    .order('nombre_completo')
+  // Step 1: Fetch all admins with all fields required by the table
+  const { data: admins, error: adminsError } = await supabase
+    .from("profiles")
+    .select("id, nombre_completo, email, telefono, created_at")
+    .eq("rol", "admin_disciplina");
 
-  if (profilesError) {
-    console.error('[admins-page] Error fetching profiles:', profilesError)
+  if (adminsError) {
+    console.error('[admins-page] Error fetching admins:', adminsError);
   }
 
-  const adminIds = (profiles || []).map((p: any) => p.id)
+  // Step 2: Fetch all disciplines with their assigned admin
+  const { data: disciplinas, error: disciplinasError } = await supabase
+    .from("disciplinas")
+    .select("nombre, admin_id")
+    .not("admin_id", "is", null);
 
-  // Fetch admin_disciplinas assignments for these admins (skip if none)
-  let assignments: any[] = []
-  if (adminIds.length > 0) {
-    const { data: assignmentsData, error: assignmentsError } = await supabase
-      .from('admin_disciplinas')
-      .select('admin_id, disciplina_id, nombre')
-      .in('admin_id', adminIds)
-
-    if (assignmentsError) {
-      console.error('[admins-page] Error fetching admin_disciplinas:', assignmentsError)
-    } else {
-      assignments = assignmentsData || []
-    }
+  if (disciplinasError) {
+    console.error('[admins-page] Error fetching disciplinas:', disciplinasError);
   }
 
-  // Map profiles to the shape expected by AdminsTable
-  const admins = (profiles || []).map((p: any) => ({
-    ...p,
-    disciplinas: assignments.filter((a: any) => a.admin_id === p.id).map((a: any) => ({ nombre: a.nombre }))
-  }))
+  // Step 3: Combine the data to match the structure expected by AdminsTable
+  const transformedAdmins = admins?.map(admin => {
+    // Find disciplines for the current admin and format them correctly
+    const adminDisciplinas = disciplinas
+      ?.filter(d => d.admin_id === admin.id)
+      .map(d => ({ nombre: d.nombre })); // Create the { nombre: '...' } structure
+
+    return {
+      ...admin,
+      created_at: admin.created_at, // Ensure created_at is passed
+      disciplinas: adminDisciplinas || [] // Add the correctly formatted adisciplinas array
+    };
+  }) || [];
 
   return (
     <div className="space-y-6">
@@ -58,7 +59,7 @@ export default async function AdminsPage() {
         </Button>
       </div>
 
-      <AdminsTable admins={admins || []} />
+      <AdminsTable admins={transformedAdmins} />
     </div>
   )
 }

@@ -10,7 +10,7 @@ export default async function EditarDisciplinaPage({ params }: { params: { id: s
 
   const { data: disciplinaData, error: disciplinaError } = await supabase
     .from("disciplinas")
-    .select("*")
+    .select("*, admin_id")
     .eq("id", params.id)
     .single();
 
@@ -20,16 +20,6 @@ export default async function EditarDisciplinaPage({ params }: { params: { id: s
 
   if (!disciplinaData) {
     notFound();
-  }
-
-  const { data: adminDisciplina, error: adminDisciplinaError } = await supabase
-    .from("admin_disciplinas")
-    .select("admin_id")
-    .eq("disciplina_id", params.id)
-    .maybeSingle();
-
-  if (adminDisciplinaError) {
-    console.error("Error fetching admin_disciplina:", adminDisciplinaError);
   }
 
   // Use the admin client to bypass RLS for fetching admin users
@@ -42,11 +32,5 @@ export default async function EditarDisciplinaPage({ params }: { params: { id: s
     console.error("Error fetching admins:", adminsError);
   }
 
-  // Augment disciplina object with admin_id
-  const disciplina = {
-    ...disciplinaData,
-    admin_id: adminDisciplina?.admin_id || null
-  };
-
-  return <EditarDisciplinaForm disciplina={disciplina} admins={admins || []} />;
+  return <EditarDisciplinaForm disciplina={disciplinaData} admins={admins || []} />;
 }
