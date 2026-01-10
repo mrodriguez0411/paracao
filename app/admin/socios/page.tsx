@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { requireAuth } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,51 +13,62 @@ export default function SociosPage() {
   const [grupos, setGrupos] = useState<GrupoWithData[]>([])
   const [loading, setLoading] = useState(true)
 
+  const loadSocios = useCallback(async (search = '') => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/admin/socios', { cache: 'no-store' })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      
+      const gruposApi: GrupoWithData[] = await res.json()
+
+      let datos = gruposApi.map((g) => ({
+        ...g,
+        totalMiembros: 1 + (Array.isArray(g.miembros_familia) ? g.miembros_familia.length : 0),
+      }))
+
+      if (search) {
+        const searchLower = search.toLowerCase()
+        datos = datos.filter((grupo) => {
+          const nombreTitular = grupo.profiles?.nombre_completo?.toLowerCase() || ''
+          const emailTitular = grupo.profiles?.email?.toLowerCase() || ''
+          const dniTitular = grupo.profiles?.dni?.toLowerCase() || ''
+          const nombreGrupo = grupo.nombre?.toLowerCase() || ''
+
+          return (
+            nombreTitular.includes(searchLower) ||
+            emailTitular.includes(searchLower) ||
+            dniTitular.includes(searchLower) ||
+            nombreGrupo.includes(searchLower)
+          )
+        })
+      }
+
+      setGrupos(datos)
+    } catch (error) {
+      console.error('Error al cargar los datos de socios:', error)
+      alert('Ocurrió un error al cargar los datos de socios. Por favor, intente nuevamente.')
+    } finally {
+      setLoading(false)
+    }
+  }, []);
+
   useEffect(() => {
-    loadSocios()
-  }, [])
+    loadSocios();
+    // Configurar listeners para recargar al volver a la pestaña
+    const handleFocus = () => loadSocios(searchTerm);
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            handleFocus();
+        }
+    });
 
-const loadSocios = async (search = '') => {
-  try {
-    setLoading(true);
-    console.log('Cargando datos de socios desde API...');
+    return () => {
+        window.removeEventListener('focus', handleFocus);
+        document.removeEventListener('visibilitychange', handleFocus);
+    };
+}, [loadSocios, searchTerm]);
 
-    const res = await fetch('/api/admin/socios', { cache: 'no-store' })
-    if (!res.ok) {
-      throw new Error(`Error ${res.status}`)
-    }
-    const gruposApi: GrupoWithData[] = await res.json()
-
-    let datos = gruposApi.map((g) => ({
-      ...g,
-      totalMiembros: 1 + (Array.isArray(g.miembros_familia) ? g.miembros_familia.length : 0),
-    }))
-
-    if (search) {
-      const searchLower = search.toLowerCase()
-      datos = datos.filter((grupo) => {
-        const nombreTitular = grupo.profiles?.nombre_completo?.toLowerCase() || ''
-        const emailTitular = grupo.profiles?.email?.toLowerCase() || ''
-        const dniTitular = grupo.profiles?.dni?.toLowerCase() || ''
-        const nombreGrupo = grupo.nombre?.toLowerCase() || ''
-
-        return (
-          nombreTitular.includes(searchLower) ||
-          emailTitular.includes(searchLower) ||
-          dniTitular.includes(searchLower) ||
-          nombreGrupo.includes(searchLower)
-        )
-      })
-    }
-
-    setGrupos(datos)
-    setLoading(false)
-  } catch (error) {
-    console.error('Error al cargar los datos de socios:', error)
-    setLoading(false)
-    alert('Ocurrió un error al cargar los datos de socios. Por favor, intente nuevamente.')
-  }
-};
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     loadSocios(searchTerm);
@@ -68,9 +79,9 @@ const loadSocios = async (search = '') => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight" style={{ color: "#efb600" }}>Socios</h2>
-          <p className="text-[#efb600]">Gestiona los grupos familiares y sus miembros</p>
+          <p className="text-muted-foreground" style={{ color: "#efb600" }}>Gestiona los grupos familiares y sus miembros</p>
         </div>
-        <Button asChild className="bg-[#efb600] hover:bg-[#efb600]/50 text-[#1e3a8a]">
+        <Button asChild style={{ backgroundColor: "#efb600", color: "#1e3a8a" }}>
           <Link href="/admin/socios/nuevo">
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Socio
@@ -90,7 +101,7 @@ const loadSocios = async (search = '') => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button type="submit" disabled={loading} className="bg-[#efb600] hover:bg-[#efb600]/90 text-[#1e3a8a]">
+          <Button type="submit" disabled={loading} style={{ backgroundColor: "#efb600", color: "#1e3a8a" }}>
             <Search className="mr-2 h-4 w-4" />
             Buscar
           </Button>

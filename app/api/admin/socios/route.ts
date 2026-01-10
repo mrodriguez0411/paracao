@@ -1,51 +1,23 @@
 import { NextResponse } from "next/server"
 import { createServiceRoleClient } from "@/lib/supabase/server"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const supabase = createServiceRoleClient()
 
-    const { data, error } = await supabase
-      .from("grupos_familiares")
-      .select(`
-        id,
-        nombre,
-        cuota_social,
-        tipo_cuota_id,
-        created_at,
-        cuotas_tipos (
-          id,
-          nombre,
-          monto,
-          tipo,
-          activo
-        ),
-        profiles:titular_id (
-          id,
-          nombre_completo,
-          email,
-          dni,
-          telefono
-        ),
-        miembros_familia (
-          id,
-          nombre_completo,
-          dni,
-          parentesco,
-          grupo_id,
-          socio_id,
-          fecha_nacimiento,
-          created_at
-        )
-      `)
-      .order("created_at", { ascending: false })
+    // Llamar a la función RPC en lugar de hacer un select directo
+    const { data, error } = await supabase.rpc('get_all_grupos_familiares')
 
     if (error) {
-      console.error("[socios-list] Error al obtener socios:", error)
+      console.error("[socios-list] Error al llamar RPC get_all_grupos_familiares:", error)
       return NextResponse.json({ error: "No se pudieron obtener los socios" }, { status: 500 })
     }
 
+    // La función RPC devuelve un único objeto JSON que es un array de grupos
     return NextResponse.json(data)
+    
   } catch (error) {
     console.error("[socios-list] Error inesperado:", error)
     return NextResponse.json(
