@@ -1,50 +1,49 @@
 
-"use client"
+'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-// Usaremos íconos para que el dashboard sea más visual
-import { Users, UserCheck, UserX } from "lucide-react"
+import { StatCard } from "@/components/admin/stat-card";
+import { DollarSign, Users, Trophy, CreditCard } from 'lucide-react';
 
 interface DashboardProps {
-  totalInscriptos: number
-  totalAbonados: number
-  totalPendientes: number
+  isSuperAdmin: boolean;
+  totalInscriptos?: number;
+  totalAbonados?: number;
+  totalPendientes?: number;
+  gruposFamiliares?: number;
+  disciplinasActivas?: number;
+  cuotasPendientes?: number;
+  recaudadoMes?: number;
 }
 
-export function MiDisciplinaDashboard({
-  totalInscriptos,
-  totalAbonados,
-  totalPendientes,
+export function MiDisciplinaDashboard({ 
+  isSuperAdmin, 
+  totalInscriptos, 
+  totalAbonados, 
+  totalPendientes, 
+  gruposFamiliares,
+  disciplinasActivas,
+  cuotasPendientes,
+  recaudadoMes
 }: DashboardProps) {
+
+  if (isSuperAdmin) {
+    // --- RENDER PARA SUPER ADMIN ---
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard title="Grupos Familiares" value={gruposFamiliares || 0} icon={Users} />
+        <StatCard title="Disciplinas Activas" value={disciplinasActivas || 0} icon={Trophy} />
+        <StatCard title="Cuotas Pendientes" value={cuotasPendientes || 0} icon={CreditCard} />
+        <StatCard title="Recaudado (Mes)" value={`$${(recaudadoMes || 0).toFixed(2)}`} icon={DollarSign} />
+      </div>
+    );
+  }
+
+  // --- RENDER PARA ADMIN DISCIPLINA ---
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total de Inscriptos</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{totalInscriptos}</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Abonados (Mes Actual)</CardTitle>
-          <UserCheck className="h-4 w-4 text-green-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-green-600">{totalAbonados}</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Pendientes (Mes Actual)</CardTitle>
-          <UserX className="h-4 w-4 text-yellow-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-yellow-600">{totalPendientes}</div>
-        </CardContent>
-      </Card>
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <StatCard title="Total Inscriptos" value={totalInscriptos || 0} icon={Users} />
+      <StatCard title="Socios al Día" value={totalAbonados || 0} icon={Users} />
+      <StatCard title="Cuotas Pendientes" value={totalPendientes || 0} icon={CreditCard} />
     </div>
-  )
+  );
 }
