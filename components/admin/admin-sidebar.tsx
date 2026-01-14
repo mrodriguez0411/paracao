@@ -30,7 +30,7 @@ export function AdminSidebar({ profile }: AdminSidebarProps) {
         // --- Rutas para Admin Disciplina ---
         { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, show: isAdminDisciplina },
         { href: '/admin/mi-disciplina', label: 'Miembros', icon: Users, show: isAdminDisciplina },
-        { href: '/admin/historial-cuotas', label: 'Historial de Cuotas', icon: History, show: isAdminDisciplina }, // Nueva ruta
+        // { href: '/admin/historial-cuotas', label: 'Historial de Cuotas', icon: History, show: isAdminDisciplina }, // Ocultado temporalmente
     ];
 
     return (
