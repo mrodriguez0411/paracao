@@ -1,39 +1,26 @@
 'use server'
 
-import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { createClient } from "@/lib/supabase/server";
 
-export async function updateMiembroStatus(
-    inscripcionId: string, 
-    newStatus: boolean
-) {
-  if (!inscripcionId) {
-    return { error: 'ID de inscripción no proporcionado.' }
-  }
+// VERSIÓN 22.0: Se elimina la acción de pago. Solo consulta.
 
-  const supabase = createServiceRoleClient()
-
-  const { error } = await supabase.from('inscripciones').update({ activa: newStatus }).eq('id', inscripcionId)
-
-  if (error) {
-    console.error('Error al actualizar el estado del miembro:', error)
-    return { error: 'No se pudo actualizar el estado.' }
-  }
-
-  revalidatePath('/admin/mi-disciplina')
-  return { success: true }
-}
-
-export async function getMiembrosPorDisciplina() {
-  const supabase = await createClient()
-
-  // Se llama a la función 'get_miembros_de_mi_disciplina' sin parámetros
-  const { data, error } = await supabase.rpc('get_miembros_de_mi_disciplina')
+/**
+ * Obtiene los miembros de la disciplina para un mes y año específicos.
+ * La función RPC subyacente ahora usa un INNER JOIN, por lo que solo devuelve
+ * resultados si las cuotas para ese período han sido generadas.
+ */
+export async function getMiembrosPorDisciplina(anio: number, mes: number) {
+  const supabase = await createClient();
+  
+  const { data, error } = await supabase.rpc('buscar_miembros_disciplina', {
+    anio_param: anio,
+    mes_param: mes
+  });
 
   if (error) {
-    console.error('Error al cargar los miembros de la disciplina desde RPC:', error)
-    return { error: `Error al cargar miembros: ${error.message}` }
+    console.error('Error al llamar al RPC buscar_miembros_disciplina:', error);
+    return { data: [], error: error.message };
   }
 
-  return { data }
+  return { data: data || [], error: null };
 }
