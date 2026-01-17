@@ -1,7 +1,7 @@
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
-// --- Handler para GET (sin cambios) ---
+// --- Handler para GET (con fecha_nacimiento y edad) ---
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id: grupoId } = params;
@@ -12,8 +12,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       .select(`
         id, nombre, tipo_cuota_id,
         cuotas_tipos (id, nombre, monto),
-        profiles:titular_id (id, nombre_completo, email, dni, telefono),
-        miembros_familia (id, nombre_completo, dni, parentesco, socio_id, inscripciones (disciplina_id, disciplinas (id, nombre)))
+        profiles:titular_id (id, nombre_completo, email, dni, telefono, fecha_nacimiento, edad),
+        miembros_familia (id, nombre_completo, dni, parentesco, socio_id, fecha_nacimiento, edad, inscripciones (disciplina_id, disciplinas (id, nombre)))
       `)
       .eq("id", grupoId)
       .single();
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-// --- Handler para PUT (CORREGIDO Y SIMPLIFICADO) ---
+// --- Handler para PUT (con fecha_nacimiento) ---
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   const { id: grupoId } = params;
   const supabase = createServiceRoleClient();
@@ -63,6 +63,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       telefono,
       email,
       tipo_cuota_id,
+      fecha_nacimiento,
       miembros,
       titular_disciplinas,
     } = body;
@@ -81,14 +82,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     await supabase.from("grupos_familiares").update({ nombre: nombre_grupo, tipo_cuota_id }).eq("id", grupoId);
 
     // 3. Actualizar tabla `profiles` del titular
-    await supabase.from("profiles").update({ nombre_completo, dni, telefono, email }).eq("id", titularId);
+    await supabase.from("profiles").update({ nombre_completo, dni, telefono, email, fecha_nacimiento }).eq("id", titularId);
     
     // 4. Actualizar email en `auth.users`
     if (email) {
         await supabase.auth.admin.updateUserById(titularId, { email });
     }
 
-    // 5. Sincronizar miembros y sus disciplinas (LÓGICA CORREGIDA)
+    // 5. Sincronizar miembros y sus disciplinas
     if (Array.isArray(miembros)) {
       const { data: miembrosActuales } = await supabase.from("miembros_familia").select("id").eq("grupo_id", grupoId);
       const idsActuales = (miembrosActuales || []).map(m => m.id);
@@ -131,7 +132,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       }
     }
     
-    // 6. Sincronizar disciplinas del titular (buscando el miembro titular)
+    // 6. Sincronizar disciplinas del titular
     if (Array.isArray(titular_disciplinas)) {
         const { data: miembroTitular } = await supabase.from("miembros_familia").select("id").eq("socio_id", titularId).eq("grupo_id", grupoId).maybeSingle();
         
@@ -142,8 +143,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
                 await supabase.from("inscripciones").insert(inscripcionesTitular);
             }
         } else {
-          // Si el titular no existe como miembro, también se lo debe actualizar
-          await supabase.from("miembros_familia").update({ nombre_completo, dni }).eq("grupo_id", grupoId).eq("parentesco", "Titular");
+          await supabase.from("miembros_familia").update({ nombre_completo, dni, fecha_nacimiento }).eq("grupo_id", grupoId).eq("parentesco", "Titular");
         }
     }
 

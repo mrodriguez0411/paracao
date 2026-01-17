@@ -15,8 +15,21 @@ interface Miembro {
   id: string
   nombre_completo: string
   dni: string
+  fecha_nacimiento: string
   parentesco?: string
   disciplinas?: string[]
+}
+
+const calculateAge = (birthDate: string) => {
+  if (!birthDate) return null
+  const today = new Date()
+  const birth = new Date(birthDate)
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--
+  }
+  return age
 }
 
 export function NuevoSocioForm() {
@@ -31,12 +44,14 @@ export function NuevoSocioForm() {
     telefono: "",
     nombre_grupo: "",
     tipo_cuota_id: "",
+    fecha_nacimiento: "",
   })
   const [miembros, setMiembros] = useState<Miembro[]>([])
   const [nuevoMiembro, setNuevoMiembro] = useState({
     nombre_completo: "",
     dni: "",
     parentesco: "",
+    fecha_nacimiento: "",
   })
   const [disciplinas, setDisciplinas] = useState<Array<{ id: string; nombre: string }>>([])
   const [titularDisciplinas, setTitularDisciplinas] = useState<string[]>([])
@@ -108,6 +123,7 @@ export function NuevoSocioForm() {
           telefono: formData.telefono,
           nombre_grupo: formData.nombre_grupo,
           tipo_cuota_id: formData.tipo_cuota_id,
+          fecha_nacimiento: formData.fecha_nacimiento,
           miembros: miembros,
           titular_disciplinas: titularDisciplinas,
         }),
@@ -137,6 +153,9 @@ export function NuevoSocioForm() {
       setIsLoading(false)
     }
   }
+
+  const titularAge = calculateAge(formData.fecha_nacimiento)
+  const nuevoMiembroAge = calculateAge(nuevoMiembro.fecha_nacimiento)
 
   return (
     <Card className="border border-gray-100 shadow-sm rounded-xl overflow-hidden">
@@ -212,6 +231,23 @@ export function NuevoSocioForm() {
                 onChange={(e) => setFormData({ ...formData, nombre_grupo: e.target.value })}
               />
             </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="fecha_nacimiento">Fecha de Nacimiento</Label>
+              <Input
+                id="fecha_nacimiento"
+                type="date"
+                value={formData.fecha_nacimiento}
+                onChange={(e) => setFormData({ ...formData, fecha_nacimiento: e.target.value })}
+              />
+            </div>
+            {titularAge !== null && (
+              <div className="space-y-2">
+                <Label>Edad</Label>
+                <p className="text-black p-2 h-10 border rounded-md bg-slate-50">{titularAge} años</p>
+              </div>
+            )}
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -333,6 +369,23 @@ export function NuevoSocioForm() {
                   />
                 </div>
               </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="miembro_fecha_nacimiento">Fecha de Nacimiento</Label>
+                  <Input
+                    id="miembro_fecha_nacimiento"
+                    type="date"
+                    value={nuevoMiembro.fecha_nacimiento}
+                    onChange={(e) => setNuevoMiembro({ ...nuevoMiembro, fecha_nacimiento: e.target.value })}
+                  />
+                </div>
+                {nuevoMiembroAge !== null && (
+                  <div className="space-y-2">
+                    <Label>Edad</Label>
+                    <p className="text-black p-2 h-10 border rounded-md bg-slate-50">{nuevoMiembroAge} años</p>
+                  </div>
+                )}
+              </div>
 
               {/* Disciplinas del nuevo miembro */}
               <div>
@@ -393,7 +446,7 @@ export function NuevoSocioForm() {
                   if (nuevoMiembro.nombre_completo.trim() && nuevoMiembro.dni.trim()) {
                     const disciplinas = (nuevoMiembro as any).disciplinas || []
                     setMiembros([...miembros, { ...nuevoMiembro, disciplinas, id: String(Date.now()) }])
-                    setNuevoMiembro({ nombre_completo: '', dni: '', parentesco: '' } as any)
+                    setNuevoMiembro({ nombre_completo: '', dni: '', parentesco: '', fecha_nacimiento: '' } as any)
                     setMiembroDiscSelect({ ...miembroDiscSelect, ["nuevo"]: "" })
                   }
                 }}

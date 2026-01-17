@@ -25,9 +25,9 @@ async function crearUsuario(supabase: any, email: string, password: string, nomb
   return authData.user
 }
 
-async function actualizarPerfil(supabase: any, userId: string, telefono: string, dni: string) {
+async function actualizarPerfil(supabase: any, userId: string, telefono: string, dni: string, fecha_nacimiento: string) {
   console.log("[crear-socio] Actualizando perfil...")
-  const updateData: any = { dni }
+  const updateData: any = { dni, fecha_nacimiento }
   if (telefono) {
     updateData.telefono = telefono
   }
@@ -74,6 +74,7 @@ async function crearMiembrosFamiliares(supabase: any, grupoId: string, miembros:
     nombre_completo: miembro.nombre_completo,
     dni: miembro.dni,
     parentesco: miembro.parentesco || null,
+    fecha_nacimiento: miembro.fecha_nacimiento,
   }))
 
   const { data: insertados, error: miembrosError } = await supabase
@@ -125,9 +126,9 @@ async function crearMiembrosFamiliares(supabase: any, grupoId: string, miembros:
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, nombre_completo, dni, telefono, nombre_grupo, tipo_cuota_id, miembros, titular_disciplinas } = body
+    const { email, password, nombre_completo, dni, telefono, nombre_grupo, tipo_cuota_id, miembros, titular_disciplinas, fecha_nacimiento } = body
 
-    console.log("[crear-socio] Iniciando con datos:", { email, nombre_completo, dni, nombre_grupo, miembros })
+    console.log("[crear-socio] Iniciando con datos:", { email, nombre_completo, dni, nombre_grupo, miembros, fecha_nacimiento })
 
     if (!email || !password || !nombre_completo || !dni || !nombre_grupo || !tipo_cuota_id) {
       return NextResponse.json(
@@ -141,7 +142,7 @@ export async function POST(request: NextRequest) {
     const user = await crearUsuario(supabase, email, password, nombre_completo)
     console.log("[crear-socio] Usuario creado:", user.id)
 
-    await actualizarPerfil(supabase, user.id, telefono, dni)
+    await actualizarPerfil(supabase, user.id, telefono, dni, fecha_nacimiento)
 
     const grupoId = await crearGrupoFamiliar(supabase, nombre_grupo, user.id, tipo_cuota_id)
     console.log("[crear-socio] Grupo creado exitosamente")

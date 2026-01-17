@@ -13,7 +13,7 @@ begin
                 gf.tipo_cuota_id,
                 gf.created_at,
                 gf.titular_id,
-                gf.activo, -- <<< AÑADIDO
+                gf.activo,
                 (
                     select
                         row_to_json(ct)
@@ -32,7 +32,8 @@ begin
                                 nombre_completo,
                                 email,
                                 dni,
-                                telefono
+                                telefono,
+                                fecha_nacimiento -- <<< AÑADIDO
                             from
                                 public.profiles
                             where

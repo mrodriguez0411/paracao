@@ -21,7 +21,20 @@ interface Miembro {
   nombre_completo: string
   dni: string
   parentesco: string
+  fecha_nacimiento: string
   disciplinas: string[]
+}
+
+const calculateAge = (birthDate: string) => {
+  if (!birthDate) return null
+  const today = new Date()
+  const birth = new Date(birthDate)
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--
+  }
+  return age
 }
 
 export default function EditarSocioPage() {
@@ -47,6 +60,7 @@ export default function EditarSocioPage() {
     telefono: "",
     tipo_cuota_id: "",
     cuota_social: "",
+    fecha_nacimiento: "",
   })
 
   // Carga de datos inicial
@@ -72,6 +86,7 @@ export default function EditarSocioPage() {
         telefono: socio.profiles?.telefono || "",
         tipo_cuota_id: socio.tipo_cuota_id || "",
         cuota_social: String(socio.cuotas_tipos?.monto ?? socio.cuota_social ?? ""),
+        fecha_nacimiento: socio.profiles?.fecha_nacimiento || "",
       })
 
       const miembrosData = (socio.miembros_familia || []).map((m: any) => ({
@@ -79,6 +94,7 @@ export default function EditarSocioPage() {
         nombre_completo: m.nombre_completo,
         dni: m.dni,
         parentesco: m.parentesco,
+        fecha_nacimiento: m.fecha_nacimiento || "",
         disciplinas: (m.inscripciones || []).map((i: any) => i.disciplina_id).filter(Boolean),
       }))
       setMiembros(miembrosData)
@@ -122,7 +138,7 @@ export default function EditarSocioPage() {
   }
 
   const handleAddMiembro = () => {
-    setMiembros(current => [...current, { nombre_completo: "", dni: "", parentesco: "", disciplinas: [] }])
+    setMiembros(current => [...current, { nombre_completo: "", dni: "", parentesco: "", fecha_nacimiento: "", disciplinas: [] }])
   }
 
   const handleRemoveMiembro = (index: number) => {
@@ -186,6 +202,8 @@ export default function EditarSocioPage() {
     return <div className="flex items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>
   }
 
+  const titularAge = calculateAge(formData.fecha_nacimiento);
+
   return (
     <div className="max-w-2xl mx-auto p-4">
       <Card className="border border-gray-100 shadow-sm rounded-xl overflow-hidden">
@@ -202,6 +220,15 @@ export default function EditarSocioPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div><Label htmlFor="telefono" className="text-black font-bold">Teléfono</Label><Input className="text-black" id="telefono" type="tel" value={formData.telefono} onChange={(e) => setFormData({ ...formData, telefono: e.target.value })} /></div>
               <div><Label htmlFor="nombre_grupo" className="text-black font-bold">Nombre Grupo Familiar *</Label><Input className="text-black" id="nombre_grupo" required value={formData.nombre_grupo} onChange={(e) => setFormData({ ...formData, nombre_grupo: e.target.value })} /></div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div><Label htmlFor="fecha_nacimiento" className="text-black font-bold">Fecha de Nacimiento</Label><Input className="text-black" id="fecha_nacimiento" type="date" value={formData.fecha_nacimiento} onChange={(e) => setFormData({ ...formData, fecha_nacimiento: e.target.value })}/></div>
+              {titularAge !== null && (
+                <div>
+                  <Label>Edad</Label>
+                  <p className="text-black p-2 h-10 border rounded-md ">{titularAge} años</p>
+                </div>
+              )}
             </div>
             <div>
               <Label htmlFor="tipo_cuota_id" className="text-gray-800 font-bold">Tipo de Cuota *</Label>
@@ -233,32 +260,44 @@ export default function EditarSocioPage() {
             {/* --- MIEMBROS DEL GRUPO --- */}
             <div className="border-t pt-4">
               <h3 className="text-lg font-semibold text-[#1e3a8a] mb-3">Miembros del Grupo Familiar</h3>
-              {miembros.map((m, idx) => (
-                <div key={m.id || idx} className="mb-3 p-3 bg-slate-50 rounded-md border">
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <div><Label className="text-black font-bold">Nombre</Label><Input className="text-black" value={m.nombre_completo} onChange={(e) => handleMiembroChange(idx, 'nombre_completo', e.target.value)} /></div>
-                    <div><Label className="text-black font-bold">DNI</Label><Input className="text-black" value={m.dni} onChange={(e) => handleMiembroChange(idx, 'dni', e.target.value)} /></div>
-                    <div><Label className="text-black font-bold">Parentesco</Label><Input className="text-black" value={m.parentesco || ""} onChange={(e) => handleMiembroChange(idx, 'parentesco', e.target.value)} /></div>
-                  </div>
-                  <div className="mt-3">
-                    <Label className="text-black font-bold">Disciplinas</Label>
-                    <div className="flex items-center gap-2">
-                      <select value={miembroDiscSelect[idx] || ""} onChange={(e) => setMiembroDiscSelect({ ...miembroDiscSelect, [idx]: e.target.value })} className="flex-1 border rounded p-2 text-black">
-                        <option value="">Seleccioná una disciplina</option>
-                        {disciplinas.map((d) => <option key={d.id} value={d.id}>{d.nombre}</option>)}
-                      </select>
-                      <Button type="button" className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white" onClick={() => handleAddDisciplinaMiembro(idx)}>Agregar</Button>
+              {miembros.map((m, idx) => {
+                const miembroAge = calculateAge(m.fecha_nacimiento)
+                return (
+                  <div key={m.id || idx} className="mb-3 p-3 bg-slate-50 rounded-md border">
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <div><Label className="text-black font-bold">Nombre</Label><Input className="text-black" value={m.nombre_completo} onChange={(e) => handleMiembroChange(idx, 'nombre_completo', e.target.value)} /></div>
+                      <div><Label className="text-black font-bold">DNI</Label><Input className="text-black" value={m.dni} onChange={(e) => handleMiembroChange(idx, 'dni', e.target.value)} /></div>
+                      <div><Label className="text-black font-bold">Parentesco</Label><Input className="text-black" value={m.parentesco || ""} onChange={(e) => handleMiembroChange(idx, 'parentesco', e.target.value)} /></div>
                     </div>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {(m.disciplinas || []).map((id) => {
-                        const disc = disciplinas.find((d) => d.id === id);
-                        return <span key={id} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-sm">{disc?.nombre || id}<button type="button" className="text-blue-800/70 hover:text-blue-900" onClick={() => handleRemoveDisciplinaMiembro(idx, id)} aria-label="Quitar">×</button></span>;
-                      })}
+                    <div className="mt-3 grid gap-4 md:grid-cols-2">
+                      <div><Label className="text-black font-bold">Fecha de Nacimiento</Label><Input className="text-black" type="date" value={m.fecha_nacimiento} onChange={(e) => handleMiembroChange(idx, 'fecha_nacimiento', e.target.value)} /></div>
+                      {miembroAge !== null && (
+                        <div>
+                          <Label>Edad</Label>
+                          <p className="text-black p-2 h-10 border rounded-md bg-slate-50 ">{miembroAge} años</p>
+                        </div>
+                      )}
                     </div>
+                    <div className="mt-3">
+                      <Label className="text-black font-bold">Disciplinas</Label>
+                      <div className="flex items-center gap-2">
+                        <select value={miembroDiscSelect[idx] || ""} onChange={(e) => setMiembroDiscSelect({ ...miembroDiscSelect, [idx]: e.target.value })} className="flex-1 border rounded p-2 text-black">
+                          <option value="">Seleccioná una disciplina</option>
+                          {disciplinas.map((d) => <option key={d.id} value={d.id}>{d.nombre}</option>)}
+                        </select>
+                        <Button type="button" className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white" onClick={() => handleAddDisciplinaMiembro(idx)}>Agregar</Button>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(m.disciplinas || []).map((id) => {
+                          const disc = disciplinas.find((d) => d.id === id);
+                          return <span key={id} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-sm">{disc?.nombre || id}<button type="button" className="text-blue-800/70 hover:text-blue-900" onClick={() => handleRemoveDisciplinaMiembro(idx, id)} aria-label="Quitar">×</button></span>;
+                        })}
+                      </div>
+                    </div>
+                    <div className="mt-3 flex justify-end"><Button variant="destructive" size="sm" onClick={() => handleRemoveMiembro(idx)}>Eliminar Miembro</Button></div>
                   </div>
-                  <div className="mt-3 flex justify-end"><Button variant="destructive" size="sm" onClick={() => handleRemoveMiembro(idx)}>Eliminar Miembro</Button></div>
-                </div>
-              ))}
+                )
+              })}
               <Button type="button" onClick={handleAddMiembro} className="mt-2 bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">Agregar Miembro</Button>
             </div>
 

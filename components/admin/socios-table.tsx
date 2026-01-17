@@ -12,6 +12,7 @@ export interface ProfileData {
   nombre_completo: string;
   email: string;
   dni: string;
+  edad?: number;
   [key: string]: any;
 }
 
@@ -23,6 +24,7 @@ export interface MiembroFamilia {
   grupo_id: string;
   socio_id: string | null;
   fecha_nacimiento: string | null;
+  edad?: number;
   created_at: string;
 }
 
@@ -46,6 +48,7 @@ export interface GrupoWithData {
     nombre_completo: string;
     dni: string;
     email: string;
+    edad?: number;
   } | null;
   miembros_familia: MiembroFamilia[];
   totalMiembros?: number;
@@ -111,9 +114,10 @@ export const SociosTable = ({ grupos: initialGrupos, loading = false }: SociosTa
   
   const TableHeader = () => (
     <div className="flex items-center px-4 py-2 rounded-lg bg-white text-gray-500 font-medium text-xs uppercase tracking-wider mb-3 shadow-sm border border-gray-100">
-      <div className="w-[30%]">Titular</div>
+      <div className="w-[25%]">Titular</div>
       <div className="w-[15%]">DNI</div>
-      <div className="w-[20%]">Email</div>
+      <div className="w-[10%] text-center">Edad</div>
+      <div className="w-[15%]">Email</div>
       <div className="w-[10%] text-center">Miembros</div>
       <div className="w-[15%] text-center">Cuota</div>
       <div className="w-[10%] text-right">Acciones</div>
@@ -147,13 +151,14 @@ export const SociosTable = ({ grupos: initialGrupos, loading = false }: SociosTa
             const nombreTitular = grupo.profiles?.nombre_completo || 'Sin nombre';
             const emailTitular = grupo.profiles?.email || 'Sin email';
             const dniTitular = grupo.profiles?.dni || 'Sin DNI';
+            const edadTitular = grupo.profiles?.edad ?? 'N/A';
             const totalMiembros = 1 + (Array.isArray(grupo.miembros_familia) ? grupo.miembros_familia.length : 0);
             const isActive = grupo.activo !== false;
 
             return (
               <div key={grupo.id} className={`flex items-center p-4 rounded-lg bg-white shadow-sm border border-gray-100 transition-all duration-300 ${!isActive ? 'opacity-50' : ''}`}>
                 {/* Titular */}
-                <div className="w-[30%] flex items-center">
+                <div className="w-[25%] flex items-center">
                   <div className={`h-2.5 w-2.5 rounded-full mr-3 ${isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
                   <div className="flex-shrink-0 h-10 w-10 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-700 font-bold border-2 border-yellow-100">
                     {nombreTitular.charAt(0).toUpperCase()}
@@ -165,8 +170,10 @@ export const SociosTable = ({ grupos: initialGrupos, loading = false }: SociosTa
                 </div>
                 {/* DNI */}
                 <div className="w-[15%] text-sm text-gray-700 font-light">{dniTitular}</div>
+                 {/* Edad */}
+                <div className="w-[10%] text-center text-sm text-gray-700 font-light">{edadTitular}</div>
                 {/* Email */}
-                <div className="w-[20%] text-sm">
+                <div className="w-[15%] text-sm">
                   <a href={`mailto:${emailTitular}`} className="text-blue-600 hover:text-blue-800 hover:underline transition-colors font-light">{emailTitular}</a>
                 </div>
                 {/* Miembros */}
