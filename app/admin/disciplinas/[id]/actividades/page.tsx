@@ -1,5 +1,5 @@
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import ActividadesForm from "./actividades-form";
 
@@ -22,23 +22,22 @@ async function getActivities(id: string, supabase: any) {
     return actividades
 }
 
-async function getUserRole(supabase: any) {
-  const { data, error } = await supabase.rpc('get_user_role');
-  if (error) {
-    console.error('Error fetching user role:', error);
-    return null;
-  }
-  return data;
-}
-
-
 export default async function ActividadesPage({ params }: { params: { id: string } }) {
   const supabase = createServerComponentClient({ cookies });
-  const [disciplina, actividades, userRole] = await Promise.all([
+  const headersList = headers();
+  const userRole = headersList.get('x-user-role');
+
+  const [disciplina, actividades] = await Promise.all([
     getDiscipline(params.id, supabase),
     getActivities(params.id, supabase),
-    getUserRole(supabase)
   ]);
+
+ /* console.log('--- Debugging ActividadesPage ---');
+  console.log('Discipline ID:', params.id);
+  console.log('Fetched Disciplina:', disciplina);
+  console.log('Fetched Actividades:', actividades);
+  console.log('Fetched User Role:', userRole);
+  console.log('-------------------------------');*/
 
   if (!disciplina) {
     notFound();
@@ -51,14 +50,6 @@ export default async function ActividadesPage({ params }: { params: { id: string
       <h1 className="text-2xl font-bold mb-4" style={{color: "#efb600"}}>
         Actividades de {disciplina.nombre}
       </h1>
-
-      {/* --- DEBUGGING INFO --- */}
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-        <strong className="font-bold">Info de depuración:</strong>
-        <span className="block sm:inline ml-2">Rol detectado: {JSON.stringify(userRole)}</span>
-        <span className="block sm:inline ml-2">Resultado de isSuperAdmin: {isSuperAdmin.toString()}</span>
-      </div>
-      {/* --- END DEBUGGING INFO --- */}
 
       <div className={`grid grid-cols-1 ${isSuperAdmin ? 'md:grid-cols-2' : ''} gap-6`}>
         {isSuperAdmin && (

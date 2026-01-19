@@ -82,13 +82,13 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Rutas públicas que no requieren autenticación
-  const publicPaths = ['/auth', '/', '/about', '/contact'] // Añade aquí las rutas públicas
+  // Rutas pÃºblicas que no requieren autenticaciÃ³n
+  const publicPaths = ['/auth', '/', '/about', '/contact'] // AÃ±ade aquÃ las rutas pÃºblicas
   const isPublicPath = publicPaths.some(path => 
     path === '/' ? request.nextUrl.pathname === path : request.nextUrl.pathname.startsWith(path)
   )
 
-  // Permitir acceso a rutas públicas sin autenticación
+  // Permitir acceso a rutas pÃºblicas sin autenticaciÃ³n
   if (isPublicPath) {
     return supabaseResponse
   }
@@ -125,6 +125,10 @@ export async function updateSession(request: NextRequest) {
     console.log('[middleware] fallback profile:', profile?.rol)
   }
 
+  // Add the user role to the request headers
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-user-role', profile?.rol || 'null');
+
   // Check admin routes
   if (request.nextUrl.pathname.startsWith('/admin')) {
     const allowedRoles = ['super_admin', 'admin_disciplina']
@@ -144,5 +148,5 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  return supabaseResponse
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
