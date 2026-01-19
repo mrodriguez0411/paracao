@@ -1,58 +1,21 @@
-/*import { createServerClient } from "@supabase/ssr"
-import { NextResponse, type NextRequest } from "next/server"
-
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
-        },
-      },
-    },
-  )
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  // Proteger rutas de admin
-  if (request.nextUrl.pathname.startsWith("/admin") && !user) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/auth/login"
-    return NextResponse.redirect(url)
-  }
-
-  // Proteger rutas de socio
-  if (request.nextUrl.pathname.startsWith("/portal") && !user) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/auth/login"
-    return NextResponse.redirect(url)
-  }
-
-  return supabaseResponse
-}*/
-import { createServerClient } from '@supabase/ssr'
+/**
+ * This middleware is responsible for:
+ * 1.  Refreshing the user's session cookie if it has expired.
+ * 2.  Redirecting unauthenticated users from protected routes.
+ * 3.  Injecting the user's role as a request header for easier access in server components.
+ */
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
+  // This response object will be passed to the Supabase client.
+  // It will be updated with the session cookie if it is refreshed.
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
   })
 
   const supabase = createServerClient(
@@ -60,93 +23,68 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
+        get(name: string) {
+          return request.cookies.get(name)?.value
         },
-        setAll(cookiesToSet) {
-          for (const { name, value } of cookiesToSet) {
-            request.cookies.set(name, value)
-          }
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          for (const { name, value, options } of cookiesToSet) {
-            supabaseResponse.cookies.set(name, value, options)
-          }
+        set(name: string, value: string, options: CookieOptions) {
+          // If the cookie is set, update the request and response cookies.
+          request.cookies.set({ name, value, ...options })
+          response.cookies.set({ name, value, ...options })
+        },
+        remove(name: string, options: CookieOptions) {
+          // If the cookie is removed, update the request and response cookies.
+          request.cookies.set({ name, value: '', ...options })
+          response.cookies.set({ name, value: '', ...options })
         },
       },
-    },
+    }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // This will refresh the session cookie if needed.
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // Rutas pÃºblicas que no requieren autenticaciÃ³n
-  const publicPaths = ['/auth', '/', '/about', '/contact'] // AÃ±ade aquÃ las rutas pÃºblicas
-  const isPublicPath = publicPaths.some(path => 
+  // --- Authorization Logic ---
+
+  const publicPaths = ['/auth', '/', '/about', '/contact', '/unauthorized']
+  const isPublicPath = publicPaths.some(path =>
     path === '/' ? request.nextUrl.pathname === path : request.nextUrl.pathname.startsWith(path)
   )
 
-  // Permitir acceso a rutas pÃºblicas sin autenticaciÃ³n
   if (isPublicPath) {
-    return supabaseResponse
+    return response // Return the response with the possibly updated session cookie.
   }
 
-  // Redirigir usuarios no autenticados a login
+  // If no user, and not a public path, redirect to login.
   if (!user) {
-    console.log('[middleware] No user found, redirecting to login')
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
     url.searchParams.set('redirectedFrom', request.nextUrl.pathname)
     return NextResponse.redirect(url)
   }
 
-  console.log('[middleware] User found:', user.id, '- Path:', request.nextUrl.pathname)
+  // --- Role-based Authorization ---
 
-  // Obtener el perfil del usuario para validar permisos
-  // Use a service-role client to read the profiles table from middleware.
-  // This avoids RLS policy recursion when policies reference the profiles table.
-  let profile = null
-  try {
-    const service = createServiceRoleClient()
-    const { data, error } = await service.from('profiles').select('rol').eq('id', user.id).single()
-    if (error) {
-      console.error('[middleware] profiles lookup error:', error.message)
-    } else {
-      profile = data
-      console.log('[middleware] profile found:', profile?.rol)
-    }
-  } catch (e) {
-    console.error('[middleware] service role client error:', String(e))
-    // If service role client isn't configured, fall back to the request-bound client
-    const { data } = await supabase.from('profiles').select('rol').eq('id', user.id).single()
-    profile = data
-    console.log('[middleware] fallback profile:', profile?.rol)
-  }
+  const service = createServiceRoleClient()
+  const { data: profile } = await service.from('profiles').select('rol').eq('id', user.id).single()
 
-  // Add the user role to the request headers
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-user-role', profile?.rol || 'null');
-
-  // Check admin routes
+  // Add the user's role to the response headers to be used in server components.
+  response.headers.set('x-user-role', profile?.rol || 'null')
+  
   if (request.nextUrl.pathname.startsWith('/admin')) {
     const allowedRoles = ['super_admin', 'admin_disciplina']
     if (!profile?.rol || !allowedRoles.includes(profile.rol)) {
-      console.log(`[middleware] Unauthorized access to admin area by role: ${profile?.rol}`)
       const url = request.nextUrl.clone()
       url.pathname = '/unauthorized'
       return NextResponse.redirect(url)
     }
   }
-  
-  // Check portal routes
+
   if (request.nextUrl.pathname.startsWith('/portal') && profile?.rol !== 'socio') {
-    console.log(`[middleware] Unauthorized access to portal by role: ${profile?.rol}`)
     const url = request.nextUrl.clone()
     url.pathname = '/unauthorized'
     return NextResponse.redirect(url)
   }
-
-  return NextResponse.next({ request: { headers: requestHeaders } });
+  
+  // Return the response object with the updated session and the new header.
+  return response
 }

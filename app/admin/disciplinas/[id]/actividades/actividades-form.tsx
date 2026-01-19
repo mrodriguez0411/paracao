@@ -1,63 +1,54 @@
 'use client'
 
-import { useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useRouter } from 'next/navigation'
+import { useTransition, useRef, useState } from 'react'
+import { createActividad } from './actions'
 
 export default function ActividadesForm({ disciplinaId }: { disciplinaId: string }) {
-  const [nombre, setNombre] = useState('')
-  const [precio, setPrecio] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const supabase = createClientComponentClient()
-  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+  const formRef = useRef<HTMLFormElement>(null)
 
-  const handleGuardar = async () => {
-    if (!nombre || !precio) {
-      setError('Nombre y precio son requeridos')
-      return
-    }
-    setLoading(true)
+  const handleSubmit = async (formData: FormData) => {
     setError(null)
 
-    const { error: insertError } = await supabase
-      .from('actividades')
-      .insert({ nombre, precio: Number(precio), disciplina_id: disciplinaId })
-
-    if (insertError) {
-      setError(insertError.message)
-    } else {
-      setNombre('')
-      setPrecio('')
-      router.refresh() // Recargar la página para mostrar la nueva actividad
-    }
-    setLoading(false)
+    startTransition(async () => {
+      const result = await createActividad(formData)
+      if (!result.success) {
+        setError(result.message)
+      } else {
+        // Limpiar el formulario si la acción fue exitosa
+        formRef.current?.reset()
+      }
+    })
   }
 
   return (
-    <div className="space-y-4">
+    <form ref={formRef} action={handleSubmit} className="space-y-4">
       {error && <p className="text-red-500">{error}</p>}
+      
+      <input type="hidden" name="disciplinaId" value={disciplinaId} />
+
       <input
         type="text"
+        name="nombre"
         placeholder="Nombre de la actividad"
-        value={nombre}
-        onChange={(e) => setNombre(e.target.value)}
+        required
         className="w-full p-2 border rounded"
       />
       <input
         type="number"
+        name="precio"
         placeholder="Precio"
-        value={precio}
-        onChange={(e) => setPrecio(e.target.value)}
+        required
         className="w-full p-2 border rounded"
       />
       <button
-        onClick={handleGuardar}
-        disabled={loading}
+        type="submit"
+        disabled={isPending}
         className="w-full p-2 bg-blue-500 text-white rounded disabled:bg-gray-400"
       >
-        {loading ? 'Guardando...' : 'Guardar Actividad'}
+        {isPending ? 'Guardando...' : 'Guardar Actividad'}
       </button>
-    </div>
+    </form>
   )
 }
