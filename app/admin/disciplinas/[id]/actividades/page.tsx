@@ -1,75 +1,56 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies, headers } from "next/headers";
-import { notFound } from "next/navigation";
-import ActividadesForm from "./actividades-form";
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { notFound } from 'next/navigation'
+import ActividadesView from './actividades-view'
+import type { Actividad } from './types'
 
 export const dynamic = 'force-dynamic'
 
-async function getDiscipline(id: string, supabase: any) {
-  const { data: disciplina } = await supabase
-    .from("disciplinas")
-    .select("*")
-    .eq("id", id)
-    .single();
-  return disciplina;
-}
-
-async function getActivities(id: string, supabase: any) {
-    const { data: actividades } = await supabase
-        .from('actividades')
-        .select('*')
-        .eq('disciplina_id', id)
-    return actividades
-}
-
+// Este es el Componente de Servidor. Su única responsabilidad es
+// obtener datos y pasarlos al componente de cliente.
 export default async function ActividadesPage({ params }: { params: { id: string } }) {
-  const supabase = createServerComponentClient({ cookies });
-  const headersList = headers();
-  const userRole = headersList.get('x-user-role');
+  const cookieStore = cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+      },
+    }
+  )
 
-  const [disciplina, actividades] = await Promise.all([
-    getDiscipline(params.id, supabase),
-    getActivities(params.id, supabase),
-  ]);
+  // 1. Obtener la disciplina
+  const { data: disciplina, error: disciplinaError } = await supabase
+    .from('disciplinas')
+    .select('id, nombre')
+    .eq('id', params.id)
+    .single()
 
- /* console.log('--- Debugging ActividadesPage ---');
-  console.log('Discipline ID:', params.id);
-  console.log('Fetched Disciplina:', disciplina);
-  console.log('Fetched Actividades:', actividades);
-  console.log('Fetched User Role:', userRole);
-  console.log('-------------------------------');*/
-
-  if (!disciplina) {
-    notFound();
+  if (disciplinaError || !disciplina) {
+    notFound()
   }
 
-  const isSuperAdmin = typeof userRole === 'string' && userRole.trim() === 'super_admin';
+  // 2. Obtener las actividades de esa disciplina
+  const { data: actividades, error: actividadesError } = await supabase
+    .from('actividades')
+    .select('*')
+    .eq('disciplina_id', params.id)
+    .order('nombre', { ascending: true })
+    
+  if (actividadesError) {
+    console.error('Error fetching actividades:', actividadesError)
+    return <div>Error al cargar las actividades.</div>
+  }
 
+  // 3. Renderizar el componente de cliente pasándole los datos iniciales
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4" style={{color: "#efb600"}}>
-        Actividades de {disciplina.nombre}
-      </h1>
-
-      <div className={`grid grid-cols-1 ${isSuperAdmin ? 'md:grid-cols-2' : ''} gap-6`}>
-        {isSuperAdmin && (
-          <div>
-            <h2 className="text-xl font-bold mb-4" style={{color: "#efb600"}}>Crear Nueva Actividad</h2>
-            <ActividadesForm disciplinaId={params.id} />
-          </div>
-        )}
-        <div className={!isSuperAdmin ? 'col-span-1' : ''}>
-          <h2 className="text-xl font-bold mb-4" style={{color: "#efb600"}}>Actividades Existentes</h2>
-          <div className="space-y-4">
-            {actividades?.map((actividad) => (
-              <div key={actividad.id} className="p-4 border rounded-lg">
-                <h3 className="font-bold">{actividad.nombre}</h3>
-                <p>Precio: ${actividad.precio}</p>
-              </div>
-            )) || <p>No hay actividades para esta disciplina.</p>}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+    <ActividadesView 
+      initialActividades={actividades as Actividad[]}
+      disciplinaId={disciplina.id}
+      disciplinaNombre={disciplina.nombre}
+    />
+  )
 }
