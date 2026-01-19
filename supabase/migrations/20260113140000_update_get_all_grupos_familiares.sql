@@ -44,15 +44,23 @@ BEGIN
               'edad', mf.edad,
               'created_at', mf.created_at,
               'inscripciones', (
-                 SELECT COALESCE(json_agg(
+                SELECT COALESCE(json_agg(
                     json_build_object(
-                      'disciplina_id', i.disciplina_id,
-                      'disciplinas', (
-                        SELECT json_build_object('id', d.id, 'nombre', d.nombre)
-                        FROM disciplinas d WHERE d.id = i.disciplina_id
-                      )
+                        'actividad', (
+                            SELECT json_build_object('id', a.id, 'nombre', a.nombre)
+                            FROM actividades a
+                            WHERE a.id = i.actividad_id
+                        ),
+                        'disciplina', (
+                            SELECT json_build_object('id', d.id, 'nombre', d.nombre)
+                            FROM disciplinas d
+                            JOIN actividades a ON a.disciplina_id = d.id
+                            WHERE a.id = i.actividad_id
+                        )
                     )
-                  ), '[]'::json) FROM inscripciones i WHERE i.miembro_id = mf.id
+                ), '[]'::json)
+                FROM inscripciones i
+                WHERE i.miembro_id = mf.id
               )
             )
           ), '[]'::json) FROM miembros_familia mf WHERE mf.grupo_id = gf.id

@@ -1,26 +1,19 @@
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+// GET /api/admin/actividades
+// Returns a list of all actividades.
+export async function GET(request: Request) {
   const supabase = createServiceRoleClient();
-  const disciplinaId = params.id;
-
-  if (!disciplinaId) {
-    return NextResponse.json({ message: "El ID de la disciplina es requerido" }, { status: 400 });
-  }
 
   try {
     const { data, error } = await supabase
       .from("actividades")
       .select("id, nombre")
-      .eq("disciplina_id", disciplinaId)
       .order("nombre", { ascending: true });
 
     if (error) {
-      console.error("Error fetching actividades:", error);
+      console.error("Error fetching all actividades:", error);
       throw new Error("No se pudieron cargar las actividades.");
     }
 

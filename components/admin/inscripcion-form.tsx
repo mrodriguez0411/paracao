@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -21,12 +21,15 @@ import {
 } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
 const FormSchema = z.object({
   disciplina: z.string({
     required_error: "Por favor selecciona una disciplina.",
   }),
-  actividad: z.string().optional(),
+  actividad: z.string({
+    required_error: "Por favor selecciona una actividad.",
+  }),
 })
 
 interface Disciplina {
@@ -40,16 +43,17 @@ interface Actividad {
 }
 
 export function InscripcionForm({ miembroId }: { miembroId: string }) {
+  const router = useRouter()
   const [disciplinas, setDisciplinas] = useState<Disciplina[]>([])
   const [actividades, setActividades] = useState<Actividad[]>([])
   const [selectedDisciplina, setSelectedDisciplina] = useState<string>("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   })
 
   useEffect(() => {
-    // Fetch disciplinas
     const fetchDisciplinas = async () => {
       const res = await fetch("/api/admin/disciplinas")
       const data = await res.json()
@@ -59,8 +63,8 @@ export function InscripcionForm({ miembroId }: { miembroId: string }) {
   }, [])
 
   useEffect(() => {
+    form.setValue('actividad', '') // Reset actividad when disciplina changes
     if (selectedDisciplina) {
-      // Fetch actividades for the selected disciplina
       const fetchActividades = async () => {
         const res = await fetch(`/api/admin/disciplinas/${selectedDisciplina}/actividades`)
         const data = await res.json()
@@ -70,20 +74,43 @@ export function InscripcionForm({ miembroId }: { miembroId: string }) {
     } else {
       setActividades([])
     }
-  }, [selectedDisciplina])
-
+  }, [selectedDisciplina, form])
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    // Here you would handle form submission,
-    // for example, by calling an API route to create the inscription.
-    toast({
-      title: "Te has inscrito a:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    })
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/admin/inscripciones', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          miembro_id: miembroId,
+          actividad_id: data.actividad,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Error al crear la inscripción")
+      }
+
+      toast({
+        title: "¡Éxito!",
+        description: "El socio ha sido inscrito correctamente.",
+      })
+      router.push(`/admin/socios`)
+      router.refresh() // To see the changes in the socios list
+
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -94,14 +121,14 @@ export function InscripcionForm({ miembroId }: { miembroId: string }) {
           name="disciplina"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Disciplina</FormLabel>
+              <FormLabel>1. Selecciona una Disciplina</FormLabel>
               <Select onValueChange={(value) => {
                 field.onChange(value)
                 setSelectedDisciplina(value)
               }} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una disciplina" />
+                    <SelectValue placeholder="Elige la disciplina principal" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -118,11 +145,11 @@ export function InscripcionForm({ miembroId }: { miembroId: string }) {
           name="actividad"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Actividad</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedDisciplina || actividades.length === 0}>
+              <FormLabel>2. Selecciona una Actividad</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDisciplina || actividades.length === 0}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una actividad" />
+                    <SelectValue placeholder={selectedDisciplina ? "Elige la actividad o grupo" : "Primero elige una disciplina"} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -133,7 +160,9 @@ export function InscripcionForm({ miembroId }: { miembroId: string }) {
             </FormItem>
           )}
         />
-        <Button type="submit">Inscribir</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Inscribiendo...' : 'Inscribir Socio'}
+        </Button>
       </form>
     </Form>
   )
