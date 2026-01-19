@@ -1,28 +1,41 @@
-import { NextResponse } from "next/server"
-import { createServiceRoleClient } from "@/lib/supabase/server"
+import { createServiceRoleClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic'
-
-export async function GET() {
+// --- Handler para GET (VERSIÓN FINAL BASADA EN EL CONTRATO DE DATOS DEL FRONTEND) ---
+export async function GET(request: NextRequest) {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient();
 
-    // Llamar a la función RPC en lugar de hacer un select directo
-    const { data, error } = await supabase.rpc('get_all_grupos_familiares')
+    // ESTA ES LA CONSULTA CORRECTA, BASADA EN LA INTERFAZ 'GrupoWithData' de socios-table.tsx
+    const { data, error } = await supabase
+      .from("grupos_familiares")
+      .select(`
+        id,
+        nombre,
+        cuota_social,
+        tipo_cuota_id,
+        activo,
+        created_at,
+        titular_id,
+        cuotas_tipos (*),
+        profiles:titular_id (*),
+        miembros_familia (*)
+      `)
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("[socios-list] Error al llamar RPC get_all_grupos_familiares:", error)
-      return NextResponse.json({ error: "No se pudieron obtener los socios" }, { status: 500 })
+      // Si la consulta a la base de datos falla, la aplicación debe saberlo.
+      throw new Error(`Error de Supabase al consultar grupos familiares: ${error.message}`);
     }
 
-    // La función RPC devuelve un único objeto JSON que es un array de grupos
-    return NextResponse.json(data)
-    
+    // La API ahora devuelve los datos en el formato exacto que el frontend espera.
+    // No se necesita ninguna transformación adicional aquí.
+    // Si 'data' es null, se enviará un array vacío, lo cual es correcto.
+    return NextResponse.json(data || []);
+
   } catch (error) {
-    console.error("[socios-list] Error inesperado:", error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Error desconocido" },
-      { status: 500 }
-    )
+    console.error("[API Socios LIST GET - VERSIÓN FINAL]", error);
+    // Devolvemos el mensaje de error para que pueda ser depurado si algo más falla.
+    return NextResponse.json({ message: error instanceof Error ? error.message : "Error fatal en el servidor al obtener la lista de socios." }, { status: 500 });
   }
 }
