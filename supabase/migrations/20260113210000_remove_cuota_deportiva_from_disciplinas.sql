@@ -1,0 +1,1 @@
+ALTER TABLE disciplinas DROP COLUMN IF EXISTS cuota_deportiva;

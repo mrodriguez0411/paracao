@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition, useMemo, Fragment } from "react"
-import * as XLSX from 'xlsx'; // Importación para Excel
+import * as XLSX from 'xlsx';
 import { getCuotas, registrarPagoManual, type GrupoConCuotas, type CuotaDetalle } from "@/app/admin/historial-cuotas/actions"
 
 import { Card } from "@/components/ui/card"
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Search, Loader2, CheckCircle, ChevronDown, ChevronRight, FileDown } from "lucide-react" // Icono para exportar
+import { Search, Loader2, CheckCircle, ChevronDown, ChevronRight, FileDown } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 type StatusFilter = "todas" | "pagada" | "pendiente" | "vencida"
@@ -44,7 +44,7 @@ function GrupoRow({ grupo, onPay, isPaying, statusFilter, searchTerm }: {
 
       const matchesSearch = !search || 
                             grupo.grupo_nombre.toLowerCase().includes(search) || 
-                            cuota.disciplina_nombre?.toLowerCase().includes(search);
+                            cuota.detalle.toLowerCase().includes(search);
 
       return matchesStatus && matchesSearch;
     })
@@ -55,7 +55,6 @@ function GrupoRow({ grupo, onPay, isPaying, statusFilter, searchTerm }: {
   const totalMonto = filteredCuotas.reduce((acc, cuota) => acc + cuota.monto, 0);
   const estadoGeneral = filteredCuotas.every(c => c.pagada) ? "Pagado" : "Pendiente";
 
-  // Lógica para determinar el mes a mostrar
   const mesesUnicos = [...new Set(filteredCuotas.map(c => c.mes))];
   const mesDisplay = mesesUnicos.length === 1 
       ? new Date(0, mesesUnicos[0] - 1).toLocaleString('es-ES', { month: 'long' })
@@ -84,8 +83,8 @@ function GrupoRow({ grupo, onPay, isPaying, statusFilter, searchTerm }: {
         const mesCuota = new Date(0, cuota.mes - 1).toLocaleString('es-ES', { month: 'long' });
         return (
           <TableRow key={cuota.id} className="bg-white">
-            <TableCell className="pl-12 text-sm text-black">{cuota.disciplina_nombre}</TableCell>
-            <TableCell></TableCell> {/* Celda vacía para alinear conceptos */}
+            <TableCell className="pl-12 text-sm text-black">{cuota.detalle}</TableCell>
+            <TableCell></TableCell> 
             <TableCell className="text-right text-black">${cuota.monto.toFixed(2)}</TableCell>
             <TableCell className="text-center text-sm text-black capitalize">{mesCuota}</TableCell>
             <TableCell className="text-center"><Badge className={status.className}>{status.text}</Badge></TableCell>
@@ -141,7 +140,7 @@ export function HistorialCuotasClient() {
             const status = getStatus(cuota).toLowerCase() as StatusFilter;
             const search = searchTerm.toLowerCase();
             const matchesStatus = statusFilter === 'todas' || status === statusFilter;
-            const matchesSearch = !search || grupo.grupo_nombre.toLowerCase().includes(search) || cuota.disciplina_nombre?.toLowerCase().includes(search);
+            const matchesSearch = !search || grupo.grupo_nombre.toLowerCase().includes(search) || cuota.detalle.toLowerCase().includes(search);
             return matchesStatus && matchesSearch;
         })
       })).filter(grupo => grupo.cuotas.length > 0);
@@ -156,7 +155,7 @@ export function HistorialCuotasClient() {
     const dataToExport = grupos.flatMap(grupo => 
       grupo.cuotas.map(cuota => ({
         'Grupo Familiar': grupo.grupo_nombre,
-        'Concepto': cuota.disciplina_nombre,
+        'Concepto': cuota.detalle,
         'Monto': cuota.monto,
         'Estado': getStatus(cuota),
         'Fecha de Vencimiento': new Date(cuota.fecha_vencimiento).toLocaleDateString(),
@@ -182,6 +181,8 @@ export function HistorialCuotasClient() {
       const result = await registrarPagoManual(cuotaId);
       if (result.success) {
         toast({ title: "Éxito", description: result.message });
+        // Re-fetch data to show the updated status
+        handleSearch(); 
       } else {
         toast({ title: "Error", description: result.message, variant: "destructive" });
       }
@@ -214,7 +215,7 @@ export function HistorialCuotasClient() {
       {grupos && (
         <Card className="bg-white/80 backdrop-blur border border-gray-200/80 shadow-sm">
           <div className="p-4 border-b flex flex-col sm:flex-row gap-4">
-            <Input placeholder="Buscar por grupo o disciplina..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="flex-grow"/>
+            <Input placeholder="Buscar por grupo o concepto..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="flex-grow"/>
             <div className="flex items-center gap-2">
                 <Button size="sm" variant={statusFilter === 'todas' ? 'default' : 'outline'} onClick={() => setStatusFilter('todas')}>Todas</Button>
                 <Button size="sm" variant={statusFilter === 'pendiente' ? 'default' : 'outline'} onClick={() => setStatusFilter('pendiente')}>Pendientes</Button>

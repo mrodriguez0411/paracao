@@ -1,11 +1,10 @@
-
 -- =================================================================
 -- SCRIPT PARA AJUSTAR LA FUNCIÓN RPC Y MOSTRAR ESTADO DE CUOTAS
 -- =================================================================
 -- INSTRUCCIONES:
 -- 1. Ejecuta este script completo en tu editor SQL de Supabase.
 --    Esto modifica la función para quitar email/teléfono y agregar el
---    estado de la cuota deportiva del mes actual.
+--    estado de la cuota deportiva del mes actual, usando la tabla `actividades`.
 -- =================================================================
 
 -- PASO 1: Eliminar la función y el tipo antiguos.
@@ -36,8 +35,9 @@ BEGIN
     COALESCE(
         (SELECT '''Al día'''
          FROM public.cuotas c
+         JOIN public.actividades a ON c.actividad_id = a.id
          WHERE c.grupo_id = mf.grupo_id
-           AND c.disciplina_id = d.id
+           AND a.disciplina_id = d.id
            AND c.tipo = '''deportiva'''
            AND c.pagada = TRUE
            AND c.mes = EXTRACT(MONTH FROM NOW())

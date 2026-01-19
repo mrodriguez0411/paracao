@@ -69,12 +69,12 @@ export async function POST(request: NextRequest) {
       return Array.isArray(data) && data.length > 0
     }
 
-    async function existeCuotaDeportiva(grupoId: string, disciplinaId: string) {
+    async function existeCuotaDeportiva(grupoId: string, actividadId: string) {
       const { data } = await supabase
         .from("cuotas")
         .select("id")
         .eq("grupo_id", grupoId)
-        .eq("disciplina_id", disciplinaId)
+        .eq("actividad_id", actividadId)
         .eq("tipo", "deportiva")
         .eq("mes", mes)
         .eq("anio", anio)
@@ -107,62 +107,55 @@ export async function POST(request: NextRequest) {
       if (!insErr) creadas++; else { console.warn("[cuotas-generar] social err", insErr); }
     }
 
-    // 3) Cuotas deportivas por inscripciones del titular y miembros
-    // 3a) Titulares: inscripciones con socio_id = titular
-    const { data: inscTit, error: errInscTit } = await supabase
+    // 3) Cuotas deportivas por inscripciones en actividades
+    const { data: inscripciones, error: errInsc } = await supabase
       .from("inscripciones")
-      .select("disciplina_id, socio_id, disciplinas (id, cuota_deportiva), profiles!inscripciones_socio_id_fkey (id), grupos_familiares!profiles_titular_id_fkey (id)")
+      .select("socio_id, miembro_id, actividad_id, actividades (precio), miembros_familia (grupo_id)")
+      .not("actividad_id", "is", null)
 
-    if (errInscTit) {
-      console.error("[cuotas-generar] Error inscripciones titular:", errInscTit)
+    if (errInsc) {
+      console.error("[cuotas-generar] Error al cargar inscripciones con actividades:", errInsc)
     }
-
-    // 3b) Miembros: inscripciones con miembro_id -> join a miembro.grupo_id
-    const { data: inscMbr, error: errInscMbr } = await supabase
-      .from("inscripciones")
-      .select("disciplina_id, miembro_id, disciplinas (id, cuota_deportiva), miembros_familia (grupo_id)")
-
-    if (errInscMbr) {
-      console.error("[cuotas-generar] Error inscripciones miembros:", errInscMbr)
-    }
-
-    // Mapeo de grupo y disciplina para ambos casos
-    const deportivas: Array<{ grupo_id: string; disciplina_id: string; monto: number }> = []
-
-    // Titulares: necesitamos mapear socio_id -> grupo_id (grupos_familiares donde titular_id = socio_id)
-    // La selección arriba intenta traer relación hasta grupos_familiares; pero si no está configurado ese alias, haremos otra consulta simple.
-    // Fallback: construir mapa titular->grupo
+    
     const mapaTitularGrupo: Record<string, string> = {}
     for (const g of grupos || []) {
       if (g?.titular_id) mapaTitularGrupo[g.titular_id] = g.id
     }
 
-    for (const it of inscTit || []) {
-      const grupoId = mapaTitularGrupo[(it as any).socio_id]
-      const disc = (it as any).disciplinas
-      if (!grupoId || !disc?.id) continue
-      // Monto deportivo: usar cuotas_tipos.deportiva si existe, sino fallback a disciplina
-      const monto = Number((mapaTipoMonto["deportiva"] ?? disc.cuota_deportiva) || 0)
-      if (monto <= 0) continue
-      deportivas.push({ grupo_id: grupoId, disciplina_id: String(disc.id), monto })
-    }
+    const deportivas: Array<{ grupo_id: string; actividad_id: string; monto: number }> = []
 
-    for (const im of inscMbr || []) {
-      const grupoId = (im as any).miembros_familia?.grupo_id
-      const disc = (im as any).disciplinas
-      if (!grupoId || !disc?.id) continue
-      const monto = Number((mapaTipoMonto["deportiva"] ?? disc.cuota_deportiva) || 0)
+    for (const insc of inscripciones || []) {
+      if (!insc.actividad_id || !(insc as any).actividades?.precio) continue
+
+      let grupoId: string | null = null
+      if (insc.miembro_id) {
+        grupoId = (insc as any).miembros_familia?.grupo_id
+      } else if (insc.socio_id) {
+        grupoId = mapaTitularGrupo[insc.socio_id]
+      }
+
+      if (!grupoId) {
+        console.warn("[cuotas-generar] No se pudo encontrar grupo_id para la inscripción", { socio_id: insc.socio_id, miembro_id: insc.miembro_id })
+        continue
+      }
+      
+      const monto = Number((insc as any).actividades.precio)
       if (monto <= 0) continue
-      deportivas.push({ grupo_id: String(grupoId), disciplina_id: String(disc.id), monto })
+
+      deportivas.push({
+        grupo_id: grupoId,
+        actividad_id: insc.actividad_id,
+        monto,
+      })
     }
 
     // Insertar deportivas evitando duplicados
     for (const d of deportivas) {
-      const ya = await existeCuotaDeportiva(d.grupo_id, d.disciplina_id)
+      const ya = await existeCuotaDeportiva(d.grupo_id, d.actividad_id)
       if (ya) { omitidas++; continue }
       const { error: insDepErr } = await supabase.from("cuotas").insert({
         grupo_id: d.grupo_id,
-        disciplina_id: d.disciplina_id,
+        actividad_id: d.actividad_id,
         tipo: "deportiva",
         mes,
         anio,
@@ -170,7 +163,15 @@ export async function POST(request: NextRequest) {
         fecha_vencimiento: venc,
         pagada: false,
       })
-      if (!insDepErr) creadas++; else { console.warn("[cuotas-generar] deportiva err", insDepErr) }
+      if (!insDepErr) {
+        creadas++
+      } else {
+        if (insDepErr.code === '23505') { // unique_violation
+            omitidas++;
+        } else {
+            console.warn("[cuotas-generar] deportiva err", insDepErr)
+        }
+      }
     }
 
     return NextResponse.json({ success: true, creadas, omitidas })

@@ -30,7 +30,6 @@ export function NuevaDisciplinaForm({ admins }: NuevaDisciplinaFormProps) {
   const [formData, setFormData] = useState({
     nombre: "",
     descripcion: "",
-    cuota_deportiva: "",
     admin_id: "",
   })
 
@@ -67,7 +66,6 @@ export function NuevaDisciplinaForm({ admins }: NuevaDisciplinaFormProps) {
         body: JSON.stringify({
           nombre: formData.nombre,
           descripcion: formData.descripcion || null,
-          cuota_deportiva: Number.parseFloat(formData.cuota_deportiva),
           admin_id: formData.admin_id || null,
           imagen_url: imageUrl || null,
         }),
@@ -134,20 +132,6 @@ export function NuevaDisciplinaForm({ admins }: NuevaDisciplinaFormProps) {
               className="text-black"
             />
             {imageFile && <p className="text-sm text-muted-foreground">Archivo seleccionado: {imageFile.name}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="cuota_deportiva">Cuota Deportiva Mensual *</Label>
-            <Input
-              id="cuota_deportiva"
-              type="number"
-              step="0.01"
-              required
-              placeholder="0.00"
-              value={formData.cuota_deportiva}
-              onChange={(e) => setFormData({ ...formData, cuota_deportiva: e.target.value })}
-              className="text-black"
-            />
           </div>
 
           <div className="space-y-2">

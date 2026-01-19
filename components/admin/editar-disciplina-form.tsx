@@ -36,7 +36,6 @@ export function EditarDisciplinaForm({ disciplina, admins }: EditarDisciplinaFor
   const [formData, setFormData] = useState({
     nombre: disciplina.nombre,
     descripcion: disciplina.descripcion || '',
-    cuota_deportiva: disciplina.cuota_deportiva.toString(),
     admin_id: disciplina.admin_id || '',
     imagen_url: disciplina.imagen_url || '',
   })
@@ -83,7 +82,6 @@ export function EditarDisciplinaForm({ disciplina, admins }: EditarDisciplinaFor
           body: JSON.stringify({
             nombre: formData.nombre,
             descripcion: formData.descripcion || null,
-            cuota_deportiva: Number.parseFloat(formData.cuota_deportiva),
             admin_id: formData.admin_id || null,
             imagen_url: imageUrl || null,
           }),
@@ -168,22 +166,6 @@ export function EditarDisciplinaForm({ disciplina, admins }: EditarDisciplinaFor
               className="text-black"
             />
             {imageFile && <p className="text-sm text-muted-foreground">Nuevo archivo seleccionado: {imageFile.name}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="cuota_deportiva">Cuota Deportiva Mensual *</Label>
-            <Input
-              id="cuota_deportiva"
-              type="number"
-              step="0.01"
-              required
-              placeholder="0.00"
-              value={formData.cuota_deportiva}
-              onChange={e =>
-                setFormData({ ...formData, cuota_deportiva: e.target.value })
-              }
-              className="text-black"
-            />
           </div>
 
           <div className="space-y-2">
