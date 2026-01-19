@@ -10,17 +10,12 @@ export async function POST(request: Request) {
     const {
       nombre,
       descripcion,
-      cuota_deportiva,
       admin_id,
-      imagen_url, // <-- AÑADIDO
+      imagen_url,
     } = body
 
     if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
       return NextResponse.json({ error: 'El campo "nombre" es requerido.' }, { status: 400 });
-    }
-
-    if (typeof cuota_deportiva !== 'number') {
-        return NextResponse.json({ error: 'El campo "cuota_deportiva" es requerido y debe ser un número.' }, { status: 400 });
     }
 
     const disciplina_id = uuidv4()
@@ -32,8 +27,7 @@ export async function POST(request: Request) {
         id: disciplina_id,
         nombre: nombre.trim(),
         descripcion: descripcion?.trim() || null,
-        cuota_deportiva: cuota_deportiva,
-        imagen_url: imagen_url || null, // <-- AÑADIDO
+        imagen_url: imagen_url || null,
         admin_id: admin_id || null,
       })
       .select()

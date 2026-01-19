@@ -7,7 +7,7 @@ export async function PUT(
 ) {
   try {
     const body = await request.json()
-    const { nombre, descripcion, cuota_deportiva, admin_id, imagen_url } = body // <-- AÑADIDO
+    const { nombre, descripcion, admin_id, imagen_url } = body
     const { id: disciplina_id } = params
 
     if (!disciplina_id) {
@@ -18,10 +18,6 @@ export async function PUT(
       return NextResponse.json({ error: 'El campo "nombre" es requerido.' }, { status: 400 });
     }
 
-    if (typeof cuota_deportiva !== 'number') {
-        return NextResponse.json({ error: 'El campo "cuota_deportiva" es requerido y debe ser un número.' }, { status: 400 });
-    }
-
     const supabase = createServiceRoleClient()
 
     // 1. Update the disciplina details in 'disciplinas' table
@@ -30,9 +26,8 @@ export async function PUT(
       .update({
         nombre: nombre.trim(),
         descripcion: descripcion?.trim() || null,
-        cuota_deportiva: cuota_deportiva,
-        imagen_url: imagen_url || null, // <-- AÑADIDO
-        admin_id: admin_id || null, // set/clear the admin reference on the disciplina
+        imagen_url: imagen_url || null,
+        admin_id: admin_id || null,
       })
       .eq("id", disciplina_id)
       .select()
@@ -43,8 +38,6 @@ export async function PUT(
     }
 
     // 2. Handle the admin assignment.
-    
-    // First, delete any existing record for this disciplina_id.
     const { error: deleteError } = await supabase
       .from("admin_disciplinas")
       .delete()
@@ -54,9 +47,8 @@ export async function PUT(
       throw new Error(`Error al actualizar la asignación del administrador: ${deleteError.message}`)
     }
 
-    // If an admin_id is provided, insert the new association.
     if (admin_id) {
-      const { data: adminDisciplinaData, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from("admin_disciplinas")
         .insert({
           disciplina_id: disciplina_id,

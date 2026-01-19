@@ -3,28 +3,48 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
-import type { ActionResult } from './types' // Importar el tipo desde el nuevo archivo
+import type { ActionResult } from './types'
 
+// --- Helper para validar el precio ---
+function validatePrice(precioStr: string | null): { isValid: boolean; value: number; message?: string } {
+  if (precioStr === null || precioStr.trim() === '') {
+    return { isValid: false, value: 0, message: 'El precio es un campo requerido.' };
+  }
+  
+  const precioNum = Number(precioStr);
+  
+  if (isNaN(precioNum)) {
+    return { isValid: false, value: 0, message: 'El precio debe ser un número válido.' };
+  }
+  
+  if (precioNum < 0) {
+    return { isValid: false, value: 0, message: 'El precio no puede ser un número negativo.' };
+  }
+  
+  return { isValid: true, value: precioNum };
+}
+
+// --- Server Action: Crear Actividad ---
 export async function createActividad(formData: FormData): Promise<ActionResult> {
   const nombre = String(formData.get('nombre'))
-  const precio = formData.get('precio')
+  const precioStr = formData.get('precio') as string | null
   const disciplinaId = String(formData.get('disciplinaId'))
+
+  // Validación de datos
+  if (!nombre || !disciplinaId) {
+    return { success: false, message: 'Faltan el nombre o el ID de la disciplina.' }
+  }
   
-  if (!nombre || !precio || !disciplinaId) {
-    return { success: false, message: 'Faltan datos requeridos.' }
+  const priceValidation = validatePrice(precioStr);
+  if (!priceValidation.isValid) {
+    return { success: false, message: priceValidation.message };
   }
 
   const cookieStore = cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-      },
-    }
+    { cookies: { get: (name: string) => cookieStore.get(name)?.value } }
   )
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -32,9 +52,10 @@ export async function createActividad(formData: FormData): Promise<ActionResult>
     return { success: false, message: 'Usuario no autenticado.' }
   }
 
+  // Inserción en la base de datos
   const { error } = await supabase
     .from('actividades')
-    .insert({ nombre, precio: Number(precio), disciplina_id: disciplinaId })
+    .insert({ nombre, precio: priceValidation.value, disciplina_id: disciplinaId })
 
   if (error) {
     console.error('Error creating activity:', error)
@@ -45,27 +66,28 @@ export async function createActividad(formData: FormData): Promise<ActionResult>
   return { success: true, message: 'Actividad creada con éxito.' }
 }
 
+// --- Server Action: Actualizar Actividad ---
 export async function updateActividad(formData: FormData): Promise<ActionResult> {
   const id = String(formData.get('id'))
   const nombre = String(formData.get('nombre'))
-  const precio = formData.get('precio')
+  const precioStr = formData.get('precio') as string | null
   const disciplinaId = String(formData.get('disciplinaId'))
 
-  if (!id || !nombre || !precio) {
-    return { success: false, message: 'Faltan datos requeridos.' }
+  // Validación de datos
+  if (!id || !nombre || !disciplinaId) {
+    return { success: false, message: 'Faltan datos requeridos (ID, nombre o ID de disciplina).' }
+  }
+  
+  const priceValidation = validatePrice(precioStr);
+  if (!priceValidation.isValid) {
+    return { success: false, message: priceValidation.message };
   }
 
   const cookieStore = cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-      },
-    }
+    { cookies: { get: (name: string) => cookieStore.get(name)?.value } }
   )
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -73,9 +95,10 @@ export async function updateActividad(formData: FormData): Promise<ActionResult>
     return { success: false, message: 'Usuario no autenticado.' }
   }
 
+  // Actualización en la base de datos
   const { error } = await supabase
     .from('actividades')
-    .update({ nombre, precio: Number(precio) })
+    .update({ nombre, precio: priceValidation.value })
     .eq('id', id)
 
   if (error) {
@@ -87,25 +110,20 @@ export async function updateActividad(formData: FormData): Promise<ActionResult>
   return { success: true, message: 'Actividad actualizada con éxito.' }
 }
 
+// --- Server Action: Eliminar Actividad ---
 export async function deleteActividad(formData: FormData): Promise<ActionResult> {
   const id = String(formData.get('id'))
   const disciplinaId = String(formData.get('disciplinaId'))
 
-  if (!id) {
-    return { success: false, message: 'Faltan datos requeridos.' }
+  if (!id || !disciplinaId) {
+    return { success: false, message: 'Faltan datos requeridos para eliminar.' }
   }
 
   const cookieStore = cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-      },
-    }
+    { cookies: { get: (name: string) => cookieStore.get(name)?.value } }
   )
 
   const { data: { user } } = await supabase.auth.getUser()
