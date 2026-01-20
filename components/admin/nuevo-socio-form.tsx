@@ -15,7 +15,8 @@ interface Disciplina { id: string; nombre: string }
 interface Actividad { id: string; nombre: string }
 interface Miembro {
   id: string
-  nombre_completo: string
+  nombre: string
+  apellido: string
   dni: string
   fecha_nacimiento: string
   parentesco?: string
@@ -41,7 +42,7 @@ export function NuevoSocioForm() {
   const [isLoading, setIsLoading] = useState(false)
   
   // --- State ---
-  const [formData, setFormData] = useState({ email: "", password: "", nombre_completo: "", dni: "", telefono: "", nombre_grupo: "", tipo_cuota_id: "", fecha_nacimiento: "" })
+  const [formData, setFormData] = useState({ email: "", password: "", nombre: "", apellido: "", dni: "", telefono: "", nombre_grupo: "", tipo_cuota_id: "", fecha_nacimiento: "" })
   const [disciplinas, setDisciplinas] = useState<Disciplina[]>([])
   const [allActividades, setAllActividades] = useState<Actividad[]>([]);
   const [tiposCuota, setTiposCuota] = useState<TipoCuota[]>([])
@@ -54,7 +55,7 @@ export function NuevoSocioForm() {
 
   // Miembros state
   const [miembros, setMiembros] = useState<Miembro[]>([])
-  const [nuevoMiembro, setNuevoMiembro] = useState<Omit<Miembro, 'id'>>({ nombre_completo: "", dni: "", parentesco: "", fecha_nacimiento: "", actividades: [] })
+  const [nuevoMiembro, setNuevoMiembro] = useState<Omit<Miembro, 'id'>>({ nombre: "", apellido: "", dni: "", parentesco: "", fecha_nacimiento: "", actividades: [] })
   const [miembroSelectedDisciplina, setMiembroSelectedDisciplina] = useState("")
   const [miembroActividades, setMiembroActividades] = useState<Actividad[]>([])
   const [miembroSelectedActividad, setMiembroSelectedActividad] = useState("")
@@ -111,9 +112,9 @@ export function NuevoSocioForm() {
   const handleAddTitularInscripcion = () => { if (titularSelectedActividad && !titularInscripciones.includes(titularSelectedActividad)) setTitularInscripciones([...titularInscripciones, titularSelectedActividad]); setTitularSelectedActividad(""); }
   const handleAddMiembroInscripcion = () => { if (miembroSelectedActividad && !nuevoMiembro.actividades?.includes(miembroSelectedActividad)) setNuevoMiembro({ ...nuevoMiembro, actividades: [...(nuevoMiembro.actividades || []), miembroSelectedActividad] }); setMiembroSelectedActividad(""); }
   const handleAddMiembro = () => {
-    if (!nuevoMiembro.nombre_completo.trim() || !nuevoMiembro.dni.trim()) return toast({ title: "Atención", description: "El nombre y DNI del miembro son obligatorios.", variant: "destructive" });
+    if (!nuevoMiembro.nombre.trim() || !nuevoMiembro.apellido.trim() || !nuevoMiembro.dni.trim()) return toast({ title: "Atención", description: "El nombre, apellido y DNI del miembro son obligatorios.", variant: "destructive" });
     setMiembros([...miembros, { ...nuevoMiembro, id: String(Date.now()) }])
-    setNuevoMiembro({ nombre_completo: '', dni: '', parentesco: '', fecha_nacimiento: '', actividades: [] })
+    setNuevoMiembro({ nombre: '', apellido: '', dni: '', parentesco: '', fecha_nacimiento: '', actividades: [] })
     setMiembroSelectedDisciplina(""); setMiembroSelectedActividad("");
   }
   const handleSubmit = async (e: React.FormEvent) => {
@@ -136,7 +137,8 @@ export function NuevoSocioForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2"><Label htmlFor="nombre_completo">Nombre Completo *</Label><Input id="nombre_completo" required value={formData.nombre_completo} onChange={(e) => setFormData({ ...formData, nombre_completo: e.target.value })}/></div>
+            <div className="space-y-2"><Label htmlFor="nombre">Nombre *</Label><Input id="nombre" required value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}/></div>
+            <div className="space-y-2"><Label htmlFor="apellido">Apellido *</Label><Input id="apellido" required value={formData.apellido} onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}/></div>
             <div className="space-y-2"><Label htmlFor="email">Email *</Label><Input id="email" type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} /></div>
             <div className="space-y-2"><Label htmlFor="password">Contraseña *</Label><Input id="password" type="password" required minLength={6} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })}/></div>
             <div className="space-y-2"><Label htmlFor="dni">DNI *</Label><Input id="dni" type="text" required placeholder="Ej: 12345678" value={formData.dni} onChange={(e) => setFormData({ ...formData, dni: e.target.value })}/></div>
@@ -160,7 +162,7 @@ export function NuevoSocioForm() {
           <div className="border-t pt-6">
              <h3 className="text-lg font-semibold text-[#1e3a8a] mb-4">Miembros del Grupo Familiar</h3>
              <div className="bg-slate-50 p-4 rounded-lg mb-4 space-y-4">
-                <div className="grid gap-4 md:grid-cols-3"><div className="space-y-2"><Label className="text-black">Nombre Completo *</Label><Input value={nuevoMiembro.nombre_completo} onChange={(e) => setNuevoMiembro({...nuevoMiembro, nombre_completo: e.target.value})} /></div><div className="space-y-2"><Label className="text-black">DNI *</Label><Input value={nuevoMiembro.dni} onChange={(e) => setNuevoMiembro({...nuevoMiembro, dni: e.target.value})} /></div><div className="space-y-2"><Label className="text-black">Parentesco</Label><Input value={nuevoMiembro.parentesco} onChange={(e) => setNuevoMiembro({...nuevoMiembro, parentesco: e.target.value})} /></div></div>
+                <div className="grid gap-4 md:grid-cols-3"><div className="space-y-2"><Label className="text-black">Nombre *</Label><Input value={nuevoMiembro.nombre} onChange={(e) => setNuevoMiembro({...nuevoMiembro, nombre: e.target.value})} /></div><div className="space-y-2"><Label className="text-black">Apellido *</Label><Input value={nuevoMiembro.apellido} onChange={(e) => setNuevoMiembro({...nuevoMiembro, apellido: e.target.value})} /></div><div className="space-y-2"><Label className="text-black">DNI *</Label><Input value={nuevoMiembro.dni} onChange={(e) => setNuevoMiembro({...nuevoMiembro, dni: e.target.value})} /></div><div className="space-y-2"><Label className="text-black">Parentesco</Label><Input value={nuevoMiembro.parentesco} onChange={(e) => setNuevoMiembro({...nuevoMiembro, parentesco: e.target.value})} /></div></div>
                 <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2"><Label className="text-black">Fecha de Nacimiento</Label><Input type="date" value={nuevoMiembro.fecha_nacimiento} onChange={(e) => setNuevoMiembro({...nuevoMiembro, fecha_nacimiento: e.target.value})} /></div>
                     {nuevoMiembroAge !== null && <div className="space-y-2"><Label className="text-black">Edad</Label><p className="p-2 h-10 border rounded-md bg-white text-black">{nuevoMiembroAge} años</p></div>}
@@ -176,7 +178,7 @@ export function NuevoSocioForm() {
                 </div>
                 <Button type="button" onClick={handleAddMiembro} className="w-full bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white">Agregar Miembro</Button>
              </div>
-             {miembros.length > 0 && <div className="space-y-2"><p className="font-medium text-[#1e3a8a]">Miembros agregados:</p>{miembros.map(miembro => (<div key={miembro.id} className="flex items-center justify-between bg-slate-100 p-3 rounded-lg"><div><p className="font-semibold text-gray-800">{miembro.nombre_completo} <span className="font-normal text-gray-600">({miembro.parentesco})</span></p><p className="text-sm text-gray-600">DNI: {miembro.dni}</p><div className="text-sm text-gray-500">Actividades: {miembro.actividades.map(id => allActividades.find(a => a.id === id)?.nombre || id).join(", ") || "Ninguna"}</div></div><Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700" onClick={() => setMiembros(miembros.filter(m => m.id !== miembro.id))}><X size={18} /></Button></div>))}</div>}
+             {miembros.length > 0 && <div className="space-y-2"><p className="font-medium text-[#1e3a8a]">Miembros agregados:</p>{miembros.map(miembro => (<div key={miembro.id} className="flex items-center justify-between bg-slate-100 p-3 rounded-lg"><div><p className="font-semibold text-gray-800">{miembro.nombre} {miembro.apellido} <span className="font-normal text-gray-600">({miembro.parentesco})</span></p><p className="text-sm text-gray-600">DNI: {miembro.dni}</p><div className="text-sm text-gray-500">Actividades: {miembro.actividades.map(id => allActividades.find(a => a.id === id)?.nombre || id).join(", ") || "Ninguna"}</div></div><Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700" onClick={() => setMiembros(miembros.filter(m => m.id !== miembro.id))}><X size={18} /></Button></div>))}</div>}
           </div>
 
           <div className="flex gap-4">
