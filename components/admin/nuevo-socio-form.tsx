@@ -42,9 +42,9 @@ export function NuevoSocioForm() {
   const [isLoading, setIsLoading] = useState(false)
   
   // --- State ---
-  const [formData, setFormData] = useState({ email: "", password: "", nombre: "", apellido: "", dni: "", telefono: "", nombre_grupo: "", tipo_cuota_id: "", fecha_nacimiento: "" })
+  const [formData, setFormData] = useState({ email: "", nombre: "", apellido: "", dni: "", telefono: "", nombre_grupo: "", tipo_cuota_id: "", fecha_nacimiento: "" })
   const [disciplinas, setDisciplinas] = useState<Disciplina[]>([])
-  const [allActividades, setAllActividades] = useState<Actividad[]>([]);
+  const [allActividades, setAllActividades] = useState<Actividad[]>([])
   const [tiposCuota, setTiposCuota] = useState<TipoCuota[]>([])
 
   // Titular state
@@ -120,7 +120,13 @@ export function NuevoSocioForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setIsLoading(true);
     try {
-      const response = await fetch("/api/admin/crear-socio", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...formData, titular_actividades: titularInscripciones, miembros }) });
+      const payload = {
+        ...formData,
+        password: formData.dni, // Use DNI as password
+        titular_actividades: titularInscripciones,
+        miembros
+      };
+      const response = await fetch("/api/admin/crear-socio", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (!response.ok) throw new Error((await response.json()).error || "Error al crear el socio");
       toast({ title: "Socio creado exitosamente" }); router.push("/admin/socios"); router.refresh();
     } catch (error: any) { toast({ title: "Error", description: error.message, variant: "destructive" }) }
@@ -140,8 +146,11 @@ export function NuevoSocioForm() {
             <div className="space-y-2"><Label htmlFor="nombre">Nombre *</Label><Input id="nombre" required value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}/></div>
             <div className="space-y-2"><Label htmlFor="apellido">Apellido *</Label><Input id="apellido" required value={formData.apellido} onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}/></div>
             <div className="space-y-2"><Label htmlFor="email">Email *</Label><Input id="email" type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} /></div>
-            <div className="space-y-2"><Label htmlFor="password">Contraseña *</Label><Input id="password" type="password" required minLength={6} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })}/></div>
-            <div className="space-y-2"><Label htmlFor="dni">DNI *</Label><Input id="dni" type="text" required placeholder="Ej: 12345678" value={formData.dni} onChange={(e) => setFormData({ ...formData, dni: e.target.value })}/></div>
+            <div className="space-y-2">
+              <Label htmlFor="dni">DNI *</Label>
+              <Input id="dni" type="text" required placeholder="Ej: 12345678" value={formData.dni} onChange={(e) => setFormData({ ...formData, dni: e.target.value })}/>
+              <p className="text-xs text-gray-500 pt-1">La contraseña inicial del socio será su DNI.</p>
+            </div>
             <div className="space-y-2"><Label htmlFor="telefono">Teléfono</Label><Input id="telefono" type="tel" value={formData.telefono} onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}/></div>
             <div className="space-y-2"><Label htmlFor="nombre_grupo">Nombre Grupo Familiar *</Label><Input id="nombre_grupo" required placeholder="Ej: Familia García" value={formData.nombre_grupo} onChange={(e) => setFormData({ ...formData, nombre_grupo: e.target.value })}/></div>
             <div className="space-y-2"><Label htmlFor="fecha_nacimiento">Fecha de Nacimiento</Label><Input id="fecha_nacimiento" type="date" value={formData.fecha_nacimiento} onChange={(e) => setFormData({ ...formData, fecha_nacimiento: e.target.value })}/></div>

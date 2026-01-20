@@ -36,7 +36,7 @@ export function AdminHeader({ profile }: AdminHeaderProps) {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="gap-2 bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 hover:text-[#1e3a8a]">
             <User className="h-4 w-4" />
-            <span className="font-medium">{profile.nombre_completo}</span>
+            <span className="font-medium">{`${profile.nombre} ${profile.apellido}`}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="border-yellow-300 bg-white">

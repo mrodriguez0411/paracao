@@ -55,7 +55,7 @@ export default async function AdminDashboard() {
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight" style={{ color: "#efb600" }}>Dashboard</h2>
-        <p style={{ color: "#efb600" }}>Bienvenido, {profile.nombre_completo}</p>
+        <p style={{ color: "#efb600" }}>{`Bienvenido, ${profile.nombre} ${profile.apellido}`}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

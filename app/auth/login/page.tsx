@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import type React from "react"
 
@@ -160,7 +160,9 @@ export default function LoginPage() {
                   />
                 </div>
                 <div className="grid gap-2 relative">
-                  <Label htmlFor="password" className="text-[#1e3a8a] font-semibold">Contraseña</Label>
+                  <div className="flex items-center">
+                    <Label htmlFor="password" className="text-[#1e3a8a] font-semibold">Contraseña</Label>
+                  </div>
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -176,6 +178,9 @@ export default function LoginPage() {
                   >
                     {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                   </button>
+                  <Link href="/auth/reset-password" className="text-right text-sm text-[#1e3a8a] hover:underline">
+                    ¿Olvidaste tu contraseña?
+                  </Link>
                 </div>
                 {error && <p className="text-sm text-red-600 font-semibold">{error}</p>}
                 <Button type="submit" className="w-full bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white font-semibold text-lg py-6" disabled={isLoading}>
