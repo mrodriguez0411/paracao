@@ -1,1 +1,62 @@
-\'use server\'\n\nimport { createClient } from \"@/utils/supabase/server\"\nimport { NextResponse } from \"next/server\"\n\nexport async function POST(request: Request) {\n  const supabase = createClient()\n  const {\ miembro_id, actividad_id } = await request.json()\n\n  // 1. Validate data\n  if (!miembro_id || !actividad_id) {\n    return NextResponse.json({ message: \"El ID del miembro y el ID de la actividad son requeridos\" }, { status: 400 })\n  }\n\n  try {\n    // 2. Check if the member is already inscribed in the activity\n    const { data: existingInscripcion, error: existingError } = await supabase\n      .from(\'inscripciones\')\n      .select(\'id\')\n      .eq(\'miembro_id\', miembro_id)\n      .eq(\'actividad_id\', actividad_id)\n      .maybeSingle()\n\n    if (existingError) {\n      console.error(\'Error al verificar inscripción existente:\', existingError)\n      throw new Error(\"Error al verificar la inscripción.\")\n    }\n\n    if (existingInscripcion) {\n      return NextResponse.json({ message: \"El socio ya está inscrito en esta actividad.\" }, { status: 409 }); // 409 Conflict\n    }\n\n    // 3. Insert the new inscription\n    const { data, error } = await supabase\n      .from(\'inscripciones\')\n      .insert([\n        { \n          miembro_id,\n          actividad_id,\n        },\n      ])\n      .select()\n\n    if (error) {\n      console.error(\'Error al crear la inscripción:\', error)\n      throw new Error(\"No se pudo realizar la inscripción. Inténtalo de nuevo.\")\n    }\n\n    return NextResponse.json(data)\n\n  } catch (error: any) {\n    return NextResponse.json({ message: error.message }, { status: 500 })\n  }\n}\n
+"use server"
+
+import { createClient } from "@/lib/supabase/server"
+import { NextResponse } from "next/server"
+
+export async function POST(request: Request) {
+  const supabase = await createClient()
+  const { miembro_id, actividad_id } = await request.json()
+
+  // 1. Validate data
+  if (!miembro_id || !actividad_id) {
+    return NextResponse.json(
+      { message: "El ID del miembro y el ID de la actividad son requeridos" },
+      { status: 400 }
+    )
+  }
+
+  try {
+    // 2. Check if the member is already inscribed in the activity
+    const { data: existingInscripcion, error: existingError } = await supabase
+      .from("inscripciones")
+      .select("id")
+      .eq("miembro_id", miembro_id)
+      .eq("actividad_id", actividad_id)
+      .maybeSingle()
+
+    if (existingError) {
+      console.error("Error al verificar inscripción existente:", existingError)
+      throw new Error("Error al verificar la inscripción.")
+    }
+
+    if (existingInscripcion) {
+      return NextResponse.json(
+        { message: "El socio ya está inscrito en esta actividad." },
+        { status: 409 }
+      ) // 409 Conflict
+    }
+
+    // 3. Insert the new inscription
+    const { data, error } = await supabase
+      .from("inscripciones")
+      .insert([
+        {
+          miembro_id,
+          actividad_id,
+        },
+      ])
+      .select()
+
+    if (error) {
+      console.error("Error al crear la inscripción:", error)
+      throw new Error("No se pudo realizar la inscripción. Inténtalo de nuevo.")
+    }
+
+    return NextResponse.json(data)
+  } catch (error: any) {
+    return NextResponse.json(
+      { message: error.message },
+      { status: 500 }
+    )
+  }
+}
