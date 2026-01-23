@@ -91,7 +91,7 @@ export function NuevoSocioForm() {
     cargarDataInicial()
   }, [toast])
 
-  // --- Effects for loading actividades ---
+  // --- Effects for loadingividades ---
   useEffect(() => {
     setTitularActividades([]);
     setTitularSelectedActividad('');
@@ -118,19 +118,49 @@ export function NuevoSocioForm() {
     setMiembroSelectedDisciplina(""); setMiembroSelectedActividad("");
   }
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); setIsLoading(true);
+    e.preventDefault();
+    setIsLoading(true);
     try {
+      if (!formData.nombre.trim() || !formData.apellido.trim() || !formData.email.trim() || !formData.dni.trim() || !formData.nombre_grupo.trim() || !formData.tipo_cuota_id.trim()) {
+        toast({ title: "Error", description: "Por favor, complete todos los campos obligatorios del titular.", variant: "destructive" });
+        setIsLoading(false);
+        return;
+      }
+
+      const miembrosPayload = miembros.map(m => ({
+        ...m,
+        fecha_nacimiento: m.fecha_nacimiento || null,
+      }));
+
       const payload = {
         ...formData,
-        password: formData.dni, // Use DNI as password
+        nombre: formData.nombre.trim(),
+        apellido: formData.apellido.trim(),
+        password: formData.dni,
+        fecha_nacimiento: formData.fecha_nacimiento || null,
         titular_actividades: titularInscripciones,
-        miembros
+        miembros: miembrosPayload,
       };
-      const response = await fetch("/api/admin/crear-socio", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      if (!response.ok) throw new Error((await response.json()).error || "Error al crear el socio");
-      toast({ title: "Socio creado exitosamente" }); router.push("/admin/socios"); router.refresh();
-    } catch (error: any) { toast({ title: "Error", description: error.message, variant: "destructive" }) }
-    finally { setIsLoading(false) }
+
+      const response = await fetch("/api/admin/crear-socio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al crear el socio");
+      }
+
+      toast({ title: "Socio creado exitosamente" });
+      router.push("/admin/socios");
+      router.refresh();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
   }
   
   const titularAge = calculateAge(formData.fecha_nacimiento);

@@ -3,19 +3,25 @@ import { NextRequest, NextResponse } from "next/server"
 
 // --- Helper Functions (modularized for clarity) ---
 
-async function crearUsuario(supabase: any, email: string, password: string, nombre_completo: string) {
-  const { data: { user }, error } = await supabase.auth.admin.createUser({
+async function crearUsuario(supabase: any, email: string, password: string, nombre: string, apellido: string) {
+  const { data, error } = await supabase.auth.admin.createUser({
     email,
     password,
-    user_metadata: { nombre_completo, rol: "socio" },
+    user_metadata: { nombre, apellido, rol: "socio" },
     email_confirm: true,
   })
-  if (error || !user) throw new Error(`Error al crear usuario: ${error?.message}`)
-  return user
+  if (error || !data.user) throw new Error(`Error al crear usuario: ${error?.message}`)
+  return data.user
 }
 
-async function actualizarPerfil(supabase: any, userId: string, telefono: string, dni: string, fecha_nacimiento: string) {
-  const { error } = await supabase.from("profiles").update({ dni, fecha_nacimiento, telefono }).eq("id", userId)
+async function actualizarPerfil(supabase: any, userId: string, telefono: string | null, dni: string, fecha_nacimiento: string | null) {
+  const profileData: { dni: string, fecha_nacimiento: string | null, telefono: string | null } = {
+    dni,
+    fecha_nacimiento: fecha_nacimiento,
+    telefono: telefono,
+  };
+
+  const { error } = await supabase.from("profiles").update(profileData).eq("id", userId)
   if (error) throw new Error(`Error al actualizar perfil: ${error.message}`)
 }
 
@@ -30,7 +36,7 @@ async function crearMiembrosConInscripciones(supabase: any, grupoId: string, mie
 
   const miembrosParaInsertar = miembros.map(m => ({
     grupo_id: grupoId,
-    nombre_completo: m.nombre_completo,
+    nombre_completo: `${m.nombre.trim()} ${m.apellido.trim()}`,
     dni: m.dni,
     parentesco: m.parentesco || null,
     fecha_nacimiento: m.fecha_nacimiento,
@@ -46,7 +52,7 @@ async function crearMiembrosConInscripciones(supabase: any, grupoId: string, mie
     
     return miembroOriginal.actividades.map((actividadId: string) => ({
       miembro_id: miembroInsertado.id,
-      actividad_id: actividadId, // Correct column name
+      actividad_id: actividadId,
     }))
   })
 
@@ -63,7 +69,7 @@ async function crearInscripciones(supabase: any, miembroId: string, actividadIds
 
   const payload = actividadIds.map(actividadId => ({ 
     miembro_id: miembroId, 
-    actividad_id: actividadId, // Correct column name
+    actividad_id: actividadId,
   }))
 
   const { error } = await supabase.from("inscripciones").insert(payload)
@@ -76,21 +82,23 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const {
-      email, password, nombre_completo, dni, telefono, 
+      email, password, nombre, apellido, dni, telefono, 
       nombre_grupo, tipo_cuota_id, fecha_nacimiento, 
-      miembros, // Array of member objects
-      titular_actividades, // Corrected: Expecting actividad IDs for titular
+      miembros, 
+      titular_actividades, 
     } = body
 
-    if (!email || !password || !nombre_completo || !dni || !nombre_grupo || !tipo_cuota_id) {
+    if (!email || !password || !nombre || !apellido || !dni || !nombre_grupo || !tipo_cuota_id) {
       return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 })
     }
+
+    const nombre_completo = `${nombre.trim()} ${apellido.trim()}`;
 
     const supabase = createServiceRoleClient()
 
     // 1. Create Auth User & Profile
-    const user = await crearUsuario(supabase, email, password, nombre_completo)
-    await actualizarPerfil(supabase, user.id, telefono, dni, fecha_nacimiento)
+    const user = await crearUsuario(supabase, email, password, nombre, apellido)
+    await actualizarPerfil(supabase, user.id, telefono || null, dni, fecha_nacimiento || null)
 
     // 2. Create Family Group
     const grupoId = await crearGrupoFamiliar(supabase, nombre_grupo, user.id, tipo_cuota_id)
@@ -98,7 +106,14 @@ export async function POST(request: NextRequest) {
     // 3. Create Titular as a member_familia record to allow inscriptions
     const { data: titularMiembro, error: titularMiembroError } = await supabase
       .from("miembros_familia")
-      .insert({ grupo_id: grupoId, nombre_completo, dni, parentesco: "Titular", socio_id: user.id })
+      .insert({ 
+        grupo_id: grupoId, 
+        nombre_completo, 
+        dni, 
+        parentesco: "Titular", 
+        socio_id: user.id,
+        fecha_nacimiento: fecha_nacimiento || null
+      })
       .select('id').single()
       
     if (titularMiembroError || !titularMiembro) {
