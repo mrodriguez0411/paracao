@@ -14,15 +14,12 @@ export async function getCurrentUser() {
   }
 
   // Use service-role client to avoid RLS recursion when reading profiles
-  try {
-    const service = createServiceRoleClient()
-    const { data: profile } = await service.from("profiles").select("*").eq("id", user.id).single()
-    return profile
-  } catch {
-    // Fallback to request-bound client if service role not available
-    const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
-    return profile
-  }
+  // The fallback to the standard client was removed as it's the likely cause of the 500 error
+  // due to a recursive RLS policy.
+  const service = createServiceRoleClient()
+  const { data: profile } = await service.from("profiles").select("*").eq("id", user.id).single()
+  return profile
+
 }
 
 export async function requireAuth(allowedRoles?: UserRole[]) {
