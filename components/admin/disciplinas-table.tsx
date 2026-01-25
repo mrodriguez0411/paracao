@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Edit, Settings } from "lucide-react"
+import { Edit, Settings, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 
@@ -19,9 +19,37 @@ interface DisciplinaWithAdmin {
 
 interface DisciplinasTableProps {
   disciplinas: DisciplinaWithAdmin[]
+  onDelete?: (id: string) => void
 }
 
-export function DisciplinasTable({ disciplinas }: DisciplinasTableProps) {
+export function DisciplinasTable({ disciplinas, onDelete }: DisciplinasTableProps) {
+  const handleDelete = async (id: string, nombre: string) => {
+    if (!confirm(`¿Estás seguro de que quieres eliminar la disciplina "${nombre}"? Esta acción no se puede deshacer.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/disciplinas/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        alert(`Error: ${error.error || 'No se pudo eliminar la disciplina'}`)
+        return
+      }
+
+      alert('Disciplina eliminada exitosamente')
+      if (onDelete) {
+        onDelete(id)
+      }
+      // Recargar la página
+      window.location.reload()
+    } catch (error) {
+      alert('Error de conexión. Por favor intenta nuevamente.')
+    }
+  }
+
   if (disciplinas.length === 0) {
     return (
       <Card className="p-8 text-center bg-textura-amarilla">
@@ -63,6 +91,14 @@ export function DisciplinasTable({ disciplinas }: DisciplinasTableProps) {
                   <Link href={`/admin/disciplinas/${disciplina.id}/editar`}>
                     <Edit className="h-4 w-4" />
                   </Link>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => handleDelete(disciplina.id, disciplina.nombre)}
+                  className="text-gray-500 hover:bg-red-50 hover:text-red-700 rounded-lg p-2 h-9 w-9"
+                >
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </TableCell>
             </TableRow>
