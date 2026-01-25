@@ -1,6 +1,6 @@
 
 import { requireAuth } from "@/lib/auth"
-import { createClient } from "@/lib/supabase/server"
+import { createServiceRoleClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
@@ -8,12 +8,12 @@ import { AdminsTable } from "@/components/admin/admins-table"
 
 export default async function AdminsPage() {
   await requireAuth(["super_admin"])
-  const supabase = await createClient()
+  const supabase = createServiceRoleClient()
 
   // Step 1: Fetch all admins with all fields required by the table
   const { data: admins, error: adminsError } = await supabase
     .from("profiles")
-    .select("id, nombre_completo, email, telefono, created_at")
+    .select("id, nombre, apellido, email, telefono, created_at")
     .eq("rol", "admin_disciplina");
 
   if (adminsError) {
@@ -39,6 +39,7 @@ export default async function AdminsPage() {
 
     return {
       ...admin,
+      nombre_completo: `${admin.nombre} ${admin.apellido}`.trim(), // Combine nombre and apellido
       created_at: admin.created_at, // Ensure created_at is passed
       disciplinas: adminDisciplinas || [] // Add the correctly formatted adisciplinas array
     };

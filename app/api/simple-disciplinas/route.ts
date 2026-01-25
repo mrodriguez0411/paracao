@@ -1,5 +1,5 @@
 import { createServiceRoleClient } from "@/lib/supabase/server"
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
@@ -10,13 +10,17 @@ export async function GET() {
       .order("nombre")
     
     if (error) {
-      console.error("[disciplinas-get] Error:", error)
+      console.error("Error:", error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
     
-    return NextResponse.json(data || [])
+    return NextResponse.json({
+      success: true,
+      count: data?.length || 0,
+      data: data || []
+    })
   } catch (error) {
-    console.error("[disciplinas-get] Error:", error)
+    console.error("Error:", error)
     return NextResponse.json({ 
       error: error instanceof Error ? error.message : "Unknown error" 
     }, { status: 500 })

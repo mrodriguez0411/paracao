@@ -39,6 +39,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      actividades: {
+        Row: {
+          created_at: string
+          disciplina_id: string
+          id: string
+          nombre: string
+          precio: number
+        }
+        Insert: {
+          created_at?: string
+          disciplina_id: string
+          id?: string
+          nombre: string
+          precio: number
+        }
+        Update: {
+          created_at?: string
+          disciplina_id?: string
+          id?: string
+          nombre?: string
+          precio?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actividades_disciplina_id_fkey"
+            columns: ["disciplina_id"]
+            isOneToOne: false
+            referencedRelation: "disciplinas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_disciplinas: {
         Row: {
           admin_id: string
@@ -74,10 +106,10 @@ export type Database = {
       }
       cuotas: {
         Row: {
+          actividad_id: string | null
           anio: number
           comprobante_url: string | null
           created_at: string | null
-          disciplina_id: string | null
           fecha_pago: string | null
           fecha_vencimiento: string
           grupo_id: string
@@ -90,10 +122,10 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          actividad_id?: string | null
           anio: number
           comprobante_url?: string | null
           created_at?: string | null
-          disciplina_id?: string | null
           fecha_pago?: string | null
           fecha_vencimiento: string
           grupo_id: string
@@ -106,10 +138,10 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          actividad_id?: string | null
           anio?: number
           comprobante_url?: string | null
           created_at?: string | null
-          disciplina_id?: string | null
           fecha_pago?: string | null
           fecha_vencimiento?: string
           grupo_id?: string
@@ -123,10 +155,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "cuotas_disciplina_id_fkey"
-            columns: ["disciplina_id"]
+            foreignKeyName: "cuotas_actividad_id_fkey"
+            columns: ["actividad_id"]
             isOneToOne: false
-            referencedRelation: "disciplinas"
+            referencedRelation: "actividades"
             referencedColumns: ["id"]
           },
           {
@@ -176,7 +208,6 @@ export type Database = {
           activa: boolean | null
           admin_id: string | null
           created_at: string | null
-          cuota_deportiva: number
           descripcion: string | null
           id: string
           imagen_url: string | null
@@ -187,7 +218,6 @@ export type Database = {
           activa?: boolean | null
           admin_id?: string | null
           created_at?: string | null
-          cuota_deportiva?: number
           descripcion?: string | null
           id?: string
           imagen_url?: string | null
@@ -198,7 +228,6 @@ export type Database = {
           activa?: boolean | null
           admin_id?: string | null
           created_at?: string | null
-          cuota_deportiva?: number
           descripcion?: string | null
           id?: string
           imagen_url?: string | null
@@ -217,6 +246,7 @@ export type Database = {
       }
       grupos_familiares: {
         Row: {
+          activo: boolean | null
           created_at: string | null
           cuota_social: number
           id: string
@@ -226,6 +256,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          activo?: boolean | null
           created_at?: string | null
           cuota_social?: number
           id?: string
@@ -235,6 +266,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          activo?: boolean | null
           created_at?: string | null
           cuota_social?: number
           id?: string
@@ -263,34 +295,41 @@ export type Database = {
       inscripciones: {
         Row: {
           activa: boolean | null
+          actividad_id: string | null
           created_at: string | null
-          disciplina_id: string
           fecha_inscripcion: string | null
           id: string
           miembro_id: string
         }
         Insert: {
           activa?: boolean | null
+          actividad_id?: string | null
           created_at?: string | null
-          disciplina_id: string
           fecha_inscripcion?: string | null
           id?: string
           miembro_id: string
         }
         Update: {
           activa?: boolean | null
+          actividad_id?: string | null
           created_at?: string | null
-          disciplina_id?: string
           fecha_inscripcion?: string | null
           id?: string
           miembro_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "inscripciones_disciplina_id_fkey"
-            columns: ["disciplina_id"]
+            foreignKeyName: "fk_actividad"
+            columns: ["actividad_id"]
             isOneToOne: false
-            referencedRelation: "disciplinas"
+            referencedRelation: "actividades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscripciones_actividad_id_fkey"
+            columns: ["actividad_id"]
+            isOneToOne: false
+            referencedRelation: "actividades"
             referencedColumns: ["id"]
           },
           {
@@ -311,32 +350,38 @@ export type Database = {
       }
       miembros_familia: {
         Row: {
+          apellido: string
           created_at: string | null
           dni: string | null
+          edad: number | null
           fecha_nacimiento: string | null
           grupo_id: string
           id: string
-          nombre_completo: string
+          nombre: string
           parentesco: string | null
           socio_id: string | null
         }
         Insert: {
+          apellido: string
           created_at?: string | null
           dni?: string | null
+          edad?: number | null
           fecha_nacimiento?: string | null
           grupo_id: string
           id?: string
-          nombre_completo: string
+          nombre: string
           parentesco?: string | null
           socio_id?: string | null
         }
         Update: {
+          apellido?: string
           created_at?: string | null
           dni?: string | null
+          edad?: number | null
           fecha_nacimiento?: string | null
           grupo_id?: string
           id?: string
-          nombre_completo?: string
+          nombre?: string
           parentesco?: string | null
           socio_id?: string | null
         }
@@ -359,31 +404,40 @@ export type Database = {
       }
       profiles: {
         Row: {
+          apellido: string
           created_at: string | null
           dni: string | null
+          edad: number | null
           email: string
+          fecha_nacimiento: string | null
           id: string
-          nombre_completo: string
+          nombre: string
           rol: string
           telefono: string | null
           updated_at: string | null
         }
         Insert: {
+          apellido: string
           created_at?: string | null
           dni?: string | null
+          edad?: number | null
           email: string
+          fecha_nacimiento?: string | null
           id: string
-          nombre_completo: string
+          nombre: string
           rol: string
           telefono?: string | null
           updated_at?: string | null
         }
         Update: {
+          apellido?: string
           created_at?: string | null
           dni?: string | null
+          edad?: number | null
           email?: string
+          fecha_nacimiento?: string | null
           id?: string
-          nombre_completo?: string
+          nombre?: string
           rol?: string
           telefono?: string | null
           updated_at?: string | null
@@ -427,6 +481,33 @@ export type Database = {
       }
     }
     Functions: {
+      _get_admin_discipline_members: {
+        Args: { p_admin_id: string; p_anio: number; p_mes: number }
+        Returns: {
+          activa: boolean
+          dni_miembro: string
+          estado_cuota: string
+          fecha_inscripcion: string
+          id: string
+          nombre_miembro: string
+          nombre_titular: string
+        }[]
+      }
+      buscar_miembros_disciplina: {
+        Args: { anio_param: number; mes_param: number }
+        Returns: {
+          activa: boolean
+          anio_cuota: number
+          dni_miembro: string
+          estado_cuota: string
+          id: string
+          mes_cuota: number
+          monto_cuota: number
+          nombre_miembro: string
+          nombre_titular: string
+        }[]
+      }
+      calculate_age: { Args: { birth_date: string }; Returns: number }
       es_admin_de_disciplina_del_grupo: {
         Args: { grupo_id_param: string }
         Returns: boolean
@@ -434,6 +515,44 @@ export type Database = {
       es_admin_de_disciplina_del_miembro: {
         Args: { miembro_id_param: string }
         Returns: boolean
+      }
+      execute_sql: { Args: { sql_statement: string }; Returns: undefined }
+      get_admin_discipline_members: {
+        Args: { p_anio: number; p_mes: number }
+        Returns: {
+          activa: boolean
+          dni_miembro: string
+          estado_cuota: string
+          fecha_inscripcion: string
+          id: string
+          nombre_miembro: string
+          nombre_titular: string
+        }[]
+      }
+      get_all_grupos_familiares: { Args: never; Returns: Json }
+      get_historial_cuotas_disciplina: {
+        Args: { p_anio: number; p_mes: number }
+        Returns: {
+          actividad_id: string
+          actividad_nombre: string
+          cuota_id: string
+          estado_pago: string
+          fecha_pago: string
+          miembro_id: string
+          monto_pagado: number
+          nombre_completo: string
+        }[]
+      }
+      get_miembros_actividad_por_mes: {
+        Args: { p_actividad_id: string; p_anio: number; p_mes: number }
+        Returns: {
+          cuota_id: string
+          estado_pago: string
+          fecha_pago: string
+          miembro_id: string
+          monto_pagado: number
+          nombre_completo: string
+        }[]
       }
       get_miembros_de_mi_disciplina: {
         Args: never
@@ -459,12 +578,14 @@ export type Database = {
       get_miembros_familia: {
         Args: { p_grupo_id: string }
         Returns: {
+          apellido: string
           created_at: string | null
           dni: string | null
+          edad: number | null
           fecha_nacimiento: string | null
           grupo_id: string
           id: string
-          nombre_completo: string
+          nombre: string
           parentesco: string | null
           socio_id: string | null
         }[]
@@ -505,11 +626,14 @@ export type Database = {
       get_profile_by_id: {
         Args: { profile_id: string }
         Returns: {
+          apellido: string
           created_at: string | null
           dni: string | null
+          edad: number | null
           email: string
+          fecha_nacimiento: string | null
           id: string
-          nombre_completo: string
+          nombre: string
           rol: string
           telefono: string | null
           updated_at: string | null
@@ -534,10 +658,10 @@ export type Database = {
           p_tipo_pago: string
         }
         Returns: {
+          actividad_id: string | null
           anio: number
           comprobante_url: string | null
           created_at: string | null
-          disciplina_id: string | null
           fecha_pago: string | null
           fecha_vencimiento: string
           grupo_id: string

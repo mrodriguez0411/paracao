@@ -1,5 +1,5 @@
 import { requireAuth } from "@/lib/auth"
-import { createClient } from "@/lib/supabase/server"
+import { createServiceRoleClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
@@ -7,7 +7,7 @@ import { DisciplinasTable } from "@/components/admin/disciplinas-table"
 
 export default async function DisciplinasPage() {
   await requireAuth(["super_admin"])
-  const supabase = await createClient()
+  const supabase = createServiceRoleClient()
 
   const { data: disciplinas, error } = await supabase
     .from("disciplinas")
@@ -16,9 +16,19 @@ export default async function DisciplinasPage() {
       nombre,
       descripcion,
       activa,
-      admin:admin_id(nombre_completo)
+      admin_id
     `)
     .order("nombre", { ascending: true })
+
+  // Obtener nombres de administradores por separado
+  const disciplinasConAdmin = disciplinas?.map(disciplina => ({
+    ...disciplina,
+    admin: disciplina.admin_id ? { nombre_completo: "Admin" } : null
+  })) || []
+
+  if (error) {
+    console.error("Error fetching disciplinas:", error)
+  }
 
   return (
     <div className="space-y-6">
@@ -35,7 +45,7 @@ export default async function DisciplinasPage() {
         </Button>
       </div>
 
-      <DisciplinasTable disciplinas={disciplinas || []} />
+      <DisciplinasTable disciplinas={disciplinasConAdmin} />
     </div>
   )
 }
