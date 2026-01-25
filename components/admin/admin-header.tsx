@@ -30,13 +30,13 @@ export function AdminHeader({ profile }: AdminHeaderProps) {
   return (
     <header className="flex h-20 items-center justify-between border-b border-yellow-300 bg-[#EFB600] px-6 shadow-md">
       <h1 className="text-xl font-bold text-[#1e3a8a]">
-        {profile.rol === "super_admin" ? "PANEL DE ADMINISTRACIÓN" : "PANEL DE DISCIPLINA"}
+        {profile.rol === "super_admin" ? "CLUB PARACAO - PANEL DE ADMINISTRACIÓN" : "CLUB PARACAO - PANEL DE DISCIPLINA"}
       </h1>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="gap-2 bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/20 hover:text-[#1e3a8a]">
             <User className="h-4 w-4" />
-            <span className="font-medium">{`${profile.nombre} ${profile.apellido}`}</span>
+            <span className="font-medium">{profile.email}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="border-yellow-300 bg-white">

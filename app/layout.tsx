@@ -6,8 +6,8 @@ import { MessageCircle } from "lucide-react"
 import { FaWhatsapp } from "react-icons/fa"
 
 export const metadata: Metadata = {
-  title: "Club Deportivo - Gestión Deportiva",
-  description: "Sistema de gestión para club deportivo con disciplinas, socios y cuotas",
+  title: "Club Paracao - Gestión Deportiva",
+  description: "Sistema de gestión para Club Paracao con disciplinas, socios y cuotas",
     generator: 'v0.app'
 }
 

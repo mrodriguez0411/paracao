@@ -142,7 +142,11 @@ export function NuevoSocioForm() {
         miembros: miembrosPayload,
       };
 
-      const response = await fetch("/api/admin/crear-socio", {
+      // Usar el mismo puerto donde está corriendo la aplicación
+      const baseUrl = window.location.origin;
+      console.log('Usando baseUrl:', baseUrl);
+      
+      const response = await fetch(`${baseUrl}/api/admin/crear-socio`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -4,14 +4,55 @@ import { NextRequest, NextResponse } from "next/server"
 // --- Helper Functions (modularized for clarity) ---
 
 async function crearUsuario(supabase: any, email: string, password: string, nombre: string, apellido: string) {
-  const { data, error } = await supabase.auth.admin.createUser({
-    email,
-    password,
-    user_metadata: { nombre, apellido, rol: "socio" },
-    email_confirm: true,
-  })
-  if (error || !data.user) throw new Error(`Error al crear usuario: ${error?.message}`)
-  return data.user
+  console.log('[crearUsuario] Intentando crear usuario con:', { email, nombre, apellido })
+  
+  // Método 1: Intentar con admin.createUser (el original)
+  try {
+    const { data, error } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      user_metadata: { nombre, apellido, rol: "socio" },
+      email_confirm: true,
+    })
+    console.log('[crearUsuario] Resultado admin.createUser:', { 
+      userId: data?.user?.id, 
+      error: error?.message,
+      errorDetails: error
+    })
+    
+    if (!error && data.user) {
+      console.log('[crearUsuario] Usuario creado con método admin:', data.user.id)
+      return data.user
+    }
+    
+    console.log('[crearUsuario] Método admin falló, intentando método signup...')
+    
+    // Método 2: Intentar con signUp (alternativa)
+    const { data: data2, error: error2 } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { nombre, apellido, rol: "socio" },
+        emailRedirectTo: undefined
+      }
+    })
+    
+    console.log('[crearUsuario] Resultado signUp:', { 
+      userId: data2.user?.id, 
+      error: error2?.message,
+      errorDetails: error2
+    })
+    
+    if (error2 || !data2.user) {
+      throw new Error(`Error al crear usuario (métodos admin y signup fallaron): admin=${error?.message}, signup=${error2?.message}`)
+    }
+    
+    return data2.user
+    
+  } catch (error) {
+    console.error('[crearUsuario] Error en ambos métodos:', error)
+    throw new Error(`Error al crear usuario: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
 }
 
 async function actualizarPerfil(supabase: any, userId: string, telefono: string | null, dni: string, fecha_nacimiento: string | null) {
@@ -79,8 +120,18 @@ async function crearInscripciones(supabase: any, miembroId: string, actividadIds
 // --- Main POST Handler ---
 
 export async function POST(request: NextRequest) {
+  console.log('[crear-socio] === INICIO PETICIÓN ===')
+  
   try {
     const body = await request.json()
+    console.log('[crear-socio] Datos recibidos:', { 
+      email: body.email, 
+      nombre: body.nombre, 
+      apellido: body.apellido,
+      passwordLength: body.password?.length,
+      hasRequiredFields: !!(body.email && body.password && body.nombre && body.apellido && body.dni && body.nombre_grupo && body.tipo_cuota_id)
+    })
+    
     const {
       email, password, nombre, apellido, dni, telefono, 
       nombre_grupo, tipo_cuota_id, fecha_nacimiento, 
@@ -89,12 +140,20 @@ export async function POST(request: NextRequest) {
     } = body
 
     if (!email || !password || !nombre || !apellido || !dni || !nombre_grupo || !tipo_cuota_id) {
+      console.log('[crear-socio] Campos faltantes:', { email: !!email, password: !!password, nombre: !!nombre, apellido: !!apellido, dni: !!dni, nombre_grupo: !!nombre_grupo, tipo_cuota_id: !!tipo_cuota_id })
       return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 })
     }
 
     const nombre_completo = `${nombre.trim()} ${apellido.trim()}`;
 
     const supabase = createServiceRoleClient()
+    
+    // Verificar configuración del cliente
+    console.log('[crear-socio] Configuración Supabase:', {
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Presente' : 'Faltante',
+      serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Presente' : 'Faltante',
+      serviceKeyLength: process.env.SUPABASE_SERVICE_ROLE_KEY?.length
+    })
 
     // 1. Create Auth User & Profile
     const user = await crearUsuario(supabase, email, password, nombre, apellido)
