@@ -67,21 +67,32 @@ export async function updateSession(request: NextRequest) {
   const service = createServiceRoleClient()
   const { data: profile } = await service.from('profiles').select('rol').eq('id', user.id).single()
 
-  // Add the user's role to the response headers to be used in server components.
+  // Add debug headers for easier troubleshooting in Network tab
   response.headers.set('x-user-role', profile?.rol || 'null')
+  response.headers.set('x-user-id', user.id || 'null')
+  response.headers.set('x-pathname', request.nextUrl.pathname)
   
   if (request.nextUrl.pathname.startsWith('/admin')) {
     const allowedRoles = ['super_admin', 'admin_disciplina']
     if (!profile?.rol || !allowedRoles.includes(profile.rol)) {
       const url = request.nextUrl.clone()
       url.pathname = '/unauthorized'
+      url.searchParams.set('reason', !profile?.rol ? 'no_role' : 'role_denied')
+      url.searchParams.set('role', profile?.rol || 'null')
+      url.searchParams.set('path', request.nextUrl.pathname)
       return NextResponse.redirect(url)
     }
   }
 
-  if (request.nextUrl.pathname.startsWith('/portal') && profile?.rol !== 'socio') {
+  if (request.nextUrl.pathname.startsWith('/portal')) {
+    // Socio: permitir acceso al portal
+    if (profile?.rol === 'socio') {
+      return response
+    }
+    // Admins: redirigir amigablemente al panel de administración
     const url = request.nextUrl.clone()
-    url.pathname = '/unauthorized'
+    url.pathname = '/admin'
+    url.searchParams.set('from', '/portal')
     return NextResponse.redirect(url)
   }
   
